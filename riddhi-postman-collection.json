@@ -1,0 +1,625 @@
+{
+  "info": {
+    "_postman_id": "f5c62b3b-72bc-4f09-8a5a-35d078e58dce",
+    "name": "Finance Tracker API",
+    "description": "A collection of endpoints for the Finance Tracker API built with Node.js, TypeScript, and MongoDB.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Create a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set(\"authToken\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with email and password to receive an authentication token"
+          },
+          "response": []
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password", "request"]
+            },
+            "description": "Request a password reset link for a user"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"newPassword\": \"newSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password", "confirm"]
+            },
+            "description": "Reset a user's password using a reset token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Get the current user's profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"profileImageUrl\": \"https://example.com/profile.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Update the current user's profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"securePassword123\",\n  \"newPassword\": \"evenMoreSecurePassword456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "description": "Change the current user's password"
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication and user management endpoints"
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Get Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions?startDate=2023-01-01&endDate=2023-12-31&types=income,expense&categoryIds=&accountIds=&minAmount=&maxAmount=&searchTerm=&tags=&status=&page=1&limit=20&sort=date&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2023-01-01",
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2023-12-31",
+                  "description": "End date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "types",
+                  "value": "income,expense",
+                  "description": "Transaction types (income, expense, transfer)"
+                },
+                {
+                  "key": "categoryIds",
+                  "value": "",
+                  "description": "Comma-separated category IDs"
+                },
+                {
+                  "key": "accountIds",
+                  "value": "",
+                  "description": "Comma-separated account IDs"
+                },
+                {
+                  "key": "minAmount",
+                  "value": "",
+                  "description": "Minimum amount"
+                },
+                {
+                  "key": "maxAmount",
+                  "value": "",
+                  "description": "Maximum amount"
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "",
+                  "description": "Search term for description or notes"
+                },
+                {
+                  "key": "tags",
+                  "value": "",
+                  "description": "Comma-separated tags"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Transaction status"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "sort",
+                  "value": "date",
+                  "description": "Field to sort by"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "description": "Sort order (asc or desc)"
+                }
+              ]
+            },
+            "description": "Get a list of transactions with optional filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "transactionId",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Get a specific transaction by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2023-06-15T00:00:00.000Z\",\n  \"description\": \"Groceries\",\n  \"amount\": 75.42,\n  \"type\": \"expense\",\n  \"categoryId\": \"categoryId\",\n  \"accountId\": \"accountId\",\n  \"notes\": \"Weekly grocery shopping\",\n  \"status\": \"cleared\",\n  \"tags\": [\"food\", \"essentials\"],\n  \"isRecurring\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Create a new transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Recurring Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2023-06-01T00:00:00.000Z\",\n  \"description\": \"Rent Payment\",\n  \"amount\": 1200,\n  \"type\": \"expense\",\n  \"categoryId\": \"categoryId\",\n  \"accountId\": \"accountId\",\n  \"notes\": \"Monthly rent\",\n  \"status\": \"cleared\",\n  \"tags\": [\"housing\", \"fixed-expense\"],\n  \"isRecurring\": true,\n  \"recurringDetails\": {\n    \"frequency\": \"monthly\",\n    \"interval\": 1,\n    \"endDate\": \"2023-12-31T00:00:00.000Z\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Create a new recurring transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\",\n  \"amount\": 82.50,\n  \"notes\": \"Updated notes\",\n  \"status\": \"reconciled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "transactionId",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Update an existing transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "transactionId",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Delete a transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Transaction Attachment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/receipt.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id/attachments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id", "attachments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "transactionId",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Upload a file attachment for a transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "categories"]
+            },
+            "description": "Get all transaction categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Transaction Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Groceries\",\n  \"color\": \"#4CAF50\",\n  \"icon\": \"shopping-cart\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "categories"]
+            },
+            "description": "Create a new transaction category"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Subcategory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Organic Food\",\n  \"color\": \"#8BC34A\",\n  \"icon\": \"leaf\",\n  \"parentId\": \"parentCategoryId\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "categories"]
+            },
+            "description": "Create a subcategory under a parent category"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Transaction Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Food & Groceries\",\n  \"color\": \"#2E7D32\",\n  \"icon\": \"restaurant\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "categories", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "categoryId",
+                  "description": "Category ID"
+                }
+              ]
+            },
+            "description": "Update an existing transaction category"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Transaction Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "categories", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "categoryId",
+                  "description": "Category ID"
+                }
+              ]
+            },
+            "description": "Delete a transaction category (only if it has no transactions or child categories)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Transaction management endpoints including categories"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the Finance Tracker API"
+    }
+  ]
+}
