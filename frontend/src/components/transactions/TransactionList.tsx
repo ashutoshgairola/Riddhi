@@ -1,10 +1,9 @@
 // src/components/transactions/TransactionList.tsx
-import { FC, useState } from "react";
-import { Edit2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import {
-  Transaction,
-  TransactionCategory,
-} from "../../types/transaction.types";
+import { FC, useState } from 'react';
+
+import { ChevronDown, ChevronUp, Edit2, Trash2 } from 'lucide-react';
+
+import { Transaction, TransactionCategory } from '../../types/transaction.types';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -12,14 +11,14 @@ interface TransactionListProps {
 
 // Dummy categories data
 const categories: Record<string, TransactionCategory> = {
-  "1": { id: "1", name: "Housing", color: "#4CAF50" },
-  "2": { id: "2", name: "Income", color: "#2196F3" },
-  "3": { id: "3", name: "Dining", color: "#FFC107" },
-  "4": { id: "4", name: "Utilities", color: "#FF5722" },
-  "5": { id: "5", name: "Fitness", color: "#9C27B0" },
-  "6": { id: "6", name: "Freelance", color: "#3F51B5" },
-  "7": { id: "7", name: "Entertainment", color: "#E91E63" },
-  "8": { id: "8", name: "Shopping", color: "#607D8B" },
+  '1': { id: '1', name: 'Housing', color: '#4CAF50' },
+  '2': { id: '2', name: 'Income', color: '#2196F3' },
+  '3': { id: '3', name: 'Dining', color: '#FFC107' },
+  '4': { id: '4', name: 'Utilities', color: '#FF5722' },
+  '5': { id: '5', name: 'Fitness', color: '#9C27B0' },
+  '6': { id: '6', name: 'Freelance', color: '#3F51B5' },
+  '7': { id: '7', name: 'Entertainment', color: '#E91E63' },
+  '8': { id: '8', name: 'Shopping', color: '#607D8B' },
 };
 
 interface TransactionItemProps {
@@ -38,18 +37,18 @@ const TransactionItem: FC<TransactionItemProps> = ({
   showDetails,
 }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -65,22 +64,19 @@ const TransactionItem: FC<TransactionItemProps> = ({
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
             style={{
-              backgroundColor: category?.color
-                ? `${category.color}20`
-                : "#e0e0e0",
+              backgroundColor: category?.color ? `${category.color}20` : '#e0e0e0',
             }}
           >
             <span
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: category?.color || "#9e9e9e" }}
+              style={{ backgroundColor: category?.color || '#9e9e9e' }}
             ></span>
           </div>
 
           <div>
             <p className="font-medium">{transaction.description}</p>
             <p className="text-sm text-gray-500">
-              {formatDate(transaction.date)} •{" "}
-              {category?.name || "Uncategorized"}
+              {formatDate(transaction.date)} • {category?.name || 'Uncategorized'}
             </p>
           </div>
         </div>
@@ -88,10 +84,10 @@ const TransactionItem: FC<TransactionItemProps> = ({
         <div className="flex items-center">
           <p
             className={`font-medium mr-4 ${
-              transaction.type === "income" ? "text-green-600" : "text-red-600"
+              transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
             }`}
           >
-            {transaction.type === "income" ? "+" : "-"}
+            {transaction.type === 'income' ? '+' : '-'}
             {formatCurrency(transaction.amount)}
           </p>
 
@@ -126,7 +122,7 @@ const TransactionItem: FC<TransactionItemProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-500 mb-1">Category</p>
-              <p>{category?.name || "Uncategorized"}</p>
+              <p>{category?.name || 'Uncategorized'}</p>
             </div>
 
             <div>
@@ -172,12 +168,12 @@ const TransactionList: FC<TransactionListProps> = ({ transactions }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const handleEditTransaction = (id: string) => {
-    console.log("Edit transaction", id);
+    console.log('Edit transaction', id);
     // Handle edit logic here
   };
 
   const handleDeleteTransaction = (id: string) => {
-    console.log("Delete transaction", id);
+    console.log('Delete transaction', id);
     // Handle delete logic here
   };
 
@@ -188,9 +184,7 @@ const TransactionList: FC<TransactionListProps> = ({ transactions }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-medium">
-          {transactions.length} Transactions
-        </h2>
+        <h2 className="text-lg font-medium">{transactions.length} Transactions</h2>
 
         <div className="flex items-center">
           <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm mr-2">
@@ -199,9 +193,7 @@ const TransactionList: FC<TransactionListProps> = ({ transactions }) => {
             <option>Sort by Category</option>
           </select>
 
-          <button className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-            Export
-          </button>
+          <button className="px-3 py-2 border border-gray-200 rounded-lg text-sm">Export</button>
         </div>
       </div>
 

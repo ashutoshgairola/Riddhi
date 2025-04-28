@@ -1,84 +1,27 @@
-# FinTrack - Personal Finance Tracker
+# ₹iddhi Frontend
 
-FinTrack is a comprehensive web application that helps users monitor their income, expenses, investments, and overall financial health. Built with React and TypeScript for the frontend and Node.js for the backend, it provides an intuitive interface for managing personal finances.
+The frontend application for ₹iddhi - a comprehensive personal finance management platform. This React application provides an intuitive and responsive user interface for the ₹iddhi API.
 
 ## Features
 
-### User Account Management
-
-- Secure authentication with email/password and 2FA
-- User profile management with personal financial goals
-- Account recovery options
-
-### Dashboard
-
-- Financial overview with key metrics (net worth, monthly cash flow)
-- Customizable widgets for different financial aspects
-- Recent transaction feed
-- Goal progress tracking
-
-### Transaction Management
-
-- Manual transaction entry with categorization
-- Bank account/credit card integration for automatic import
-- Recurring transaction setup
-- Receipt image upload and storage
-
-### Budget Planning
-
-- Monthly budget creation by category
-- Budget vs. actual comparison visualizations
-- Flexible budget adjustment tools
-- Budget templates and recommendations
-
-### Expense Analysis
-
-- Categorized spending breakdown
-- Spending trend analysis over time
-- Custom reporting with exportable data
-
-### Income Tracking
-
-- Multiple income source management
-- Income vs. expense ratio analysis
-- Tax liability estimation
-
-### Investment Portfolio Tracking
-
-- Asset allocation visualization
-- Individual investment performance tracking
-- Integration with major brokerages
-- Historical performance analysis
-
-### Debt Management
-
-- Loan and credit card debt tracking
-- Interest payment analysis
-- Debt payoff strategy tools
-
-### Financial Goal Setting
-
-- Goal creation with target amounts and deadlines
-- Progress visualization
-- Goal priority management
+- **Interactive Dashboard**: Visualize your financial data with customizable widgets
+- **Transaction Management**: Track and categorize income and expenses with ease
+- **Budget Planning**: Create and monitor monthly budgets by category
+- **Goal Tracking**: Set financial goals and visualize your progress
+- **Investment Portfolio**: Monitor your investments with detailed analytics
+- **Reports & Insights**: Generate custom reports to gain financial insights
+- **Account Management**: Connect multiple financial accounts in one place
+- **Responsive Design**: Seamless experience across desktop, tablet, and mobile devices
 
 ## Tech Stack
 
-### Frontend
-
-- React with TypeScript
-- React Router for navigation
-- Context API for state management
-- Recharts for data visualization
-- Tailwind CSS for styling
-
-### Backend
-
-- Node.js with TypeScript
-- Express.js framework
-- MongoDB for data storage
-- JWT for authentication
-- RESTful API design
+- **React 18**: UI library for building the application interface
+- **TypeScript**: For type-safe code and improved developer experience
+- **React Router**: For application routing
+- **Context API**: For state management across the application
+- **Recharts**: For interactive data visualizations
+- **Tailwind CSS**: For styling with a utility-first approach
+- **React Hook Form**: For form handling with validation
 
 ## Getting Started
 
@@ -86,166 +29,103 @@ FinTrack is a comprehensive web application that helps users monitor their incom
 
 - Node.js (v16.x or later)
 - npm (v8.x or later)
-- MongoDB (v5.x or later)
+- API backend running (see the ₹iddhi API repository)
 
 ### Installation
 
 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/fintrack.git
-cd fintrack
+git clone https://github.com/riddhi/frontend.git
+cd frontend
 ```
 
-2. Install dependencies for both frontend and backend
+2. Install dependencies
 
 ```bash
-# Install backend dependencies
-cd server
-npm install
-
-# Install frontend dependencies
-cd ../client
 npm install
 ```
 
-3. Create .env files
-
-In the `server` directory, create a `.env` file:
-
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/fintrack
-JWT_SECRET=yoursecretkey
-```
-
-In the `client` directory, create a `.env` file:
+3. Create a `.env` file in the root directory with the following variables:
 
 ```
 REACT_APP_API_URL=http://localhost:5000/api
 ```
 
-4. Start the development servers
-
-For the backend:
+4. Start the development server
 
 ```bash
-cd server
-npm run dev
-```
-
-For the frontend:
-
-```bash
-cd client
 npm start
 ```
 
-5. Access the application at `http://localhost:3000`
-
-## Project Structure
-
-```
-fintrack/
-├── client/                        # Frontend React application
-│   ├── public/                    # Public assets
-│   └── src/
-│       ├── assets/                # Images and icons
-│       ├── components/            # React components
-│       ├── contexts/              # Context providers
-│       ├── hooks/                 # Custom React hooks
-│       ├── layouts/               # Page layouts
-│       ├── pages/                 # Page components
-│       ├── services/              # API services
-│       ├── types/                 # TypeScript type definitions
-│       └── utils/                 # Utility functions
-├── server/                        # Backend Node.js application
-│   ├── src/
-│   │   ├── config/                # Configuration files
-│   │   ├── controllers/           # Route controllers
-│   │   ├── middleware/            # Express middleware
-│   │   ├── models/                # MongoDB models
-│   │   ├── routes/                # API routes
-│   │   ├── services/              # Business logic
-│   │   ├── types/                 # TypeScript type definitions
-│   │   └── utils/                 # Utility functions
-│   └── tests/                     # Backend tests
-├── .gitignore
-├── package.json
-└── README.md
-```
-
-## API Documentation
-
-The backend provides a RESTful API for the frontend application. The API is organized into the following resources:
-
-- `/api/auth` - Authentication and user management
-- `/api/transactions` - Transaction management
-- `/api/budgets` - Budget planning
-- `/api/goals` - Financial goal tracking
-- `/api/accounts` - Account management
-- `/api/settings` - User preferences and settings
-- `/api/reports` - Financial reporting and analysis
-
-For detailed API documentation, see [API.md](./API.md).
+5. The application will be available at `http://localhost:3000`
 
 ## Development
 
-### Code Style
+### Available Scripts
 
-We use ESLint and Prettier to enforce code style. Please ensure your code passes linting before submitting PRs:
+- `npm start` - Runs the app in development mode
+- `npm test` - Launches the test runner
+- `npm run build` - Builds the app for production
+- `npm run lint` - Lints the code using ESLint
+- `npm run format` - Formats the code using Prettier
 
-```bash
-# In client or server directory
-npm run lint
+### Project Structure
+
+```
+src/
+├── assets/            # Static assets like images
+├── components/        # Reusable components
+│   ├── auth/          # Authentication components
+│   ├── budgets/       # Budget-related components
+│   ├── common/        # Shared components
+│   ├── dashboard/     # Dashboard widgets and components
+│   ├── goals/         # Goal-tracking components
+│   ├── investments/   # Investment components
+│   ├── reports/       # Reporting and analytics components
+│   ├── settings/      # User settings components
+│   └── transactions/  # Transaction management components
+├── contexts/          # React Context providers
+├── hooks/             # Custom React hooks
+├── layouts/           # Page layouts
+├── pages/             # Page components
+├── services/          # API service integrations
+├── types/             # TypeScript type definitions
+└── utils/             # Utility functions
 ```
 
-### Testing
+### Component Development
 
-Run tests with:
+Components follow a standard structure:
 
-```bash
-# In client or server directory
-npm test
-```
+- Each component is in its own directory with related files
+- TypeScript interfaces for component props
+- Proper error handling and loading states
+- Jest tests for component functionality
+
+### Styling
+
+This project uses Tailwind CSS for styling. Custom theme configuration is available in the `tailwind.config.js` file.
 
 ## Deployment
 
-### Prerequisites
-
-- Node.js (v16.x or later)
-- MongoDB database (hosted or self-managed)
-
-### Build
-
-To build for production:
+### Building for Production
 
 ```bash
-# Build frontend
-cd client
-npm run build
-
-# Build backend
-cd ../server
 npm run build
 ```
 
+This creates a `build` directory with optimized production files that can be served from any static file server.
+
 ### Deployment Options
 
-1. **Self-hosted**: Deploy the Node.js backend and serve the React static files
-2. **Containerized**: Docker configurations are available in the `docker` directory
-3. **Cloud platforms**: Deploy to Heroku, AWS, Azure, or Google Cloud
-
-## Roadmap
-
-- Mobile app development
-- Financial advisor network integration
-- AI-powered financial recommendations
-- International market expansion with multi-currency support
+- **Static hosting**: Deploy to services like Netlify, Vercel, or GitHub Pages
+- **Docker**: Containerized deployment using the included Dockerfile
+- **Traditional hosting**: Upload build files to any web server
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please check out our [contribution guidelines](CONTRIBUTING.md) for details on how to get started.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -253,19 +133,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-Please ensure your code follows the project's style guidelines and include appropriate tests.
+## Design System
 
-## License
+The application follows a consistent design system:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- [Recharts](https://recharts.org/) for data visualization
-- [Tailwind CSS](https://tailwindcss.com/) for UI styling
-- [React Router](https://reactrouter.com/) for navigation
-- [Express.js](https://expressjs.com/) for the backend API
-
-## Contact
-
-Project Link: [https://github.com/yourusername/fintrack](https://github.com/yourusername/fintrack)
+- Color palette focuses on greens and blues for a financial application feel
+- Typography uses Inter for readability across devices
+- Components follow accessibility best practices
+- Mobile-first responsive design approach

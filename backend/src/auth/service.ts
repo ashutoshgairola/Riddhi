@@ -1,18 +1,19 @@
-import jwt from "jsonwebtoken";
-import crypto from "crypto";
-import { Collection, Db } from "mongodb";
-import bcrypt from "bcryptjs";
-import { UserModel } from "./db";
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import dayjs from 'dayjs';
+import jwt from 'jsonwebtoken';
+import { Collection, Db } from 'mongodb';
+
+import { UserModel } from './db';
 import {
+  AuthToken,
+  LoginRequest,
+  PasswordResetToken,
+  RegisterUserRequest,
+  UpdateProfileRequest,
   User,
   UserDTO,
-  RegisterUserRequest,
-  LoginRequest,
-  AuthToken,
-  UpdateProfileRequest,
-  PasswordResetToken,
-} from "./types/interface";
-import dayjs from "dayjs";
+} from './types/interface';
 
 export class AuthService {
   private userModel: UserModel;
@@ -22,20 +23,15 @@ export class AuthService {
 
   constructor(db: Db) {
     this.userModel = new UserModel(db);
-    this.resetTokenCollection = db.collection<PasswordResetToken>(
-      "passwordResetTokens"
-    );
-    this.jwtSecret = process.env.JWT_SECRET || "your-secret-key";
-    this.tokenExpiration = process.env.TOKEN_EXPIRATION || "24h";
+    this.resetTokenCollection = db.collection<PasswordResetToken>('passwordResetTokens');
+    this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+    this.tokenExpiration = process.env.TOKEN_EXPIRATION || '24h';
   }
 
   async initialize(): Promise<void> {
     await this.userModel.initialize();
     // Create index for password reset tokens
-    await this.resetTokenCollection.createIndex(
-      { expiresAt: 1 },
-      { expireAfterSeconds: 0 }
-    );
+    await this.resetTokenCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
     await this.resetTokenCollection.createIndex({ token: 1 }, { unique: true });
   }
 
@@ -43,7 +39,7 @@ export class AuthService {
     // Check if user with this email already exists
     const existingUser = await this.userModel.findByEmail(userData.email);
     if (existingUser) {
-      throw new Error("Email already registered");
+      throw new Error('Email already registered');
     }
 
     const user = await this.userModel.create(userData);
@@ -55,15 +51,12 @@ export class AuthService {
   async login(credentials: LoginRequest): Promise<UserDTO> {
     const user = await this.userModel.findByEmail(credentials.email);
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
-    const isPasswordValid = await this.userModel.comparePassword(
-      user,
-      credentials.password
-    );
+    const isPasswordValid = await this.userModel.comparePassword(user, credentials.password);
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+      throw new Error('Invalid credentials');
     }
 
     // Update last login time
@@ -77,11 +70,11 @@ export class AuthService {
   async requestPasswordReset(email: string): Promise<void> {
     const user = await this.userModel.findByEmail(email);
     if (!user) {
-      throw new Error("Email not found");
+      throw new Error('Email not found');
     }
 
     // Generate reset token
-    const token = crypto.randomBytes(32).toString("hex");
+    const token = crypto.randomBytes(32).toString('hex');
 
     // Store token with expiration time (e.g., 1 hour)
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
@@ -102,32 +95,26 @@ export class AuthService {
     // Email would be sent here
   }
 
-  async confirmPasswordReset(
-    token: string,
-    newPassword: string
-  ): Promise<void> {
+  async confirmPasswordReset(token: string, newPassword: string): Promise<void> {
     // Find the token
     const resetToken = await this.resetTokenCollection.findOne({ token });
     if (!resetToken) {
-      throw new Error("Invalid or expired token");
+      throw new Error('Invalid or expired token');
     }
 
     // Check if token is expired
     if (dayjs(resetToken.expiresAt).isBefore(dayjs())) {
       await this.resetTokenCollection.deleteOne({ token });
-      throw new Error("Token has expired");
+      throw new Error('Token has expired');
     }
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update user's password
-    const success = await this.userModel.updatePassword(
-      resetToken.userId,
-      hashedPassword
-    );
+    const success = await this.userModel.updatePassword(resetToken.userId, hashedPassword);
     if (!success) {
-      throw new Error("Failed to update password");
+      throw new Error('Failed to update password');
     }
 
     // Delete the token
@@ -137,19 +124,16 @@ export class AuthService {
   async getProfile(userId: string): Promise<UserDTO> {
     const user = await this.userModel.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     return this.mapUserToDTO(user);
   }
 
-  async updateProfile(
-    userId: string,
-    updates: UpdateProfileRequest
-  ): Promise<UserDTO> {
+  async updateProfile(userId: string, updates: UpdateProfileRequest): Promise<UserDTO> {
     const updatedUser = await this.userModel.updateProfile(userId, updates);
     if (!updatedUser) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     return this.mapUserToDTO(updatedUser);
@@ -158,26 +142,23 @@ export class AuthService {
   async changePassword(
     userId: string,
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<void> {
     const user = await this.userModel.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
-    const isPasswordValid = await this.userModel.comparePassword(
-      user,
-      currentPassword
-    );
+    const isPasswordValid = await this.userModel.comparePassword(user, currentPassword);
     if (!isPasswordValid) {
-      throw new Error("Current password is incorrect");
+      throw new Error('Current password is incorrect');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     const success = await this.userModel.updatePassword(userId, hashedPassword);
 
     if (!success) {
-      throw new Error("Failed to update password");
+      throw new Error('Failed to update password');
     }
   }
 
@@ -185,7 +166,7 @@ export class AuthService {
     try {
       return jwt.verify(token, this.jwtSecret) as AuthToken;
     } catch (error) {
-      throw new Error("Invalid or expired token");
+      throw new Error('Invalid or expired token');
     }
   }
 

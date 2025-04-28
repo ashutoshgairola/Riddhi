@@ -1,6 +1,7 @@
 // src/components/common/Navbar.tsx
-import { FC } from "react";
-import { Bell, Search, User, Menu } from "lucide-react";
+import { FC } from 'react';
+
+import { Bell, Menu, Search, User } from 'lucide-react';
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -11,17 +12,12 @@ const Navbar: FC<NavbarProps> = ({ toggleSidebar }) => {
     <header className="bg-white shadow-sm p-4">
       <div className="flex justify-between items-center">
         <div className="flex md:hidden">
-          <button
-            onClick={toggleSidebar}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
+          <button onClick={toggleSidebar} className="p-2 rounded-lg hover:bg-gray-100">
             <Menu size={20} />
           </button>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-800 hidden md:block">
-          Dashboard
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800 hidden md:block">Dashboard</h1>
 
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">
@@ -43,9 +39,7 @@ const Navbar: FC<NavbarProps> = ({ toggleSidebar }) => {
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
               <User size={16} className="text-green-800" />
             </div>
-            <span className="text-sm font-medium hidden md:block">
-              John Doe
-            </span>
+            <span className="text-sm font-medium hidden md:block">John Doe</span>
           </button>
         </div>
       </div>

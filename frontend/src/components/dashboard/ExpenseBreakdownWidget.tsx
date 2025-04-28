@@ -1,29 +1,23 @@
 // src/components/dashboard/ExpenseBreakdownWidget.tsx
-import { FC } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from "recharts";
+import { FC } from 'react';
+
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 // Dummy data for the chart
 const expenseData = [
-  { name: "Housing", value: 1500, color: "#4CAF50" },
-  { name: "Food", value: 450, color: "#2196F3" },
-  { name: "Transport", value: 275, color: "#FFC107" },
-  { name: "Entertainment", value: 385, color: "#9C27B0" },
-  { name: "Utilities", value: 310, color: "#FF5722" },
-  { name: "Other", value: 280, color: "#607D8B" },
+  { name: 'Housing', value: 1500, color: '#4CAF50' },
+  { name: 'Food', value: 450, color: '#2196F3' },
+  { name: 'Transport', value: 275, color: '#FFC107' },
+  { name: 'Entertainment', value: 385, color: '#9C27B0' },
+  { name: 'Utilities', value: 310, color: '#FF5722' },
+  { name: 'Other', value: 280, color: '#607D8B' },
 ];
 
 const ExpenseBreakdownWidget: FC = () => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(value);
   };
 

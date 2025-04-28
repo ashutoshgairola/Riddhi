@@ -1,7 +1,9 @@
 // src/components/goals/GoalForm.tsx
-import { FC, useState } from "react";
-import { X } from "lucide-react";
-import { Goal, GoalType } from "../../types/goal.types";
+import { FC, useState } from 'react';
+
+import { X } from 'lucide-react';
+
+import { Goal, GoalType } from '../../types/goal.types';
 
 interface GoalFormProps {
   onClose: () => void;
@@ -11,37 +13,35 @@ interface GoalFormProps {
 
 // Color palette for goals
 const colorPalette = [
-  "#4CAF50",
-  "#2196F3",
-  "#FFC107",
-  "#9C27B0",
-  "#FF5722",
-  "#607D8B",
-  "#795548",
-  "#009688",
-  "#E91E63",
-  "#3F51B5",
+  '#4CAF50',
+  '#2196F3',
+  '#FFC107',
+  '#9C27B0',
+  '#FF5722',
+  '#607D8B',
+  '#795548',
+  '#009688',
+  '#E91E63',
+  '#3F51B5',
 ];
 
 const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    type: initialData?.type || ("savings" as GoalType),
-    targetAmount: initialData?.targetAmount?.toString() || "",
-    currentAmount: initialData?.currentAmount?.toString() || "",
-    startDate: initialData?.startDate || new Date().toISOString().split("T")[0],
-    targetDate: initialData?.targetDate || "",
+    name: initialData?.name || '',
+    type: initialData?.type || ('savings' as GoalType),
+    targetAmount: initialData?.targetAmount?.toString() || '',
+    currentAmount: initialData?.currentAmount?.toString() || '',
+    startDate: initialData?.startDate || new Date().toISOString().split('T')[0],
+    targetDate: initialData?.targetDate || '',
     color: initialData?.color || colorPalette[0],
-    notes: initialData?.notes || "",
-    priority: initialData?.priority?.toString() || "3",
+    notes: initialData?.notes || '',
+    priority: initialData?.priority?.toString() || '3',
     contributionFrequency: initialData?.contributionFrequency || undefined,
-    contributionAmount: initialData?.contributionAmount?.toString() || "",
+    contributionAmount: initialData?.contributionAmount?.toString() || '',
   });
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData({
@@ -70,13 +70,13 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
     const processedData = {
       ...formData,
       targetAmount: parseFloat(formData.targetAmount),
-      currentAmount: parseFloat(formData.currentAmount || "0"),
+      currentAmount: parseFloat(formData.currentAmount || '0'),
       priority: parseInt(formData.priority),
       contributionAmount: formData.contributionAmount
         ? parseFloat(formData.contributionAmount)
         : undefined,
-      id: initialData?.id || "",
-      status: initialData?.status || "active",
+      id: initialData?.id || '',
+      status: initialData?.status || 'active',
     };
 
     if (onSubmit) {
@@ -89,22 +89,14 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
   return (
     <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
-        <h2 className="text-xl font-bold">
-          {initialData ? "Edit Goal" : "Add New Goal"}
-        </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
-        >
+        <h2 className="text-xl font-bold">{initialData ? 'Edit Goal' : 'Add New Goal'}</h2>
+        <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X size={20} />
         </button>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Goal Name*
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Goal Name*</label>
         <input
           type="text"
           name="name"
@@ -117,51 +109,49 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Goal Type*
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Goal Type*</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             className={`px-4 py-2 rounded-lg text-center ${
-              formData.type === "savings"
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'savings'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("savings")}
+            onClick={() => handleTypeChange('savings')}
           >
             Savings
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-lg text-center ${
-              formData.type === "debt"
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'debt'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("debt")}
+            onClick={() => handleTypeChange('debt')}
           >
             Debt Payoff
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-lg text-center ${
-              formData.type === "major_purchase"
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'major_purchase'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("major_purchase")}
+            onClick={() => handleTypeChange('major_purchase')}
           >
             Major Purchase
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-lg text-center ${
-              formData.type === "retirement"
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'retirement'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("retirement")}
+            onClick={() => handleTypeChange('retirement')}
           >
             Retirement
           </button>
@@ -169,9 +159,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Target Amount*
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Target Amount*</label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
             ₹
@@ -191,9 +179,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Current Amount
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Current Amount</label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
             ₹
@@ -213,9 +199,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Start Date
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
           <input
             type="date"
             name="startDate"
@@ -226,9 +210,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Target Date*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Target Date*</label>
           <input
             type="date"
             name="targetDate"
@@ -241,18 +223,14 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Color
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
         <div className="flex flex-wrap gap-2">
           {colorPalette.map((color) => (
             <button
               key={color}
               type="button"
               className={`w-8 h-8 rounded-full ${
-                formData.color === color
-                  ? "ring-2 ring-offset-2 ring-gray-500"
-                  : ""
+                formData.color === color ? 'ring-2 ring-offset-2 ring-gray-500' : ''
               }`}
               style={{ backgroundColor: color }}
               onClick={() => handleColorSelect(color)}
@@ -262,9 +240,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Priority
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
         <select
           name="priority"
           value={formData.priority}
@@ -278,9 +254,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Regular Contribution
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Regular Contribution</label>
         <div className="grid grid-cols-2 gap-4">
           <select
             name="contributionFrequency"
@@ -314,9 +288,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notes
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
         <textarea
           name="notes"
           value={formData.notes}
@@ -339,7 +311,7 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
           type="submit"
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
-          {initialData ? "Update" : "Add"} Goal
+          {initialData ? 'Update' : 'Add'} Goal
         </button>
       </div>
     </form>

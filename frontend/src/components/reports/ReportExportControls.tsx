@@ -1,6 +1,7 @@
 // src/components/reports/ReportExportControls.tsx
-import { FC } from "react";
-import { FileText, FileSpreadsheet, File, Download } from "lucide-react";
+import { FC } from 'react';
+
+import { Download, File, FileSpreadsheet, FileText } from 'lucide-react';
 
 const ReportExportControls: FC = () => {
   return (
@@ -13,8 +14,7 @@ const ReportExportControls: FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <p className="text-sm text-gray-500 mb-4">
-              Export your report in various formats for further analysis or
-              record keeping.
+              Export your report in various formats for further analysis or record keeping.
             </p>
 
             <div className="space-y-3">
@@ -39,10 +39,7 @@ const ReportExportControls: FC = () => {
                   name="export-format"
                   className="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500"
                 />
-                <label
-                  htmlFor="export-excel"
-                  className="ml-2 flex items-center"
-                >
+                <label htmlFor="export-excel" className="ml-2 flex items-center">
                   <FileSpreadsheet size={16} className="mr-2 text-gray-500" />
                   <span>Excel Spreadsheet</span>
                 </label>
@@ -64,9 +61,7 @@ const ReportExportControls: FC = () => {
           </div>
 
           <div>
-            <p className="text-sm text-gray-500 mb-4">
-              Choose what to include in your export:
-            </p>
+            <p className="text-sm text-gray-500 mb-4">Choose what to include in your export:</p>
 
             <div className="space-y-3">
               <div className="flex items-center">

@@ -1,6 +1,5 @@
 // Authentication domain types
-
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
 export interface User {
   _id?: ObjectId;

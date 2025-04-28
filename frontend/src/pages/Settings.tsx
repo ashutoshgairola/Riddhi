@@ -1,13 +1,14 @@
 // src/pages/Settings.tsx
-import { FC, useState } from "react";
-import PageHeader from "../components/common/PageHeader";
-import ProfileForm from "../components/settings/ProfileForm";
-import NotificationSettings from "../components/settings/NotificationSettings";
-import SecuritySettings from "../components/settings/SecuritySettings";
-import AccountConnectionCard from "../components/settings/AccountConnectionCard";
+import { FC, useState } from 'react';
+
+import PageHeader from '../components/common/PageHeader';
+import AccountConnectionCard from '../components/settings/AccountConnectionCard';
+import NotificationSettings from '../components/settings/NotificationSettings';
+import ProfileForm from '../components/settings/ProfileForm';
+import SecuritySettings from '../components/settings/SecuritySettings';
 
 const Settings: FC = () => {
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState('profile');
 
   return (
     <div>
@@ -24,66 +25,54 @@ const Settings: FC = () => {
             <nav className="p-2">
               <button
                 className={`w-full text-left px-4 py-2 rounded-lg mb-1 ${
-                  activeTab === "profile"
-                    ? "bg-green-50 text-green-700"
-                    : "hover:bg-gray-50"
+                  activeTab === 'profile' ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab("profile")}
+                onClick={() => setActiveTab('profile')}
               >
                 Profile
               </button>
 
               <button
                 className={`w-full text-left px-4 py-2 rounded-lg mb-1 ${
-                  activeTab === "connections"
-                    ? "bg-green-50 text-green-700"
-                    : "hover:bg-gray-50"
+                  activeTab === 'connections' ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab("connections")}
+                onClick={() => setActiveTab('connections')}
               >
                 Account Connections
               </button>
 
               <button
                 className={`w-full text-left px-4 py-2 rounded-lg mb-1 ${
-                  activeTab === "notifications"
-                    ? "bg-green-50 text-green-700"
-                    : "hover:bg-gray-50"
+                  activeTab === 'notifications' ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab("notifications")}
+                onClick={() => setActiveTab('notifications')}
               >
                 Notifications
               </button>
 
               <button
                 className={`w-full text-left px-4 py-2 rounded-lg mb-1 ${
-                  activeTab === "security"
-                    ? "bg-green-50 text-green-700"
-                    : "hover:bg-gray-50"
+                  activeTab === 'security' ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab("security")}
+                onClick={() => setActiveTab('security')}
               >
                 Security
               </button>
 
               <button
                 className={`w-full text-left px-4 py-2 rounded-lg mb-1 ${
-                  activeTab === "preferences"
-                    ? "bg-green-50 text-green-700"
-                    : "hover:bg-gray-50"
+                  activeTab === 'preferences' ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab("preferences")}
+                onClick={() => setActiveTab('preferences')}
               >
                 Preferences
               </button>
 
               <button
                 className={`w-full text-left px-4 py-2 rounded-lg mb-1 ${
-                  activeTab === "data"
-                    ? "bg-green-50 text-green-700"
-                    : "hover:bg-gray-50"
+                  activeTab === 'data' ? 'bg-green-50 text-green-700' : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab("data")}
+                onClick={() => setActiveTab('data')}
               >
                 Data Management
               </button>
@@ -99,7 +88,7 @@ const Settings: FC = () => {
 
         {/* Settings Content */}
         <div className="md:col-span-3">
-          {activeTab === "profile" && (
+          {activeTab === 'profile' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold">Profile Settings</h2>
@@ -111,7 +100,7 @@ const Settings: FC = () => {
             </div>
           )}
 
-          {activeTab === "connections" && (
+          {activeTab === 'connections' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold">Account Connections</h2>
@@ -119,8 +108,8 @@ const Settings: FC = () => {
 
               <div className="p-6">
                 <p className="text-sm text-gray-500 mb-6">
-                  Connect your financial accounts to automatically import
-                  transactions and track your finances.
+                  Connect your financial accounts to automatically import transactions and track
+                  your finances.
                 </p>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -155,7 +144,7 @@ const Settings: FC = () => {
             </div>
           )}
 
-          {activeTab === "notifications" && (
+          {activeTab === 'notifications' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold">Notification Settings</h2>
@@ -167,7 +156,7 @@ const Settings: FC = () => {
             </div>
           )}
 
-          {activeTab === "security" && (
+          {activeTab === 'security' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold">Security Settings</h2>
@@ -179,7 +168,7 @@ const Settings: FC = () => {
             </div>
           )}
 
-          {activeTab === "preferences" && (
+          {activeTab === 'preferences' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold">Preferences</h2>
@@ -252,7 +241,7 @@ const Settings: FC = () => {
             </div>
           )}
 
-          {activeTab === "data" && (
+          {activeTab === 'data' && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-bold">Data Management</h2>

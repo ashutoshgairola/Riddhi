@@ -596,6 +596,1206 @@
         }
       ],
       "description": "Transaction management endpoints including categories"
+    },
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "Get Current Budget",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", "current"]
+            },
+            "description": "Get the current active budget with category details"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Budget History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets?startDate=2023-01-01&endDate=2023-12-31&page=1&limit=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2023-01-01",
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2023-12-31",
+                  "description": "End date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "12",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Get a list of historical budgets"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Budget by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "budgetId",
+                  "description": "Budget ID"
+                }
+              ]
+            },
+            "description": "Get a specific budget by ID with complete details"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"June 2023 Budget\",\n  \"startDate\": \"2023-06-01T00:00:00.000Z\",\n  \"endDate\": \"2023-06-30T23:59:59.999Z\",\n  \"categories\": [\n    {\n      \"name\": \"Groceries\",\n      \"allocated\": 400,\n      \"categoryId\": \"categoryId1\",\n      \"color\": \"#4CAF50\",\n      \"icon\": \"shopping-cart\",\n      \"rollover\": false\n    },\n    {\n      \"name\": \"Dining Out\",\n      \"allocated\": 200,\n      \"categoryId\": \"categoryId2\",\n      \"color\": \"#F44336\",\n      \"icon\": \"restaurant\",\n      \"rollover\": false\n    },\n    {\n      \"name\": \"Entertainment\",\n      \"allocated\": 150,\n      \"categoryId\": \"categoryId3\",\n      \"color\": \"#9C27B0\",\n      \"icon\": \"movie\",\n      \"rollover\": true,\n      \"notes\": \"Save for concert tickets\"\n    }\n  ],\n  \"income\": 3500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets"]
+            },
+            "description": "Create a new budget with categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated June 2023 Budget\",\n  \"income\": 3800\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "budgetId",
+                  "description": "Budget ID"
+                }
+              ]
+            },
+            "description": "Update an existing budget"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Budget",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "budgetId",
+                  "description": "Budget ID"
+                }
+              ]
+            },
+            "description": "Delete a budget"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Budget Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Utilities\",\n  \"allocated\": 250,\n  \"categoryId\": \"categoryId4\",\n  \"color\": \"#2196F3\",\n  \"icon\": \"bolt\",\n  \"rollover\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id", "categories"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "budgetId",
+                  "description": "Budget ID"
+                }
+              ]
+            },
+            "description": "Add a new category to an existing budget"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Budget Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allocated\": 300,\n  \"rollover\": true,\n  \"notes\": \"Increased due to summer AC usage\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:budgetId/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "budgets",
+                ":budgetId",
+                "categories",
+                ":categoryId"
+              ],
+              "variable": [
+                {
+                  "key": "budgetId",
+                  "value": "budgetId",
+                  "description": "Budget ID"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "budgetCategoryId",
+                  "description": "Budget Category ID"
+                }
+              ]
+            },
+            "description": "Update a budget category"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Budget Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:budgetId/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "budgets",
+                ":budgetId",
+                "categories",
+                ":categoryId"
+              ],
+              "variable": [
+                {
+                  "key": "budgetId",
+                  "value": "budgetId",
+                  "description": "Budget ID"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "budgetCategoryId",
+                  "description": "Budget Category ID"
+                }
+              ]
+            },
+            "description": "Delete a category from a budget"
+          },
+          "response": []
+        }
+      ],
+      "description": "Budget management endpoints"
+    },
+    {
+      "name": "Goals",
+      "item": [
+        {
+          "name": "Get Goals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals?type=savings,debt&status=active&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "savings,debt",
+                  "description": "Goal types (savings, debt, retirement",
+                  "key": "type",
+                  "value": "savings,debt",
+                  "description": "Goal types (savings, debt, retirement, major_purchase, other)"
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Goal status (active, completed, paused)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Get a list of financial goals with filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Goal by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "goalId",
+                  "description": "Goal ID"
+                }
+              ]
+            },
+            "description": "Get a specific goal by ID with progress details"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Emergency Fund\",\n  \"type\": \"savings\",\n  \"targetAmount\": 10000,\n  \"currentAmount\": 2500,\n  \"startDate\": \"2023-01-01T00:00:00.000Z\",\n  \"targetDate\": \"2023-12-31T00:00:00.000Z\",\n  \"accountId\": \"accountId\",\n  \"notes\": \"Building a 3-month emergency fund\",\n  \"color\": \"#2196F3\",\n  \"priority\": 1,\n  \"contributionFrequency\": \"monthly\",\n  \"contributionAmount\": 625\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals"]
+            },
+            "description": "Create a new financial goal"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentAmount\": 3000,\n  \"contributionAmount\": 700,\n  \"notes\": \"Increased monthly contribution\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "goalId",
+                  "description": "Goal ID"
+                }
+              ]
+            },
+            "description": "Update an existing goal"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "goalId",
+                  "description": "Goal ID"
+                }
+              ]
+            },
+            "description": "Delete a goal"
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id", "complete"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "goalId",
+                  "description": "Goal ID"
+                }
+              ]
+            },
+            "description": "Mark a goal as completed"
+          },
+          "response": []
+        },
+        {
+          "name": "Pause Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id/pause",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id", "pause"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "goalId",
+                  "description": "Goal ID"
+                }
+              ]
+            },
+            "description": "Pause progress on a goal"
+          },
+          "response": []
+        },
+        {
+          "name": "Resume Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id/resume",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id", "resume"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "goalId",
+                  "description": "Goal ID"
+                }
+              ]
+            },
+            "description": "Resume progress on a paused goal"
+          },
+          "response": []
+        }
+      ],
+      "description": "Financial goals management endpoints"
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Get Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts?type=checking,savings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "checking,savings",
+                  "description": "Account types (checking, savings, credit, investment, cash, loan, other)"
+                }
+              ]
+            },
+            "description": "Get a list of accounts with optional type filter"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Account by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "accountId",
+                  "description": "Account ID"
+                }
+              ]
+            },
+            "description": "Get a specific account by ID with recent transactions"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Chase Checking\",\n  \"type\": \"checking\",\n  \"balance\": 3500.75,\n  \"currency\": \"USD\",\n  \"institutionName\": \"Chase Bank\",\n  \"institutionLogo\": \"https://example.com/chase-logo.png\",\n  \"includeInNetWorth\": true,\n  \"color\": \"#2196F3\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"]
+            },
+            "description": "Create a new account"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Credit Card Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"American Express\",\n  \"type\": \"credit\",\n  \"balance\": 1250.50,\n  \"currency\": \"USD\",\n  \"institutionName\": \"American Express\",\n  \"institutionLogo\": \"https://example.com/amex-logo.png\",\n  \"includeInNetWorth\": true,\n  \"color\": \"#4CAF50\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"]
+            },
+            "description": "Create a new credit card account (balance will be stored as negative)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Chase Everyday Checking\",\n  \"balance\": 3750.25,\n  \"color\": \"#1976D2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "accountId",
+                  "description": "Account ID"
+                }
+              ]
+            },
+            "description": "Update an existing account"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "accountId",
+                  "description": "Account ID"
+                }
+              ]
+            },
+            "description": "Delete an account (only if it has no transactions)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Financial accounts management endpoints"
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get User Preferences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "preferences"]
+            },
+            "description": "Get user preferences"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"EUR\",\n  \"dateFormat\": \"DD/MM/YYYY\",\n  \"theme\": \"dark\",\n  \"startOfWeek\": \"monday\",\n  \"language\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "preferences"]
+            },
+            "description": "Update user preferences"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notification Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "notifications"]
+            },
+            "description": "Get notification settings"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": true,\n  \"push\": false,\n  \"sms\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/notifications/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "notifications", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "notificationSettingId",
+                  "description": "Notification setting ID"
+                }
+              ]
+            },
+            "description": "Update notification settings"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Account Connections",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/connections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "connections"]
+            },
+            "description": "Get account connections to financial institutions"
+          },
+          "response": []
+        },
+        {
+          "name": "Connect Account Institution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institutionId\": \"inst_123\",\n  \"credentials\": {\n    \"username\": \"test_user\",\n    \"password\": \"test_password\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/connections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "connections"]
+            },
+            "description": "Connect to a financial institution"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Account Connection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/connections/:id/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "connections", ":id", "refresh"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "connectionId",
+                  "description": "Connection ID"
+                }
+              ]
+            },
+            "description": "Refresh a connection to update account data"
+          },
+          "response": []
+        },
+        {
+          "name": "Disconnect Account Connection",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/connections/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "connections", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "connectionId",
+                  "description": "Connection ID"
+                }
+              ]
+            },
+            "description": "Disconnect from a financial institution"
+          },
+          "response": []
+        },
+        {
+          "name": "Export User Data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/data/export?format=json&type=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "data", "export"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json",
+                  "description": "Export format: 'csv' or 'json'"
+                },
+                {
+                  "key": "type",
+                  "value": "all",
+                  "description": "Data to export: 'transactions', 'budgets', 'goals', 'all'"
+                }
+              ]
+            },
+            "description": "Export user data in CSV or JSON format"
+          },
+          "response": []
+        },
+        {
+          "name": "Import User Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/file"
+                },
+                {
+                  "key": "type",
+                  "value": "transactions",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/data/import",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "data", "import"]
+            },
+            "description": "Import user data from a file"
+          },
+          "response": []
+        },
+        {
+          "name": "Clear User Data",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"types\": [\"transactions\", \"budgets\"],\n  \"confirmation\": \"DELETE MY DATA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/settings/data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings", "data"]
+            },
+            "description": "Clear user data by type"
+          },
+          "response": []
+        }
+      ],
+      "description": "User settings and preferences management endpoints"
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get Account Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/accounts/summary?startDate=2023-01-01&endDate=2023-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "accounts", "summary"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2023-01-01",
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2023-12-31",
+                  "description": "End date (YYYY-MM-DD)"
+                }
+              ]
+            },
+            "description": "Get summary of all accounts, including net worth and changes"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Income Expense Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/income-expense?period=month&startDate=2023-01-01&endDate=2023-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "income-expense"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "month",
+                  "description": "Period: 'week', 'month', 'quarter', 'year'"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2023-01-01",
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2023-12-31",
+                  "description": "End date (YYYY-MM-DD)"
+                }
+              ]
+            },
+            "description": "Get income and expense breakdown with category details"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/categories?categoryId=categoryId&period=month&startDate=2023-01-01&endDate=2023-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "categories"],
+              "query": [
+                {
+                  "key": "categoryId",
+                  "value": "categoryId",
+                  "description": "Category ID"
+                },
+                {
+                  "key": "period",
+                  "value": "month",
+                  "description": "Period: 'week', 'month', 'quarter', 'year'"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2023-01-01",
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2023-12-31",
+                  "description": "End date (YYYY-MM-DD)"
+                }
+              ]
+            },
+            "description": "Get spending report for a specific category"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Budget Performance Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/budget-performance?budgetId=budgetId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "budget-performance"],
+              "query": [
+                {
+                  "key": "budgetId",
+                  "value": "budgetId",
+                  "description": "Budget ID (optional, defaults to current budget)"
+                }
+              ]
+            },
+            "description": "Get budget performance report with category details"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Net Worth Over Time",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/net-worth?period=year",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "net-worth"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "year",
+                  "description": "Period: 'month', 'quarter', 'year', 'all'"
+                }
+              ]
+            },
+            "description": "Get net worth trend over time"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Custom Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Custom Spending Report\",\n  \"type\": \"spending\",\n  \"timeframe\": \"month\",\n  \"startDate\": \"2023-01-01\",\n  \"endDate\": \"2023-12-31\",\n  \"categoryIds\": [\"categoryId1\", \"categoryId2\"],\n  \"accountIds\": [\"accountId1\"],\n  \"compareWithPrevious\": true,\n  \"groupBy\": \"category\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/custom",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "custom"]
+            },
+            "description": "Generate a custom report based on specified parameters"
+          },
+          "response": []
+        }
+      ],
+      "description": "Financial reporting and analytics endpoints"
     }
   ],
   "event": [

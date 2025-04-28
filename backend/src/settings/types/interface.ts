@@ -1,5 +1,5 @@
 // Settings domain types
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
 export interface UserPreferences {
   _id?: string | ObjectId;
@@ -106,7 +106,7 @@ export interface ConnectAccountRequest {
 }
 
 export interface ExportDataQuery {
-  format: "csv" | "json";
+  format: 'csv' | 'json';
   type?: string; // 'transactions', 'budgets', 'goals', 'all'
 }
 

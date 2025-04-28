@@ -1,14 +1,14 @@
 // Account domain types
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
 export type AccountType =
-  | "checking"
-  | "savings"
-  | "credit"
-  | "investment"
-  | "cash"
-  | "loan"
-  | "other";
+  | 'checking'
+  | 'savings'
+  | 'credit'
+  | 'investment'
+  | 'cash'
+  | 'loan'
+  | 'other';
 
 export interface Account {
   _id?: string | ObjectId;

@@ -1,12 +1,7 @@
 // src/contexts/GoalsContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { Goal, GoalType, GoalStatus } from "../types/goal.types";
+import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+
+import { Goal, GoalStatus, GoalType } from '../types/goal.types';
 
 interface GoalsContextType {
   goals: Goal[];
@@ -14,7 +9,7 @@ interface GoalsContextType {
   error: string | null;
   getGoals: (type?: GoalType) => Promise<Goal[]>;
   getGoal: (id: string) => Promise<Goal | null>;
-  createGoal: (goal: Omit<Goal, "id">) => Promise<Goal>;
+  createGoal: (goal: Omit<Goal, 'id'>) => Promise<Goal>;
   updateGoal: (id: string, goal: Partial<Goal>) => Promise<Goal>;
   deleteGoal: (id: string) => Promise<void>;
   completeGoal: (id: string) => Promise<Goal>;
@@ -30,78 +25,76 @@ const GoalsContext = createContext<GoalsContextType | undefined>(undefined);
 // Dummy goals data
 const dummyGoals: Goal[] = [
   {
-    id: "1",
-    name: "Emergency Fund",
-    type: "savings",
+    id: '1',
+    name: 'Emergency Fund',
+    type: 'savings',
     targetAmount: 15000,
     currentAmount: 10000,
-    startDate: "2024-01-01",
-    targetDate: "2025-12-31",
+    startDate: '2024-01-01',
+    targetDate: '2025-12-31',
     priority: 1,
-    status: "active",
-    color: "#4CAF50",
-    notes: "Save 6 months of expenses for emergencies",
+    status: 'active',
+    color: '#4CAF50',
+    notes: 'Save 6 months of expenses for emergencies',
   },
   {
-    id: "2",
-    name: "Vacation to Europe",
-    type: "savings",
+    id: '2',
+    name: 'Vacation to Europe',
+    type: 'savings',
     targetAmount: 5000,
     currentAmount: 2500,
-    startDate: "2025-01-01",
-    targetDate: "2025-08-15",
+    startDate: '2025-01-01',
+    targetDate: '2025-08-15',
     priority: 2,
-    status: "active",
-    color: "#2196F3",
-    notes: "Summer vacation to France and Italy",
+    status: 'active',
+    color: '#2196F3',
+    notes: 'Summer vacation to France and Italy',
   },
   {
-    id: "3",
-    name: "New Car",
-    type: "major_purchase",
+    id: '3',
+    name: 'New Car',
+    type: 'major_purchase',
     targetAmount: 30000,
     currentAmount: 7500,
-    startDate: "2024-06-01",
-    targetDate: "2026-06-30",
+    startDate: '2024-06-01',
+    targetDate: '2026-06-30',
     priority: 3,
-    status: "active",
-    color: "#FFC107",
-    contributionFrequency: "monthly",
+    status: 'active',
+    color: '#FFC107',
+    contributionFrequency: 'monthly',
     contributionAmount: 1000,
   },
   {
-    id: "4",
-    name: "Home Down Payment",
-    type: "major_purchase",
+    id: '4',
+    name: 'Home Down Payment',
+    type: 'major_purchase',
     targetAmount: 60000,
     currentAmount: 15000,
-    startDate: "2023-01-01",
-    targetDate: "2027-01-01",
+    startDate: '2023-01-01',
+    targetDate: '2027-01-01',
     priority: 1,
-    status: "active",
-    color: "#9C27B0",
-    contributionFrequency: "monthly",
+    status: 'active',
+    color: '#9C27B0',
+    contributionFrequency: 'monthly',
     contributionAmount: 1200,
   },
   {
-    id: "5",
-    name: "Pay off Student Loan",
-    type: "debt",
+    id: '5',
+    name: 'Pay off Student Loan',
+    type: 'debt',
     targetAmount: 18000,
     currentAmount: 12000,
-    startDate: "2023-05-01",
-    targetDate: "2026-05-01",
+    startDate: '2023-05-01',
+    targetDate: '2026-05-01',
     priority: 2,
-    status: "active",
-    color: "#FF5722",
-    contributionFrequency: "monthly",
+    status: 'active',
+    color: '#FF5722',
+    contributionFrequency: 'monthly',
     contributionAmount: 500,
   },
 ];
 
-export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const GoalsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,9 +110,7 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
         setGoals(dummyGoals);
         setError(null);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load goals data"
-        );
+        setError(err instanceof Error ? err.message : 'Failed to load goals data');
       } finally {
         setIsLoading(false);
       }
@@ -144,7 +135,7 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
       setError(null);
       return filteredGoals;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch goals");
+      setError(err instanceof Error ? err.message : 'Failed to fetch goals');
       return [];
     } finally {
       setIsLoading(false);
@@ -162,7 +153,7 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
       setError(null);
       return goal;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch goal");
+      setError(err instanceof Error ? err.message : 'Failed to fetch goal');
       return null;
     } finally {
       setIsLoading(false);
@@ -170,7 +161,7 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   // Create a new goal
-  const createGoal = async (goal: Omit<Goal, "id">): Promise<Goal> => {
+  const createGoal = async (goal: Omit<Goal, 'id'>): Promise<Goal> => {
     try {
       setIsLoading(true);
       // Simulate API call
@@ -188,32 +179,27 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       return newGoal;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create goal");
-      throw new Error("Failed to create goal");
+      setError(err instanceof Error ? err.message : 'Failed to create goal');
+      throw new Error('Failed to create goal');
     } finally {
       setIsLoading(false);
     }
   };
 
   // Update an existing goal
-  const updateGoal = async (
-    id: string,
-    goalData: Partial<Goal>
-  ): Promise<Goal> => {
+  const updateGoal = async (id: string, goalData: Partial<Goal>): Promise<Goal> => {
     try {
       setIsLoading(true);
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Find and update the goal
-      const updatedGoals = goals.map((g) =>
-        g.id === id ? { ...g, ...goalData } : g
-      );
+      const updatedGoals = goals.map((g) => (g.id === id ? { ...g, ...goalData } : g));
 
       const updatedGoal = updatedGoals.find((g) => g.id === id);
 
       if (!updatedGoal) {
-        throw new Error("Goal not found");
+        throw new Error('Goal not found');
       }
 
       // Update state
@@ -222,8 +208,8 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       return updatedGoal;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update goal");
-      throw new Error("Failed to update goal");
+      setError(err instanceof Error ? err.message : 'Failed to update goal');
+      throw new Error('Failed to update goal');
     } finally {
       setIsLoading(false);
     }
@@ -243,8 +229,8 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
       setGoals(updatedGoals);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete goal");
-      throw new Error("Failed to delete goal");
+      setError(err instanceof Error ? err.message : 'Failed to delete goal');
+      throw new Error('Failed to delete goal');
     } finally {
       setIsLoading(false);
     }
@@ -262,16 +248,16 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
         g.id === id
           ? {
               ...g,
-              status: "completed" as GoalStatus,
+              status: 'completed' as GoalStatus,
               currentAmount: g.targetAmount,
             }
-          : g
+          : g,
       );
 
       const updatedGoal = updatedGoals.find((g) => g.id === id);
 
       if (!updatedGoal) {
-        throw new Error("Goal not found");
+        throw new Error('Goal not found');
       }
 
       // Update state
@@ -280,8 +266,8 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       return updatedGoal;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to complete goal");
-      throw new Error("Failed to complete goal");
+      setError(err instanceof Error ? err.message : 'Failed to complete goal');
+      throw new Error('Failed to complete goal');
     } finally {
       setIsLoading(false);
     }
@@ -296,13 +282,13 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       // Find and update the goal
       const updatedGoals = goals.map((g) =>
-        g.id === id ? { ...g, status: "paused" as GoalStatus } : g
+        g.id === id ? { ...g, status: 'paused' as GoalStatus } : g,
       );
 
       const updatedGoal = updatedGoals.find((g) => g.id === id);
 
       if (!updatedGoal) {
-        throw new Error("Goal not found");
+        throw new Error('Goal not found');
       }
 
       // Update state
@@ -311,8 +297,8 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       return updatedGoal;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to pause goal");
-      throw new Error("Failed to pause goal");
+      setError(err instanceof Error ? err.message : 'Failed to pause goal');
+      throw new Error('Failed to pause goal');
     } finally {
       setIsLoading(false);
     }
@@ -328,13 +314,13 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       // Find and update the goal
       const updatedGoals = goals.map((g) =>
-        g.id === id ? { ...g, status: "active" as GoalStatus } : g
+        g.id === id ? { ...g, status: 'active' as GoalStatus } : g,
       );
 
       const updatedGoal = updatedGoals.find((g) => g.id === id);
 
       if (!updatedGoal) {
-        throw new Error("Goal not found");
+        throw new Error('Goal not found');
       }
 
       // Update state
@@ -343,8 +329,8 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
 
       return updatedGoal;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resume goal");
-      throw new Error("Failed to resume goal");
+      setError(err instanceof Error ? err.message : 'Failed to resume goal');
+      throw new Error('Failed to resume goal');
     } finally {
       setIsLoading(false);
     }
@@ -358,10 +344,7 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
       return { percentage: 0, remaining: 0 };
     }
 
-    const percentage = Math.min(
-      Math.round((goal.currentAmount / goal.targetAmount) * 100),
-      100
-    );
+    const percentage = Math.min(Math.round((goal.currentAmount / goal.targetAmount) * 100), 100);
     const remaining = goal.targetAmount - goal.currentAmount;
 
     return { percentage, remaining };
@@ -385,13 +368,13 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
     let monthlyContribution = 0;
 
     switch (goal.contributionFrequency) {
-      case "weekly":
+      case 'weekly':
         monthlyContribution = goal.contributionAmount * 4.33; // Average weeks per month
         break;
-      case "biweekly":
+      case 'biweekly':
         monthlyContribution = goal.contributionAmount * 2.17; // Average bi-weeks per month
         break;
-      case "monthly":
+      case 'monthly':
         monthlyContribution = goal.contributionAmount;
         break;
       default:
@@ -429,9 +412,7 @@ export const GoalsProvider: React.FC<{ children: ReactNode }> = ({
     calculateProjectedCompletion,
   };
 
-  return (
-    <GoalsContext.Provider value={value}>{children}</GoalsContext.Provider>
-  );
+  return <GoalsContext.Provider value={value}>{children}</GoalsContext.Provider>;
 };
 
 // Custom hook for using goals context
@@ -439,7 +420,7 @@ export const useGoals = () => {
   const context = useContext(GoalsContext);
 
   if (context === undefined) {
-    throw new Error("useGoals must be used within a GoalsProvider");
+    throw new Error('useGoals must be used within a GoalsProvider');
   }
 
   return context;

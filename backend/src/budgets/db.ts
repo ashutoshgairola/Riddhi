@@ -1,11 +1,12 @@
-import { Collection, Db, ObjectId, Filter } from "mongodb";
-import { Budget, GetBudgetsQuery, PaginationResponse } from "./types/interface";
+import { Collection, Db, Filter, ObjectId } from 'mongodb';
+
+import { Budget, GetBudgetsQuery, PaginationResponse } from './types/interface';
 
 export class BudgetModel {
   public collection: Collection<Budget>;
 
   constructor(db: Db) {
-    this.collection = db.collection<Budget>("budgets");
+    this.collection = db.collection<Budget>('budgets');
   }
 
   async initialize(): Promise<void> {
@@ -15,9 +16,7 @@ export class BudgetModel {
     await this.collection.createIndex({ userId: 1, startDate: 1, endDate: 1 });
   }
 
-  async create(
-    budget: Omit<Budget, "_id" | "createdAt" | "updatedAt">
-  ): Promise<Budget> {
+  async create(budget: Omit<Budget, '_id' | 'createdAt' | 'updatedAt'>): Promise<Budget> {
     const now = new Date();
     const newBudget: Budget = {
       ...budget,
@@ -39,7 +38,7 @@ export class BudgetModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<Omit<Budget, "_id" | "userId" | "createdAt" | "updatedAt">>
+    updates: Partial<Omit<Budget, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<Budget | null> {
     const updatedBudget = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id), userId },
@@ -49,7 +48,7 @@ export class BudgetModel {
           updatedAt: new Date(),
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedBudget.value;
@@ -66,7 +65,7 @@ export class BudgetModel {
 
   async findAll(
     userId: string,
-    query: GetBudgetsQuery
+    query: GetBudgetsQuery,
   ): Promise<{ budgets: Budget[]; pagination: PaginationResponse }> {
     const filter: Filter<Budget> = { userId };
 
@@ -121,7 +120,7 @@ export class BudgetModel {
     userId: string,
     startDate: Date,
     endDate: Date,
-    excludeBudgetId?: string
+    excludeBudgetId?: string,
   ): Promise<boolean> {
     const filter: Filter<Budget> = {
       userId,
@@ -157,7 +156,7 @@ export class BudgetModel {
     budgetId: string,
     userId: string,
     categoryId: string,
-    amount: number
+    amount: number,
   ): Promise<boolean> {
     // Find the budget
     const budget = await this.findById(budgetId, userId);
@@ -166,9 +165,7 @@ export class BudgetModel {
     }
 
     // Find the category in the budget
-    const categoryIndex = budget.categories.findIndex(
-      (c) => c.categoryId === categoryId
-    );
+    const categoryIndex = budget.categories.findIndex((c) => c.categoryId === categoryId);
     if (categoryIndex === -1) {
       return false;
     }
@@ -179,15 +176,15 @@ export class BudgetModel {
       {
         _id: new ObjectId(budgetId),
         userId,
-        "categories.categoryId": categoryId,
+        'categories.categoryId': categoryId,
       },
       {
         $set: {
-          "categories.$.spent": newSpent,
+          'categories.$.spent': newSpent,
           totalSpent: budget.totalSpent + amount,
           updatedAt: new Date(),
         },
-      }
+      },
     );
 
     return result.modifiedCount === 1;
@@ -196,8 +193,8 @@ export class BudgetModel {
   async addCategory(
     budgetId: string,
     userId: string,
-    category: Omit<Budget["categories"][0], "_id">
-  ): Promise<Budget["categories"][0] | null> {
+    category: Omit<Budget['categories'][0], '_id'>,
+  ): Promise<Budget['categories'][0] | null> {
     // Add _id to the category
     const categoryWithId = {
       ...category,
@@ -212,7 +209,7 @@ export class BudgetModel {
         $inc: { totalAllocated: category.allocated },
         $set: { updatedAt: new Date() },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     if (!result) {
@@ -221,7 +218,7 @@ export class BudgetModel {
 
     // Find the added category
     const addedCategory = result.value?.categories.find(
-      (c) => c._id?.toString() === categoryWithId._id.toString()
+      (c) => c._id?.toString() === categoryWithId._id.toString(),
     );
 
     return addedCategory || null;
@@ -231,10 +228,8 @@ export class BudgetModel {
     budgetId: string,
     userId: string,
     categoryId: string,
-    updates: Partial<
-      Omit<Budget["categories"][0], "_id" | "categoryId" | "spent">
-    >
-  ): Promise<Budget["categories"][0] | null> {
+    updates: Partial<Omit<Budget['categories'][0], '_id' | 'categoryId' | 'spent'>>,
+  ): Promise<Budget['categories'][0] | null> {
     // First get the current budget to calculate allocation difference
     const budget = await this.findById(budgetId, userId);
     if (!budget) {
@@ -242,9 +237,7 @@ export class BudgetModel {
     }
 
     // Find the category
-    const category = budget.categories.find(
-      (c) => c._id?.toString() === categoryId
-    );
+    const category = budget.categories.find((c) => c._id?.toString() === categoryId);
     if (!category) {
       return null;
     }
@@ -275,10 +268,10 @@ export class BudgetModel {
       {
         _id: new ObjectId(budgetId),
         userId,
-        "categories._id": new ObjectId(categoryId),
+        'categories._id': new ObjectId(categoryId),
       },
       { $set: updateObject },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     if (!result) {
@@ -286,17 +279,11 @@ export class BudgetModel {
     }
 
     // Find the updated category
-    const updatedCategory = result.value?.categories.find(
-      (c) => c._id?.toString() === categoryId
-    );
+    const updatedCategory = result.value?.categories.find((c) => c._id?.toString() === categoryId);
     return updatedCategory || null;
   }
 
-  async deleteCategory(
-    budgetId: string,
-    userId: string,
-    categoryId: string
-  ): Promise<boolean> {
+  async deleteCategory(budgetId: string, userId: string, categoryId: string): Promise<boolean> {
     // First get the current budget to calculate new totalAllocated
     const budget = await this.findById(budgetId, userId);
     if (!budget) {
@@ -304,9 +291,7 @@ export class BudgetModel {
     }
 
     // Find the category
-    const category = budget.categories.find(
-      (c) => c._id?.toString() === categoryId
-    );
+    const category = budget.categories.find((c) => c._id?.toString() === categoryId);
     if (!category) {
       return false;
     }
@@ -321,7 +306,7 @@ export class BudgetModel {
           totalSpent: -category.spent,
         },
         $set: { updatedAt: new Date() },
-      }
+      },
     );
 
     return result.modifiedCount === 1;

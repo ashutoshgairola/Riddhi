@@ -1,5 +1,5 @@
 // Budget domain types
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
 export interface Budget {
   _id?: string | ObjectId;

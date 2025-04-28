@@ -1,16 +1,17 @@
-import { Db } from "mongodb";
+import { Db } from 'mongodb';
+
+import { TransactionModel } from '../transactions/db';
+import { AccountModel } from './db';
 import {
   Account,
   AccountDTO,
   AccountDetailDTO,
   AccountType,
-  GetAccountsQuery,
-  CreateAccountRequest,
-  UpdateAccountRequest,
   AccountsResponse,
-} from "./types/interface";
-import { AccountModel } from "./db";
-import { TransactionModel } from "../transactions/db";
+  CreateAccountRequest,
+  GetAccountsQuery,
+  UpdateAccountRequest,
+} from './types/interface';
 
 export class AccountService {
   private accountModel: AccountModel;
@@ -25,20 +26,15 @@ export class AccountService {
     await this.accountModel.initialize();
   }
 
-  async getAccounts(
-    userId: string,
-    query: GetAccountsQuery
-  ): Promise<AccountsResponse> {
+  async getAccounts(userId: string, query: GetAccountsQuery): Promise<AccountsResponse> {
     // Parse account types if provided
     let accountTypes: string[] | undefined;
     if (query.type) {
-      accountTypes = query.type.split(",");
+      accountTypes = query.type.split(',');
     }
 
     const accounts = await this.accountModel.findAll(userId, accountTypes);
-    const accountDTOs = accounts.map((account) =>
-      this.mapAccountToDTO(account)
-    );
+    const accountDTOs = accounts.map((account) => this.mapAccountToDTO(account));
 
     return {
       data: accountDTOs,
@@ -48,12 +44,11 @@ export class AccountService {
   async getAccountById(id: string, userId: string): Promise<AccountDetailDTO> {
     const account = await this.accountModel.findById(id, userId);
     if (!account) {
-      throw new Error("Account not found");
+      throw new Error('Account not found');
     }
 
     // Get recent transactions for this account
-    const recentTransactions =
-      await this.transactionModel.findRecentByAccountId(userId, id, 10);
+    const recentTransactions = await this.transactionModel.findRecentByAccountId(userId, id, 10);
 
     // Map to simplified transaction format for account detail
     const transactionSummaries = recentTransactions.map((transaction) => ({
@@ -71,28 +66,22 @@ export class AccountService {
     };
   }
 
-  async createAccount(
-    userId: string,
-    accountData: CreateAccountRequest
-  ): Promise<AccountDTO> {
+  async createAccount(userId: string, accountData: CreateAccountRequest): Promise<AccountDTO> {
     // Validate inputs
     if (
       accountData.balance < 0 &&
-      ["checking", "savings", "cash", "investment"].includes(accountData.type)
+      ['checking', 'savings', 'cash', 'investment'].includes(accountData.type)
     ) {
-      throw new Error("Balance cannot be negative for this account type");
+      throw new Error('Balance cannot be negative for this account type');
     }
 
     // For credit and loan accounts, convert balance to negative if positive
-    if (
-      ["credit", "loan"].includes(accountData.type) &&
-      accountData.balance > 0
-    ) {
+    if (['credit', 'loan'].includes(accountData.type) && accountData.balance > 0) {
       accountData.balance = -accountData.balance;
     }
 
     // Create the account
-    const accountToCreate: Omit<Account, "_id" | "createdAt" | "updatedAt"> = {
+    const accountToCreate: Omit<Account, '_id' | 'createdAt' | 'updatedAt'> = {
       userId,
       name: accountData.name,
       type: accountData.type,
@@ -113,11 +102,11 @@ export class AccountService {
   async updateAccount(
     id: string,
     userId: string,
-    updates: UpdateAccountRequest
+    updates: UpdateAccountRequest,
   ): Promise<AccountDTO> {
     const account = await this.accountModel.findById(id, userId);
     if (!account) {
-      throw new Error("Account not found");
+      throw new Error('Account not found');
     }
 
     // Prepare updates
@@ -134,15 +123,15 @@ export class AccountService {
 
       // Adjust balance sign if type is changing between asset/liability types
       if (
-        ["checking", "savings", "cash", "investment"].includes(updates.type) &&
-        ["credit", "loan"].includes(account.type) &&
+        ['checking', 'savings', 'cash', 'investment'].includes(updates.type) &&
+        ['credit', 'loan'].includes(account.type) &&
         account.balance < 0
       ) {
         // Converting from liability to asset
         accountUpdates.balance = -account.balance;
       } else if (
-        ["credit", "loan"].includes(updates.type) &&
-        ["checking", "savings", "cash", "investment"].includes(account.type) &&
+        ['credit', 'loan'].includes(updates.type) &&
+        ['checking', 'savings', 'cash', 'investment'].includes(account.type) &&
         account.balance > 0
       ) {
         // Converting from asset to liability
@@ -157,13 +146,13 @@ export class AccountService {
 
       if (
         updates.balance < 0 &&
-        ["checking", "savings", "cash", "investment"].includes(accountType)
+        ['checking', 'savings', 'cash', 'investment'].includes(accountType)
       ) {
-        throw new Error("Balance cannot be negative for this account type");
+        throw new Error('Balance cannot be negative for this account type');
       }
 
       // For credit and loan accounts, convert balance to negative if positive
-      if (["credit", "loan"].includes(accountType) && updates.balance > 0) {
+      if (['credit', 'loan'].includes(accountType) && updates.balance > 0) {
         accountUpdates.balance = -updates.balance;
       } else {
         accountUpdates.balance = updates.balance;
@@ -192,14 +181,10 @@ export class AccountService {
     }
 
     // Apply updates
-    const updatedAccount = await this.accountModel.update(
-      id,
-      userId,
-      accountUpdates
-    );
+    const updatedAccount = await this.accountModel.update(id, userId, accountUpdates);
 
     if (!updatedAccount) {
-      throw new Error("Failed to update account");
+      throw new Error('Failed to update account');
     }
 
     return this.mapAccountToDTO(updatedAccount);
@@ -208,22 +193,19 @@ export class AccountService {
   async deleteAccount(id: string, userId: string): Promise<void> {
     const account = await this.accountModel.findById(id, userId);
     if (!account) {
-      throw new Error("Account not found");
+      throw new Error('Account not found');
     }
 
     // Check if account has associated transactions
-    const transactionCount = await this.transactionModel.countByAccountId(
-      userId,
-      id
-    );
+    const transactionCount = await this.transactionModel.countByAccountId(userId, id);
     if (transactionCount > 0) {
-      throw new Error("Cannot delete account with associated transactions");
+      throw new Error('Cannot delete account with associated transactions');
     }
 
     const deleted = await this.accountModel.delete(id, userId);
 
     if (!deleted) {
-      throw new Error("Failed to delete account");
+      throw new Error('Failed to delete account');
     }
   }
 

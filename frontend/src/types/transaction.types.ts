@@ -1,6 +1,6 @@
 // src/types/transaction.types.ts
-export type TransactionType = "income" | "expense" | "transfer";
-export type TransactionStatus = "cleared" | "pending" | "reconciled";
+export type TransactionType = 'income' | 'expense' | 'transfer';
+export type TransactionStatus = 'cleared' | 'pending' | 'reconciled';
 
 export interface TransactionCategory {
   id: string;

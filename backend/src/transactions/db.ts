@@ -1,18 +1,19 @@
-import { Collection, Db, ObjectId, Filter } from "mongodb";
+import dayjs from 'dayjs';
+import { Collection, Db, Filter, ObjectId } from 'mongodb';
+
 import {
-  Transaction,
   GetTransactionsQuery,
   PaginationResponse,
-  TransactionType,
+  Transaction,
   TransactionStatus,
-} from "./types/interface";
-import dayjs from "dayjs";
+  TransactionType,
+} from './types/interface';
 
 export class TransactionModel {
   public collection: Collection<Transaction>;
 
   constructor(db: Db) {
-    this.collection = db.collection<Transaction>("transactions");
+    this.collection = db.collection<Transaction>('transactions');
   }
 
   async initialize(): Promise<void> {
@@ -25,7 +26,7 @@ export class TransactionModel {
   }
 
   async create(
-    transaction: Omit<Transaction, "_id" | "createdAt" | "updatedAt">
+    transaction: Omit<Transaction, '_id' | 'createdAt' | 'updatedAt'>,
   ): Promise<Transaction> {
     const now = dayjs().toDate();
     const newTransaction: Transaction = {
@@ -45,10 +46,7 @@ export class TransactionModel {
     });
   }
 
-  async findByRecurringId(
-    recurringId: string,
-    userId: string
-  ): Promise<Transaction[]> {
+  async findByRecurringId(recurringId: string, userId: string): Promise<Transaction[]> {
     return this.collection
       .find({
         recurringId,
@@ -60,9 +58,7 @@ export class TransactionModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<
-      Omit<Transaction, "_id" | "userId" | "createdAt" | "updatedAt">
-    >
+    updates: Partial<Omit<Transaction, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<Transaction | null> {
     const updatedTransaction = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id), userId },
@@ -72,7 +68,7 @@ export class TransactionModel {
           updatedAt: dayjs().toDate(),
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedTransaction.value;
@@ -89,7 +85,7 @@ export class TransactionModel {
 
   async findAll(
     userId: string,
-    query: GetTransactionsQuery
+    query: GetTransactionsQuery,
   ): Promise<{ transactions: Transaction[]; pagination: PaginationResponse }> {
     const filter: Filter<Transaction> = { userId };
 
@@ -106,19 +102,19 @@ export class TransactionModel {
 
     // Apply type filters
     if (query.types) {
-      const types = query.types.split(",");
+      const types = query.types.split(',');
       filter.type = { $in: types as TransactionType[] };
     }
 
     // Apply category filters
     if (query.categoryIds) {
-      const categoryIds = query.categoryIds.split(",");
+      const categoryIds = query.categoryIds.split(',');
       filter.categoryId = { $in: categoryIds };
     }
 
     // Apply account filters
     if (query.accountIds) {
-      const accountIds = query.accountIds.split(",");
+      const accountIds = query.accountIds.split(',');
       filter.accountId = { $in: accountIds };
     }
 
@@ -136,20 +132,20 @@ export class TransactionModel {
     // Apply text search
     if (query.searchTerm) {
       filter.$or = [
-        { description: { $regex: query.searchTerm, $options: "i" } },
-        { notes: { $regex: query.searchTerm, $options: "i" } },
+        { description: { $regex: query.searchTerm, $options: 'i' } },
+        { notes: { $regex: query.searchTerm, $options: 'i' } },
       ];
     }
 
     // Apply tag filters
     if (query.tags) {
-      const tags = query.tags.split(",");
+      const tags = query.tags.split(',');
       filter.tags = { $elemMatch: { $in: tags } };
     }
 
     // Apply status filters
     if (query.status) {
-      const statuses = query.status.split(",");
+      const statuses = query.status.split(',');
       filter.status = { $in: statuses as TransactionStatus[] };
     }
 
@@ -161,7 +157,7 @@ export class TransactionModel {
     // Set up sorting
     const sort: any = {};
     if (query.sort) {
-      sort[query.sort] = query.order === "asc" ? 1 : -1;
+      sort[query.sort] = query.order === 'asc' ? 1 : -1;
     } else {
       sort.date = -1; // Default sort by date descending
     }
@@ -195,11 +191,7 @@ export class TransactionModel {
     });
   }
 
-  async findByDateRange(
-    userId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<Transaction[]> {
+  async findByDateRange(userId: string, startDate: Date, endDate: Date): Promise<Transaction[]> {
     return this.collection
       .find({
         userId,
@@ -215,7 +207,7 @@ export class TransactionModel {
     userId: string,
     startDate: Date,
     endDate: Date,
-    categoryId: string
+    categoryId: string,
   ): Promise<Transaction[]> {
     return this.collection
       .find({
@@ -239,7 +231,7 @@ export class TransactionModel {
   async findRecentByAccountId(
     userId: string,
     accountId: string,
-    limit: number
+    limit: number,
   ): Promise<Transaction[]> {
     return this.collection
       .find({
@@ -249,5 +241,9 @@ export class TransactionModel {
       .sort({ date: -1 })
       .limit(limit)
       .toArray();
+  }
+
+  async findOldest(userId: string): Promise<Transaction | null> {
+    return this.collection.find({ userId }).sort({ date: 1 }).limit(1).next();
   }
 }

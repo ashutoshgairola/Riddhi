@@ -1,6 +1,6 @@
 // src/layouts/AuthLayout.tsx
-import { FC } from "react";
-import { Outlet } from "react-router-dom";
+import { FC } from 'react';
+import { Outlet } from 'react-router-dom';
 
 const AuthLayout: FC = () => {
   return (

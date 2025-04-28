@@ -1,4 +1,4 @@
-import { MongoClient, Db } from "mongodb";
+import { Db, MongoClient } from 'mongodb';
 
 export class DatabaseConfig {
   private static instance: DatabaseConfig;
@@ -16,23 +16,23 @@ export class DatabaseConfig {
 
   async connect(): Promise<void> {
     try {
-      const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017";
-      const dbName = process.env.DB_NAME || "finance-tracker";
+      const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017';
+      const dbName = process.env.DB_NAME || 'finance-tracker';
 
       this.client = new MongoClient(mongoUri);
       await this.client.connect();
       this.db = this.client.db(dbName);
 
-      console.log("Connected to MongoDB");
+      console.log('Connected to MongoDB');
     } catch (error) {
-      console.error("Failed to connect to MongoDB:", error);
+      console.error('Failed to connect to MongoDB:', error);
       throw error;
     }
   }
 
   getDb(): Db {
     if (!this.db) {
-      throw new Error("Database not connected");
+      throw new Error('Database not connected');
     }
     return this.db;
   }
@@ -42,7 +42,7 @@ export class DatabaseConfig {
       await this.client.close();
       this.client = null;
       this.db = null;
-      console.log("Disconnected from MongoDB");
+      console.log('Disconnected from MongoDB');
     }
   }
 }

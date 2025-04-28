@@ -1,24 +1,25 @@
-import { Db } from "mongodb";
-import path from "path";
-import fs from "fs";
-import { promisify } from "util";
+import dayjs from 'dayjs';
+import fs from 'fs';
+import { Db } from 'mongodb';
+import path from 'path';
+import { promisify } from 'util';
+
+import { AttachmentModel } from './attachment-db';
+import { CategoryModel } from './category-db';
+import { TransactionModel } from './db';
 import {
-  Transaction,
-  TransactionDTO,
-  TransactionCategory,
-  CategoryDTO,
   Attachment,
   AttachmentDTO,
-  GetTransactionsQuery,
-  CreateTransactionRequest,
-  UpdateTransactionRequest,
-  TransactionsResponse,
   CategoriesResponse,
-} from "./types/interface";
-import { TransactionModel } from "./db";
-import { CategoryModel } from "./category-db";
-import { AttachmentModel } from "./attachment-db";
-import dayjs from "dayjs";
+  CategoryDTO,
+  CreateTransactionRequest,
+  GetTransactionsQuery,
+  Transaction,
+  TransactionCategory,
+  TransactionDTO,
+  TransactionsResponse,
+  UpdateTransactionRequest,
+} from './types/interface';
 
 export class TransactionService {
   private transactionModel: TransactionModel;
@@ -30,8 +31,7 @@ export class TransactionService {
     this.transactionModel = new TransactionModel(db);
     this.categoryModel = new CategoryModel(db);
     this.attachmentModel = new AttachmentModel(db);
-    this.uploadsDir =
-      process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
+    this.uploadsDir = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
 
     // Ensure uploads directory exists
     if (!fs.existsSync(this.uploadsDir)) {
@@ -47,14 +47,11 @@ export class TransactionService {
 
   async getTransactions(
     userId: string,
-    query: GetTransactionsQuery
+    query: GetTransactionsQuery,
   ): Promise<TransactionsResponse> {
-    const { transactions, pagination } = await this.transactionModel.findAll(
-      userId,
-      query
-    );
+    const { transactions, pagination } = await this.transactionModel.findAll(userId, query);
     const transactionDTOs = await Promise.all(
-      transactions.map((t) => this.enrichTransactionWithCategory(t))
+      transactions.map((t) => this.enrichTransactionWithCategory(t)),
     );
 
     return {
@@ -63,13 +60,10 @@ export class TransactionService {
     };
   }
 
-  async getTransactionById(
-    id: string,
-    userId: string
-  ): Promise<TransactionDTO> {
+  async getTransactionById(id: string, userId: string): Promise<TransactionDTO> {
     const transaction = await this.transactionModel.findById(id, userId);
     if (!transaction) {
-      throw new Error("Transaction not found");
+      throw new Error('Transaction not found');
     }
 
     return this.enrichTransactionWithCategory(transaction);
@@ -77,15 +71,12 @@ export class TransactionService {
 
   async createTransaction(
     userId: string,
-    transactionData: CreateTransactionRequest
+    transactionData: CreateTransactionRequest,
   ): Promise<TransactionDTO> {
     // Validate category exists
-    const category = await this.categoryModel.findById(
-      transactionData.categoryId,
-      userId
-    );
+    const category = await this.categoryModel.findById(transactionData.categoryId, userId);
     if (!category) {
-      throw new Error("Category not found");
+      throw new Error('Category not found');
     }
 
     // Parse date
@@ -114,9 +105,7 @@ export class TransactionService {
       transaction.recurringId = recurringId;
 
       // Store original transaction
-      const createdTransaction = await this.transactionModel.create(
-        transaction
-      );
+      const createdTransaction = await this.transactionModel.create(transaction);
 
       // TODO: Implement logic to generate future recurring transactions
       // This would typically involve a scheduled job or separate service
@@ -124,9 +113,7 @@ export class TransactionService {
       return this.mapTransactionToDTO(createdTransaction);
     } else {
       // Store non-recurring transaction
-      const createdTransaction = await this.transactionModel.create(
-        transaction
-      );
+      const createdTransaction = await this.transactionModel.create(transaction);
       return this.mapTransactionToDTO(createdTransaction);
     }
   }
@@ -134,15 +121,12 @@ export class TransactionService {
   async updateTransaction(
     id: string,
     userId: string,
-    updates: UpdateTransactionRequest
+    updates: UpdateTransactionRequest,
   ): Promise<TransactionDTO> {
     // Validate transaction exists
-    const existingTransaction = await this.transactionModel.findById(
-      id,
-      userId
-    );
+    const existingTransaction = await this.transactionModel.findById(id, userId);
     if (!existingTransaction) {
-      throw new Error("Transaction not found");
+      throw new Error('Transaction not found');
     }
 
     // Prepare updates
@@ -166,12 +150,9 @@ export class TransactionService {
 
     if (updates.categoryId !== undefined) {
       // Validate category exists
-      const category = await this.categoryModel.findById(
-        updates.categoryId,
-        userId
-      );
+      const category = await this.categoryModel.findById(updates.categoryId, userId);
       if (!category) {
-        throw new Error("Category not found");
+        throw new Error('Category not found');
       }
       transactionUpdates.categoryId = updates.categoryId;
     }
@@ -197,14 +178,10 @@ export class TransactionService {
     }
 
     // Apply updates
-    const updatedTransaction = await this.transactionModel.update(
-      id,
-      userId,
-      transactionUpdates
-    );
+    const updatedTransaction = await this.transactionModel.update(id, userId, transactionUpdates);
 
     if (!updatedTransaction) {
-      throw new Error("Failed to update transaction");
+      throw new Error('Failed to update transaction');
     }
 
     return this.mapTransactionToDTO(updatedTransaction);
@@ -214,14 +191,14 @@ export class TransactionService {
     // Validate transaction exists
     const transaction = await this.transactionModel.findById(id, userId);
     if (!transaction) {
-      throw new Error("Transaction not found");
+      throw new Error('Transaction not found');
     }
 
     // Delete transaction
     const deleted = await this.transactionModel.delete(id, userId);
 
     if (!deleted) {
-      throw new Error("Failed to delete transaction");
+      throw new Error('Failed to delete transaction');
     }
 
     // If transaction has attachments, delete them as well
@@ -235,15 +212,12 @@ export class TransactionService {
   async uploadAttachment(
     transactionId: string,
     userId: string,
-    file: Express.Multer.File
+    file: Express.Multer.File,
   ): Promise<AttachmentDTO> {
     // Validate transaction exists
-    const transaction = await this.transactionModel.findById(
-      transactionId,
-      userId
-    );
+    const transaction = await this.transactionModel.findById(transactionId, userId);
     if (!transaction) {
-      throw new Error("Transaction not found");
+      throw new Error('Transaction not found');
     }
 
     // Create file path and URL
@@ -262,7 +236,7 @@ export class TransactionService {
       uploadedAt: dayjs().toDate(),
     };
 
-    if (file.mimetype.startsWith("image/")) {
+    if (file.mimetype.startsWith('image/')) {
       // TODO: Generate thumbnail for images
       attachment.thumbnailUrl = `/uploads/thumbnails/${fileName}`;
     }
@@ -281,7 +255,7 @@ export class TransactionService {
   async deleteAttachment(attachmentId: string): Promise<void> {
     const attachment = await this.attachmentModel.findById(attachmentId);
     if (!attachment) {
-      throw new Error("Attachment not found");
+      throw new Error('Attachment not found');
     }
 
     // Delete file from disk
@@ -314,29 +288,23 @@ export class TransactionService {
     name: string,
     color?: string,
     icon?: string,
-    parentId?: string
+    parentId?: string,
   ): Promise<CategoryDTO> {
     // Check if category with same name already exists
     const existingCategory = await this.categoryModel.findByName(name, userId);
     if (existingCategory) {
-      throw new Error("Category with this name already exists");
+      throw new Error('Category with this name already exists');
     }
 
     // Validate parent category if provided
     if (parentId) {
-      const parentCategory = await this.categoryModel.findById(
-        parentId,
-        userId
-      );
+      const parentCategory = await this.categoryModel.findById(parentId, userId);
       if (!parentCategory) {
-        throw new Error("Parent category not found");
+        throw new Error('Parent category not found');
       }
     }
 
-    const category: Omit<
-      TransactionCategory,
-      "_id" | "createdAt" | "updatedAt"
-    > = {
+    const category: Omit<TransactionCategory, '_id' | 'createdAt' | 'updatedAt'> = {
       userId,
       name,
       color,
@@ -354,22 +322,19 @@ export class TransactionService {
     name?: string,
     color?: string,
     icon?: string,
-    parentId?: string
+    parentId?: string,
   ): Promise<CategoryDTO> {
     // Validate category exists
     const existingCategory = await this.categoryModel.findById(id, userId);
     if (!existingCategory) {
-      throw new Error("Category not found");
+      throw new Error('Category not found');
     }
 
     // Validate name uniqueness if changing name
     if (name && name !== existingCategory.name) {
-      const categoryWithSameName = await this.categoryModel.findByName(
-        name,
-        userId
-      );
+      const categoryWithSameName = await this.categoryModel.findByName(name, userId);
       if (categoryWithSameName) {
-        throw new Error("Category with this name already exists");
+        throw new Error('Category with this name already exists');
       }
     }
 
@@ -377,15 +342,12 @@ export class TransactionService {
     if (parentId) {
       // Prevent circular parent references
       if (parentId === id) {
-        throw new Error("Category cannot be its own parent");
+        throw new Error('Category cannot be its own parent');
       }
 
-      const parentCategory = await this.categoryModel.findById(
-        parentId,
-        userId
-      );
+      const parentCategory = await this.categoryModel.findById(parentId, userId);
       if (!parentCategory) {
-        throw new Error("Parent category not found");
+        throw new Error('Parent category not found');
       }
 
       // TODO: More complex validation to prevent deeper circular references
@@ -409,14 +371,10 @@ export class TransactionService {
       updates.parentId = parentId;
     }
 
-    const updatedCategory = await this.categoryModel.update(
-      id,
-      userId,
-      updates
-    );
+    const updatedCategory = await this.categoryModel.update(id, userId, updates);
 
     if (!updatedCategory) {
-      throw new Error("Failed to update category");
+      throw new Error('Failed to update category');
     }
 
     return this.mapCategoryToDTO(updatedCategory);
@@ -426,51 +384,43 @@ export class TransactionService {
     // Validate category exists
     const category = await this.categoryModel.findById(id, userId);
     if (!category) {
-      throw new Error("Category not found");
+      throw new Error('Category not found');
     }
 
     // Check if category has transactions
-    const transactionCount = await this.transactionModel.countByCategory(
-      userId,
-      id
-    );
+    const transactionCount = await this.transactionModel.countByCategory(userId, id);
     if (transactionCount > 0) {
-      throw new Error("Cannot delete category with associated transactions");
+      throw new Error('Cannot delete category with associated transactions');
     }
 
     // Check if category has child categories
     const childCategories = await this.categoryModel.findByParentId(id, userId);
     if (childCategories.length > 0) {
-      throw new Error("Cannot delete category with child categories");
+      throw new Error('Cannot delete category with child categories');
     }
 
     // Delete category
     const deleted = await this.categoryModel.delete(id, userId);
 
     if (!deleted) {
-      throw new Error("Failed to delete category");
+      throw new Error('Failed to delete category');
     }
   }
 
-  private async enrichTransactionWithCategory(
-    transaction: Transaction
-  ): Promise<TransactionDTO> {
+  private async enrichTransactionWithCategory(transaction: Transaction): Promise<TransactionDTO> {
     const dto = this.mapTransactionToDTO(transaction);
 
     try {
       const category = await this.categoryModel.findById(
         transaction.categoryId,
-        transaction.userId
+        transaction.userId,
       );
       if (category) {
         dto.category = this.mapCategoryToDTO(category);
       }
     } catch (error) {
       // Simply leave category as undefined if there's an error
-      console.error(
-        `Error fetching category for transaction ${transaction._id}:`,
-        error
-      );
+      console.error(`Error fetching category for transaction ${transaction._id}:`, error);
     }
 
     return dto;

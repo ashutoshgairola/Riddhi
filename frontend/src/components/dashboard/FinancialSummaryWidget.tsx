@@ -1,6 +1,7 @@
 // src/components/dashboard/FinancialSummaryWidget.tsx
-import { FC } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { FC } from 'react';
+
+import { TrendingDown, TrendingUp } from 'lucide-react';
 
 interface FinancialMetricCardProps {
   title: string;
@@ -9,12 +10,7 @@ interface FinancialMetricCardProps {
   positive: boolean;
 }
 
-const FinancialMetricCard: FC<FinancialMetricCardProps> = ({
-  title,
-  value,
-  change,
-  positive,
-}) => {
+const FinancialMetricCard: FC<FinancialMetricCardProps> = ({ title, value, change, positive }) => {
   return (
     <div className="p-4 border border-gray-100 rounded-lg">
       <p className="text-sm text-gray-500 mb-1">{title}</p>
@@ -25,11 +21,7 @@ const FinancialMetricCard: FC<FinancialMetricCardProps> = ({
         ) : (
           <TrendingDown size={16} className="text-red-600 mr-1" />
         )}
-        <span
-          className={`text-sm ${positive ? "text-green-600" : "text-red-600"}`}
-        >
-          {change}
-        </span>
+        <span className={`text-sm ${positive ? 'text-green-600' : 'text-red-600'}`}>{change}</span>
         <span className="text-xs text-gray-500 ml-1">vs last month</span>
       </div>
     </div>
@@ -39,17 +31,17 @@ const FinancialMetricCard: FC<FinancialMetricCardProps> = ({
 const FinancialSummaryWidget: FC = () => {
   // Dummy data
   const financialSummary = {
-    netWorth: "₹42,500",
-    netWorthChange: "+2.4%",
+    netWorth: '₹42,500',
+    netWorthChange: '+2.4%',
     netWorthPositive: true,
-    monthlyIncome: "₹5,000",
-    monthlyIncomeChange: "0%",
+    monthlyIncome: '₹5,000',
+    monthlyIncomeChange: '0%',
     monthlyIncomePositive: true,
-    monthlyExpenses: "₹3,200",
-    monthlyExpensesChange: "-3.2%",
+    monthlyExpenses: '₹3,200',
+    monthlyExpensesChange: '-3.2%',
     monthlyExpensesPositive: true,
-    savingsRate: "36%",
-    savingsRateChange: "+1.8%",
+    savingsRate: '36%',
+    savingsRateChange: '+1.8%',
     savingsRatePositive: true,
   };
 

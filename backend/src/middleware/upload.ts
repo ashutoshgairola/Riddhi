@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import multer from "multer";
+import { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 
 export class UploadMiddleware {
   private storage: multer.StorageEngine;
@@ -12,19 +12,19 @@ export class UploadMiddleware {
     this.storage = multer.memoryStorage();
 
     // Set file size limit (default 5MB)
-    this.maxFileSize = parseInt(process.env.MAX_FILE_SIZE || "5242880", 10);
+    this.maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '5242880', 10);
 
     // Define allowed file types
     this.allowedMimeTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "application/pdf",
-      "text/plain",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'application/pdf',
+      'text/plain',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
     // Configure multer
@@ -42,7 +42,7 @@ export class UploadMiddleware {
   private fileFilter(
     req: Express.Request,
     file: Express.Multer.File,
-    cb: multer.FileFilterCallback
+    cb: multer.FileFilterCallback,
   ): void {
     // Check file type
     if (this.allowedMimeTypes.includes(file.mimetype)) {
@@ -50,20 +50,18 @@ export class UploadMiddleware {
     } else {
       cb(
         new Error(
-          "Invalid file type. Only images, PDFs, text files, and office documents are allowed."
-        )
+          'Invalid file type. Only images, PDFs, text files, and office documents are allowed.',
+        ),
       );
     }
   }
 
   handleUpload = (req: Request, res: Response, next: NextFunction): void => {
-    this.upload.single("file")(req, res, (err: any) => {
+    this.upload.single('file')(req, res, (err: any) => {
       if (err instanceof multer.MulterError) {
-        if (err.code === "LIMIT_FILE_SIZE") {
+        if (err.code === 'LIMIT_FILE_SIZE') {
           return res.status(400).json({
-            error: `File too large. Maximum size is ${
-              this.maxFileSize / 1024 / 1024
-            }MB.`,
+            error: `File too large. Maximum size is ${this.maxFileSize / 1024 / 1024}MB.`,
           });
         }
         return res.status(400).json({ error: err.message });

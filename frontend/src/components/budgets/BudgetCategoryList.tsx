@@ -1,21 +1,20 @@
 // src/components/budgets/BudgetCategoryList.tsx
-import { FC } from "react";
-import { Edit2, AlertTriangle } from "lucide-react";
-import { BudgetCategory } from "../../types/budget.types";
+import { FC } from 'react';
+
+import { AlertTriangle, Edit2 } from 'lucide-react';
+
+import { BudgetCategory } from '../../types/budget.types';
 
 interface BudgetCategoryListProps {
   categories: BudgetCategory[];
   onEditCategory: (category: BudgetCategory) => void;
 }
 
-const BudgetCategoryList: FC<BudgetCategoryListProps> = ({
-  categories,
-  onEditCategory,
-}) => {
+const BudgetCategoryList: FC<BudgetCategoryListProps> = ({ categories, onEditCategory }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -46,23 +45,17 @@ const BudgetCategoryList: FC<BudgetCategoryListProps> = ({
       <div className="p-6">
         <div className="space-y-4">
           {sortedCategories.map((category) => {
-            const percentage = calculatePercentage(
-              category.spent,
-              category.allocated
-            );
+            const percentage = calculatePercentage(category.spent, category.allocated);
             const isOverBudget = category.spent > category.allocated;
             const isNearLimit = percentage >= 90 && !isOverBudget;
 
             return (
-              <div
-                key={category.id}
-                className="border border-gray-200 rounded-lg p-4"
-              >
+              <div key={category.id} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center">
                     <div
                       className="w-4 h-4 rounded-full mr-2"
-                      style={{ backgroundColor: category.color || "#9e9e9e" }}
+                      style={{ backgroundColor: category.color || '#9e9e9e' }}
                     ></div>
                     <h3 className="font-medium">{category.name}</h3>
                   </div>
@@ -91,8 +84,7 @@ const BudgetCategoryList: FC<BudgetCategoryListProps> = ({
 
                 <div className="flex justify-between items-center mb-1">
                   <p className="text-sm text-gray-500">
-                    {formatCurrency(category.spent)} of{" "}
-                    {formatCurrency(category.allocated)}
+                    {formatCurrency(category.spent)} of {formatCurrency(category.allocated)}
                   </p>
                   <p className="text-sm font-medium">{percentage}%</p>
                 </div>
@@ -100,19 +92,15 @@ const BudgetCategoryList: FC<BudgetCategoryListProps> = ({
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${
-                      isOverBudget
-                        ? "bg-red-600"
-                        : isNearLimit
-                        ? "bg-yellow-500"
-                        : ""
+                      isOverBudget ? 'bg-red-600' : isNearLimit ? 'bg-yellow-500' : ''
                     }`}
                     style={{
                       width: `${percentage}%`,
                       backgroundColor: isOverBudget
                         ? undefined
                         : isNearLimit
-                        ? undefined
-                        : category.color,
+                          ? undefined
+                          : category.color,
                     }}
                   ></div>
                 </div>

@@ -1,136 +1,165 @@
-import { Request, Response } from "express";
-import { AccountService } from "./service";
+import { Request, Response } from 'express';
+
+import { ReportService } from './service';
 import {
-  GetAccountsQuery,
-  CreateAccountRequest,
-  UpdateAccountRequest,
-} from "./types/interface";
+  AccountSummaryQuery,
+  BudgetPerformanceQuery,
+  CategoryReportQuery,
+  CustomReportRequest,
+  GroupByOption,
+  IncomeExpenseQuery,
+  NetWorthPeriod,
+  NetWorthQuery,
+  Timeframe,
+} from './types/interface';
 
-export class AccountController {
-  private accountService: AccountService;
+export class ReportController {
+  private reportService: ReportService;
 
-  constructor(accountService: AccountService) {
-    this.accountService = accountService;
+  constructor(reportService: ReportService) {
+    this.reportService = reportService;
   }
 
-  getAccounts = async (req: Request, res: Response): Promise<void> => {
+  /**
+   * Get account summary
+   */
+  async getAccountSummary(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!.userId;
-      const query: GetAccountsQuery = req.query as any;
+      const { userId } = req.body.user;
+      const query: AccountSummaryQuery = {
+        startDate: req.query.startDate as string,
+        endDate: req.query.endDate as string,
+      };
 
-      const accounts = await this.accountService.getAccounts(userId, query);
-      res.status(200).json(accounts);
+      const accountSummary = await this.reportService.getAccountSummary(userId, query);
+      res.status(200).json(accountSummary);
     } catch (error: any) {
-      console.error("Error fetching accounts:", error);
-      res.status(500).json({ error: "Failed to fetch accounts" });
+      res.status(500).json({ message: error.message });
     }
-  };
+  }
 
-  getAccountById = async (req: Request, res: Response): Promise<void> => {
+  /**
+   * Get income expense summary
+   */
+  async getIncomeExpenseSummary(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!.userId;
-      const { id } = req.params;
+      const { userId } = req.body.user;
+      const query: IncomeExpenseQuery = {
+        period: (req.query.period as Timeframe) || 'month',
+        startDate: req.query.startDate as string,
+        endDate: req.query.endDate as string,
+      };
 
-      try {
-        const account = await this.accountService.getAccountById(id, userId);
-        res.status(200).json(account);
-      } catch (error: any) {
-        if (error.message === "Account not found") {
-          res.status(404).json({ error: error.message });
-        } else {
-          throw error;
-        }
-      }
+      const incomeExpenseSummary = await this.reportService.getIncomeExpenseSummary(userId, query);
+      res.status(200).json(incomeExpenseSummary);
     } catch (error: any) {
-      console.error("Error fetching account:", error);
-      res.status(500).json({ error: "Failed to fetch account" });
+      res.status(500).json({ message: error.message });
     }
-  };
+  }
 
-  createAccount = async (req: Request, res: Response): Promise<void> => {
+  /**
+   * Get category report
+   */
+  async getCategoryReport(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!.userId;
-      const accountData: CreateAccountRequest = req.body;
+      const { userId } = req.body.user;
+      const categoryId = req.query.categoryId as string;
 
-      // Basic validation
-      if (
-        !accountData.name ||
-        !accountData.type ||
-        accountData.balance === undefined ||
-        !accountData.currency ||
-        accountData.includeInNetWorth === undefined
-      ) {
-        res.status(400).json({ error: "Missing required fields" });
+      if (!categoryId) {
+        res.status(400).json({ message: 'Category ID is required' });
         return;
       }
 
-      try {
-        const account = await this.accountService.createAccount(
-          userId,
-          accountData
-        );
-        res.status(201).json(account);
-      } catch (error: any) {
-        if (error.message.includes("Balance cannot be negative")) {
-          res.status(400).json({ error: error.message });
-        } else {
-          throw error;
-        }
-      }
-    } catch (error: any) {
-      console.error("Error creating account:", error);
-      res.status(500).json({ error: "Failed to create account" });
-    }
-  };
+      const query: CategoryReportQuery = {
+        categoryId,
+        period: (req.query.period as Timeframe) || 'month',
+        startDate: req.query.startDate as string,
+        endDate: req.query.endDate as string,
+      };
 
-  updateAccount = async (req: Request, res: Response): Promise<void> => {
+      const categoryReport = await this.reportService.getCategoryReport(userId, query);
+      res.status(200).json(categoryReport);
+    } catch (error: any) {
+      if (error.message === 'Category not found') {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  }
+
+  /**
+   * Get budget performance report
+   */
+  async getBudgetPerformance(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!.userId;
-      const { id } = req.params;
-      const updates: UpdateAccountRequest = req.body;
+      const { userId } = req.body.user;
+      const query: BudgetPerformanceQuery = {
+        budgetId: req.query.budgetId as string,
+      };
 
-      try {
-        const account = await this.accountService.updateAccount(
-          id,
-          userId,
-          updates
-        );
-        res.status(200).json(account);
-      } catch (error: any) {
-        if (error.message === "Account not found") {
-          res.status(404).json({ error: error.message });
-        } else if (error.message.includes("Balance cannot be negative")) {
-          res.status(400).json({ error: error.message });
-        } else {
-          throw error;
-        }
-      }
+      const budgetPerformance = await this.reportService.getBudgetPerformance(userId, query);
+      res.status(200).json(budgetPerformance);
     } catch (error: any) {
-      console.error("Error updating account:", error);
-      res.status(500).json({ error: "Failed to update account" });
+      if (error.message === 'Budget not found' || error.message === 'No current budget found') {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
     }
-  };
+  }
 
-  deleteAccount = async (req: Request, res: Response): Promise<void> => {
+  /**
+   * Get net worth over time
+   */
+  async getNetWorthOverTime(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!.userId;
-      const { id } = req.params;
+      const { userId } = req.body.user;
+      const query: NetWorthQuery = {
+        period: (req.query.period as NetWorthPeriod) || 'month',
+      };
 
-      try {
-        await this.accountService.deleteAccount(id, userId);
-        res.status(204).send();
-      } catch (error: any) {
-        if (error.message === "Account not found") {
-          res.status(404).json({ error: error.message });
-        } else if (error.message.includes("associated transactions")) {
-          res.status(409).json({ error: error.message });
-        } else {
-          throw error;
-        }
-      }
+      const netWorthData = await this.reportService.getNetWorthOverTime(userId, query);
+      res.status(200).json(netWorthData);
     } catch (error: any) {
-      console.error("Error deleting account:", error);
-      res.status(500).json({ error: "Failed to delete account" });
+      res.status(500).json({ message: error.message });
     }
-  };
+  }
+
+  /**
+   * Get custom report
+   */
+  async getCustomReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { userId } = req.body.user;
+      const reportRequest: CustomReportRequest = req.body;
+
+      // Validation
+      if (!reportRequest.type || !reportRequest.timeframe) {
+        res.status(400).json({ message: 'Report type and timeframe are required' });
+        return;
+      }
+
+      if (
+        reportRequest.timeframe === 'custom' &&
+        (!reportRequest.startDate || !reportRequest.endDate)
+      ) {
+        res.status(400).json({
+          message: 'Start date and end date are required for custom timeframe',
+        });
+        return;
+      }
+
+      const customReport = await this.reportService.getCustomReport(userId, reportRequest);
+      res.status(200).json(customReport);
+    } catch (error: any) {
+      if (error.message.includes('not found')) {
+        res.status(404).json({ message: error.message });
+      } else if (error.message.includes('required')) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  }
 }

@@ -1,12 +1,7 @@
 // src/contexts/AuthContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { User, AuthState } from "../types/auth.types";
+import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+
+import { AuthState, User } from '../types/auth.types';
 
 interface AuthContextType {
   authState: AuthState;
@@ -34,18 +29,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Demo user for testing purposes
 const demoUser: User = {
-  id: "1",
-  email: "john.doe@example.com",
-  firstName: "John",
-  lastName: "Doe",
+  id: '1',
+  email: 'john.doe@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
   profileImageUrl: undefined,
-  createdAt: "2024-01-01T00:00:00.000Z",
+  createdAt: '2024-01-01T00:00:00.000Z',
   lastLogin: new Date().toISOString(),
 };
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>(initialAuthState);
 
   // Check for existing session on initial load
@@ -53,7 +46,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     const checkAuthStatus = async () => {
       try {
         // In a real app, this would verify the token with your backend
-        const token = localStorage.getItem("auth_token");
+        const token = localStorage.getItem('auth_token');
 
         if (token) {
           // Simulating a successful authentication check
@@ -76,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           isAuthenticated: false,
           user: null,
           loading: false,
-          error: "Failed to verify authentication",
+          error: 'Failed to verify authentication',
         });
       }
     };
@@ -94,9 +87,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Demo validation (replace with actual API validation)
-      if (email === "john.doe@example.com" && password === "password") {
+      if (email === 'john.doe@example.com' && password === 'password') {
         // Store auth token in localStorage
-        localStorage.setItem("auth_token", "demo_token_123");
+        localStorage.setItem('auth_token', 'demo_token_123');
 
         setAuthState({
           isAuthenticated: true,
@@ -105,13 +98,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           error: null,
         });
       } else {
-        throw new Error("Invalid credentials");
+        throw new Error('Invalid credentials');
       }
     } catch (error) {
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : "Login failed",
+        error: error instanceof Error ? error.message : 'Login failed',
       }));
     }
   };
@@ -127,16 +120,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       // Create new user (in a real app, this would be done by the backend)
       const newUser: User = {
         id: Date.now().toString(),
-        email: userData.email || "",
-        firstName: userData.firstName || "",
-        lastName: userData.lastName || "",
+        email: userData.email || '',
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
         profileImageUrl: userData.profileImageUrl,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
       };
 
       // Store auth token
-      localStorage.setItem("auth_token", "demo_token_123");
+      localStorage.setItem('auth_token', 'demo_token_123');
 
       setAuthState({
         isAuthenticated: true,
@@ -148,7 +141,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : "Registration failed",
+        error: error instanceof Error ? error.message : 'Registration failed',
       }));
     }
   };
@@ -156,7 +149,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Logout function
   const logout = () => {
     // Remove token from localStorage
-    localStorage.removeItem("auth_token");
+    localStorage.removeItem('auth_token');
 
     setAuthState({
       isAuthenticated: false,
@@ -185,7 +178,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : "Password reset failed",
+        error: error instanceof Error ? error.message : 'Password reset failed',
       }));
     }
   };
@@ -216,7 +209,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : "Profile update failed",
+        error: error instanceof Error ? error.message : 'Profile update failed',
       }));
     }
   };
@@ -243,7 +236,7 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
 
   return context;

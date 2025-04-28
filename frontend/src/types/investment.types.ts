@@ -1,20 +1,14 @@
 // src/types/investment.types.ts
-export type AssetClass =
-  | "stocks"
-  | "bonds"
-  | "cash"
-  | "alternatives"
-  | "real_estate"
-  | "other";
+export type AssetClass = 'stocks' | 'bonds' | 'cash' | 'alternatives' | 'real_estate' | 'other';
 export type InvestmentType =
-  | "individual_stock"
-  | "etf"
-  | "mutual_fund"
-  | "bond"
-  | "crypto"
-  | "options"
-  | "reit"
-  | "other";
+  | 'individual_stock'
+  | 'etf'
+  | 'mutual_fund'
+  | 'bond'
+  | 'crypto'
+  | 'options'
+  | 'reit'
+  | 'other';
 
 export interface Investment {
   id: string;

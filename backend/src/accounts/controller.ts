@@ -1,10 +1,7 @@
-import { Request, Response } from "express";
-import { AccountService } from "./service";
-import {
-  GetAccountsQuery,
-  CreateAccountRequest,
-  UpdateAccountRequest,
-} from "./types/interface";
+import { Request, Response } from 'express';
+
+import { AccountService } from './service';
+import { CreateAccountRequest, GetAccountsQuery, UpdateAccountRequest } from './types/interface';
 
 export class AccountController {
   private accountService: AccountService;
@@ -21,8 +18,8 @@ export class AccountController {
       const accounts = await this.accountService.getAccounts(userId, query);
       res.status(200).json(accounts);
     } catch (error: any) {
-      console.error("Error fetching accounts:", error);
-      res.status(500).json({ error: "Failed to fetch accounts" });
+      console.error('Error fetching accounts:', error);
+      res.status(500).json({ error: 'Failed to fetch accounts' });
     }
   };
 
@@ -35,15 +32,15 @@ export class AccountController {
         const account = await this.accountService.getAccountById(id, userId);
         res.status(200).json(account);
       } catch (error: any) {
-        if (error.message === "Account not found") {
+        if (error.message === 'Account not found') {
           res.status(404).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error fetching account:", error);
-      res.status(500).json({ error: "Failed to fetch account" });
+      console.error('Error fetching account:', error);
+      res.status(500).json({ error: 'Failed to fetch account' });
     }
   };
 
@@ -60,26 +57,23 @@ export class AccountController {
         !accountData.currency ||
         accountData.includeInNetWorth === undefined
       ) {
-        res.status(400).json({ error: "Missing required fields" });
+        res.status(400).json({ error: 'Missing required fields' });
         return;
       }
 
       try {
-        const account = await this.accountService.createAccount(
-          userId,
-          accountData
-        );
+        const account = await this.accountService.createAccount(userId, accountData);
         res.status(201).json(account);
       } catch (error: any) {
-        if (error.message.includes("Balance cannot be negative")) {
+        if (error.message.includes('Balance cannot be negative')) {
           res.status(400).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error creating account:", error);
-      res.status(500).json({ error: "Failed to create account" });
+      console.error('Error creating account:', error);
+      res.status(500).json({ error: 'Failed to create account' });
     }
   };
 
@@ -90,24 +84,20 @@ export class AccountController {
       const updates: UpdateAccountRequest = req.body;
 
       try {
-        const account = await this.accountService.updateAccount(
-          id,
-          userId,
-          updates
-        );
+        const account = await this.accountService.updateAccount(id, userId, updates);
         res.status(200).json(account);
       } catch (error: any) {
-        if (error.message === "Account not found") {
+        if (error.message === 'Account not found') {
           res.status(404).json({ error: error.message });
-        } else if (error.message.includes("Balance cannot be negative")) {
+        } else if (error.message.includes('Balance cannot be negative')) {
           res.status(400).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error updating account:", error);
-      res.status(500).json({ error: "Failed to update account" });
+      console.error('Error updating account:', error);
+      res.status(500).json({ error: 'Failed to update account' });
     }
   };
 
@@ -120,17 +110,17 @@ export class AccountController {
         await this.accountService.deleteAccount(id, userId);
         res.status(204).send();
       } catch (error: any) {
-        if (error.message === "Account not found") {
+        if (error.message === 'Account not found') {
           res.status(404).json({ error: error.message });
-        } else if (error.message.includes("associated transactions")) {
+        } else if (error.message.includes('associated transactions')) {
           res.status(409).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error deleting account:", error);
-      res.status(500).json({ error: "Failed to delete account" });
+      console.error('Error deleting account:', error);
+      res.status(500).json({ error: 'Failed to delete account' });
     }
   };
 }

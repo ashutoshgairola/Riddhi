@@ -1,13 +1,9 @@
 // src/components/goals/GoalList.tsx
-import { FC } from "react";
-import { Goal, GoalType } from "../../types/goal.types";
-import {
-  Edit2,
-  Calendar,
-  DollarSign,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { FC } from 'react';
+
+import { AlertCircle, Calendar, CheckCircle, DollarSign, Edit2 } from 'lucide-react';
+
+import { Goal, GoalType } from '../../types/goal.types';
 
 interface GoalListProps {
   goals: Goal[];
@@ -16,18 +12,18 @@ interface GoalListProps {
 
 const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -52,7 +48,7 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
     const target = new Date(targetDate);
     const current = new Date();
 
-    if (target < current) return "Past due";
+    if (target < current) return 'Past due';
 
     const diffTime = Math.abs(target.getTime() - current.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -65,39 +61,32 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
     const diffYears = Math.floor(diffMonths / 12);
     const remainingMonths = diffMonths % 12;
 
-    if (remainingMonths === 0)
-      return `${diffYears} year${diffYears > 1 ? "s" : ""} left`;
+    if (remainingMonths === 0) return `${diffYears} year${diffYears > 1 ? 's' : ''} left`;
     return `${diffYears} year${
-      diffYears > 1 ? "s" : ""
-    }, ${remainingMonths} month${remainingMonths > 1 ? "s" : ""} left`;
+      diffYears > 1 ? 's' : ''
+    }, ${remainingMonths} month${remainingMonths > 1 ? 's' : ''} left`;
   };
 
   const getGoalTypeLabel = (type: GoalType): string => {
     switch (type) {
-      case "savings":
-        return "Savings";
-      case "debt":
-        return "Debt Payoff";
-      case "retirement":
-        return "Retirement";
-      case "major_purchase":
-        return "Major Purchase";
-      case "other":
-        return "Other";
+      case 'savings':
+        return 'Savings';
+      case 'debt':
+        return 'Debt Payoff';
+      case 'retirement':
+        return 'Retirement';
+      case 'major_purchase':
+        return 'Major Purchase';
+      case 'other':
+        return 'Other';
       default:
         return type;
     }
   };
 
   const getGoalStatusElement = (goal: Goal) => {
-    const progressPercentage = calculatePercentage(
-      goal.currentAmount,
-      goal.targetAmount
-    );
-    const timePercentage = calculateTimePercentage(
-      goal.startDate,
-      goal.targetDate
-    );
+    const progressPercentage = calculatePercentage(goal.currentAmount, goal.targetAmount);
+    const timePercentage = calculateTimePercentage(goal.startDate, goal.targetDate);
 
     if (progressPercentage >= 100) {
       return (
@@ -142,16 +131,10 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
         {goals.length > 0 ? (
           <div className="space-y-4">
             {goals.map((goal) => {
-              const progressPercentage = calculatePercentage(
-                goal.currentAmount,
-                goal.targetAmount
-              );
+              const progressPercentage = calculatePercentage(goal.currentAmount, goal.targetAmount);
 
               return (
-                <div
-                  key={goal.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
-                >
+                <div key={goal.id} className="border border-gray-200 rounded-lg overflow-hidden">
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -181,12 +164,9 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
 
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-sm">
-                        {formatCurrency(goal.currentAmount)} of{" "}
-                        {formatCurrency(goal.targetAmount)}
+                        {formatCurrency(goal.currentAmount)} of {formatCurrency(goal.targetAmount)}
                       </p>
-                      <p className="text-sm font-medium">
-                        {progressPercentage}%
-                      </p>
+                      <p className="text-sm font-medium">{progressPercentage}%</p>
                     </div>
 
                     <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
@@ -212,7 +192,7 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                       <div className="mt-2 text-sm text-gray-500 flex items-center">
                         <DollarSign size={14} className="mr-1" />
                         <span>
-                          Contributing {formatCurrency(goal.contributionAmount)}{" "}
+                          Contributing {formatCurrency(goal.contributionAmount)}{' '}
                           {goal.contributionFrequency}
                         </span>
                       </div>
@@ -225,9 +205,7 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
         ) : (
           <div className="text-center py-8">
             <p className="text-gray-500">No goals found</p>
-            <p className="text-sm text-gray-400 mt-1">
-              Create your first financial goal
-            </p>
+            <p className="text-sm text-gray-400 mt-1">Create your first financial goal</p>
           </div>
         )}
       </div>

@@ -1,20 +1,16 @@
 // src/components/transactions/TransactionFilters.tsx
-import { FC, useState } from "react";
-import { Search, Filter, X } from "lucide-react";
-import {
-  TransactionFilters as FilterType,
-  TransactionType,
-} from "../../types/transaction.types";
+import { FC, useState } from 'react';
+
+import { Filter, Search, X } from 'lucide-react';
+
+import { TransactionFilters as FilterType, TransactionType } from '../../types/transaction.types';
 
 interface TransactionFiltersProps {
   filters: FilterType;
   onFilterChange: (filters: FilterType) => void;
 }
 
-const TransactionFilters: FC<TransactionFiltersProps> = ({
-  filters,
-  onFilterChange,
-}) => {
+const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChange }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +37,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
       startDate: undefined,
       endDate: undefined,
       types: undefined,
-      searchTerm: "",
+      searchTerm: '',
     });
   };
 
@@ -61,7 +57,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
             type="text"
             placeholder="Search transactions..."
             className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-            value={filters.searchTerm || ""}
+            value={filters.searchTerm || ''}
             onChange={handleSearchChange}
           />
         </div>
@@ -69,9 +65,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
         <div className="flex gap-2">
           <button
             className={`px-4 py-2 rounded-lg border ${
-              showAdvancedFilters
-                ? "bg-gray-100 border-gray-300"
-                : "border-gray-200"
+              showAdvancedFilters ? 'bg-gray-100 border-gray-300' : 'border-gray-200'
             } transition-colors flex items-center gap-2`}
             onClick={toggleAdvancedFilters}
           >
@@ -101,31 +95,31 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
               <div className="flex gap-2">
                 <button
                   className={`px-3 py-1 rounded-full text-sm ${
-                    filters.types?.includes("income")
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
+                    filters.types?.includes('income')
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}
-                  onClick={() => handleTypeChange("income")}
+                  onClick={() => handleTypeChange('income')}
                 >
                   Income
                 </button>
                 <button
                   className={`px-3 py-1 rounded-full text-sm ${
-                    filters.types?.includes("expense")
-                      ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800"
+                    filters.types?.includes('expense')
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}
-                  onClick={() => handleTypeChange("expense")}
+                  onClick={() => handleTypeChange('expense')}
                 >
                   Expense
                 </button>
                 <button
                   className={`px-3 py-1 rounded-full text-sm ${
-                    filters.types?.includes("transfer")
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-100 text-gray-800"
+                    filters.types?.includes('transfer')
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}
-                  onClick={() => handleTypeChange("transfer")}
+                  onClick={() => handleTypeChange('transfer')}
                 >
                   Transfer
                 </button>
@@ -133,14 +127,12 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date Range
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="date"
                   className="px-3 py-2 rounded-lg border border-gray-200"
-                  value={filters.startDate || ""}
+                  value={filters.startDate || ''}
                   onChange={(e) =>
                     onFilterChange({
                       ...filters,
@@ -151,7 +143,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
                 <input
                   type="date"
                   className="px-3 py-2 rounded-lg border border-gray-200"
-                  value={filters.endDate || ""}
+                  value={filters.endDate || ''}
                   onChange={(e) =>
                     onFilterChange({
                       ...filters,
@@ -163,9 +155,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Advanced
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Advanced</label>
               <button className="w-full px-3 py-2 border border-gray-200 rounded-lg text-left text-gray-500">
                 More filters...
               </button>

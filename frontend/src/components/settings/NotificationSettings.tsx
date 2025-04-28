@@ -1,5 +1,5 @@
 // src/components/settings/NotificationSettings.tsx
-import { FC, useState } from "react";
+import { FC, useState } from 'react';
 
 interface NotificationSetting {
   id: string;
@@ -13,59 +13,57 @@ interface NotificationSetting {
 const NotificationSettings: FC = () => {
   const [settings, setSettings] = useState<NotificationSetting[]>([
     {
-      id: "bill-reminders",
-      name: "Bill Reminders",
-      description: "Get notified when bills are due",
+      id: 'bill-reminders',
+      name: 'Bill Reminders',
+      description: 'Get notified when bills are due',
       email: true,
       push: true,
       sms: false,
     },
     {
-      id: "budget-alerts",
-      name: "Budget Alerts",
+      id: 'budget-alerts',
+      name: 'Budget Alerts',
       description: "Get notified when you're close to or exceed your budget",
       email: true,
       push: true,
       sms: false,
     },
     {
-      id: "large-transactions",
-      name: "Large Transactions",
-      description: "Get notified of unusually large transactions",
+      id: 'large-transactions',
+      name: 'Large Transactions',
+      description: 'Get notified of unusually large transactions',
       email: false,
       push: true,
       sms: false,
     },
     {
-      id: "goal-milestones",
-      name: "Goal Milestones",
-      description: "Get notified when you reach a goal milestone",
+      id: 'goal-milestones',
+      name: 'Goal Milestones',
+      description: 'Get notified when you reach a goal milestone',
       email: true,
       push: true,
       sms: false,
     },
     {
-      id: "account-updates",
-      name: "Account Updates",
-      description: "Get notified of account balance updates",
+      id: 'account-updates',
+      name: 'Account Updates',
+      description: 'Get notified of account balance updates',
       email: false,
       push: false,
       sms: false,
     },
   ]);
 
-  const handleToggle = (id: string, channel: "email" | "push" | "sms") => {
+  const handleToggle = (id: string, channel: 'email' | 'push' | 'sms') => {
     setSettings((prevSettings) =>
       prevSettings.map((setting) =>
-        setting.id === id
-          ? { ...setting, [channel]: !setting[channel] }
-          : setting
-      )
+        setting.id === id ? { ...setting, [channel]: !setting[channel] } : setting,
+      ),
     );
   };
 
   const handleSave = () => {
-    console.log("Notification settings saved:", settings);
+    console.log('Notification settings saved:', settings);
     // Handle save logic here
   };
 
@@ -96,7 +94,7 @@ const NotificationSettings: FC = () => {
                   <input
                     type="checkbox"
                     checked={setting.email}
-                    onChange={() => handleToggle(setting.id, "email")}
+                    onChange={() => handleToggle(setting.id, 'email')}
                     className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                   />
                 </td>
@@ -104,7 +102,7 @@ const NotificationSettings: FC = () => {
                   <input
                     type="checkbox"
                     checked={setting.push}
-                    onChange={() => handleToggle(setting.id, "push")}
+                    onChange={() => handleToggle(setting.id, 'push')}
                     className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                   />
                 </td>
@@ -112,7 +110,7 @@ const NotificationSettings: FC = () => {
                   <input
                     type="checkbox"
                     checked={setting.sms}
-                    onChange={() => handleToggle(setting.id, "sms")}
+                    onChange={() => handleToggle(setting.id, 'sms')}
                     className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                   />
                 </td>

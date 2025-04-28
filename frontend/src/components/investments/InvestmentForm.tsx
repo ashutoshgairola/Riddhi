@@ -1,11 +1,9 @@
 // src/components/investments/InvestmentForm.tsx
-import { FC, useState } from "react";
-import { X } from "lucide-react";
-import {
-  Investment,
-  AssetClass,
-  InvestmentType,
-} from "../../types/investment.types";
+import { FC, useState } from 'react';
+
+import { X } from 'lucide-react';
+
+import { AssetClass, Investment, InvestmentType } from '../../types/investment.types';
 
 interface InvestmentFormProps {
   onClose: () => void;
@@ -13,33 +11,26 @@ interface InvestmentFormProps {
   initialData?: Investment | null;
 }
 
-const InvestmentForm: FC<InvestmentFormProps> = ({
-  onClose,
-  onSubmit,
-  initialData,
-}) => {
+const InvestmentForm: FC<InvestmentFormProps> = ({ onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    ticker: initialData?.ticker || "",
-    assetClass: initialData?.assetClass || ("stocks" as AssetClass),
-    type: initialData?.type || ("etf" as InvestmentType),
-    shares: initialData?.shares?.toString() || "",
-    purchasePrice: initialData?.purchasePrice?.toString() || "",
-    currentPrice: initialData?.currentPrice?.toString() || "",
-    purchaseDate:
-      initialData?.purchaseDate || new Date().toISOString().split("T")[0],
-    accountId: initialData?.accountId || "1",
-    notes: initialData?.notes || "",
-    dividendYield: initialData?.dividendYield?.toString() || "",
-    sector: initialData?.sector || "",
-    region: initialData?.region || "",
-    currency: initialData?.currency || "USD",
+    name: initialData?.name || '',
+    ticker: initialData?.ticker || '',
+    assetClass: initialData?.assetClass || ('stocks' as AssetClass),
+    type: initialData?.type || ('etf' as InvestmentType),
+    shares: initialData?.shares?.toString() || '',
+    purchasePrice: initialData?.purchasePrice?.toString() || '',
+    currentPrice: initialData?.currentPrice?.toString() || '',
+    purchaseDate: initialData?.purchaseDate || new Date().toISOString().split('T')[0],
+    accountId: initialData?.accountId || '1',
+    notes: initialData?.notes || '',
+    dividendYield: initialData?.dividendYield?.toString() || '',
+    sector: initialData?.sector || '',
+    region: initialData?.region || '',
+    currency: initialData?.currency || 'USD',
   });
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData({
@@ -57,9 +48,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
       shares: parseFloat(formData.shares),
       purchasePrice: parseFloat(formData.purchasePrice),
       currentPrice: parseFloat(formData.currentPrice),
-      dividendYield: formData.dividendYield
-        ? parseFloat(formData.dividendYield)
-        : undefined,
+      dividendYield: formData.dividendYield ? parseFloat(formData.dividendYield) : undefined,
     };
 
     if (onSubmit) {
@@ -73,21 +62,15 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
     <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
         <h2 className="text-xl font-bold">
-          {initialData ? "Edit Investment" : "Add New Investment"}
+          {initialData ? 'Edit Investment' : 'Add New Investment'}
         </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
-        >
+        <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X size={20} />
         </button>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Investment Name*
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Investment Name*</label>
         <input
           type="text"
           name="name"
@@ -100,9 +83,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Ticker Symbol
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Ticker Symbol</label>
         <input
           type="text"
           name="ticker"
@@ -115,9 +96,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Asset Class*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Asset Class*</label>
           <select
             name="assetClass"
             value={formData.assetClass}
@@ -135,9 +114,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Investment Type*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Investment Type*</label>
           <select
             name="type"
             value={formData.type}
@@ -159,9 +136,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Shares/Units*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Shares/Units*</label>
           <input
             type="number"
             name="shares"
@@ -176,9 +151,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Purchase Price*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Price*</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               ₹
@@ -198,9 +171,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Current Price*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Current Price*</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               ₹
@@ -222,9 +193,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Purchase Date
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
           <input
             type="date"
             name="purchaseDate"
@@ -235,9 +204,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Account
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Account</label>
           <select
             name="accountId"
             value={formData.accountId}
@@ -253,9 +220,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Dividend Yield (%)
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Dividend Yield (%)</label>
           <input
             type="number"
             name="dividendYield"
@@ -270,9 +235,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sector
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Sector</label>
           <input
             type="text"
             name="sector"
@@ -284,9 +247,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Region
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
           <input
             type="text"
             name="region"
@@ -299,9 +260,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Currency
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
         <select
           name="currency"
           value={formData.currency}
@@ -318,9 +277,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notes
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
         <textarea
           name="notes"
           value={formData.notes}
@@ -343,7 +300,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({
           type="submit"
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
-          {initialData ? "Update" : "Add"} Investment
+          {initialData ? 'Update' : 'Add'} Investment
         </button>
       </div>
     </form>

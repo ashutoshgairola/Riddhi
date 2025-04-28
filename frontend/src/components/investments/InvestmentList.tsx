@@ -1,57 +1,52 @@
 // src/components/investments/InvestmentList.tsx
-import { FC } from "react";
-import {
-  Investment,
-  AssetClass,
-  InvestmentType,
-} from "../../types/investment.types";
-import { Edit2, Trash2 } from "lucide-react";
+import { FC } from 'react';
+
+import { Edit2, Trash2 } from 'lucide-react';
+
+import { AssetClass, Investment, InvestmentType } from '../../types/investment.types';
 
 interface InvestmentListProps {
   investments: Investment[];
   onEditInvestment: (investment: Investment) => void;
 }
 
-const InvestmentList: FC<InvestmentListProps> = ({
-  investments,
-  onEditInvestment,
-}) => {
+const InvestmentList: FC<InvestmentListProps> = ({ investments, onEditInvestment }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
   const formatPercentage = (percentage: number): string => {
-    return `${percentage > 0 ? "+" : ""}${percentage.toFixed(2)}%`;
+    return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
   };
 
   const formatAssetClass = (assetClass: AssetClass): string => {
     return assetClass
-      .split("_")
+      .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+      .join(' ');
   };
 
   const formatInvestmentType = (type: InvestmentType): string => {
     switch (type) {
-      case "individual_stock":
-        return "Stock";
-      case "etf":
-        return "ETF";
-      case "mutual_fund":
-        return "Mutual Fund";
-      case "bond":
-        return "Bond";
-      case "crypto":
-        return "Cryptocurrency";
-      case "options":
-        return "Options";
-      case "reit":
-        return "REIT";
-      case "other":
-        return "Other";
+      case 'individual_stock':
+        return 'Stock';
+      case 'etf':
+        return 'ETF';
+      case 'mutual_fund':
+        return 'Mutual Fund';
+      case 'bond':
+        return 'Bond';
+      case 'crypto':
+        return 'Cryptocurrency';
+      case 'options':
+        return 'Options';
+      case 'reit':
+        return 'REIT';
+      case 'other':
+        return 'Other';
       default:
         return type;
     }
@@ -116,8 +111,7 @@ const InvestmentList: FC<InvestmentListProps> = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {investments.map((investment) => {
               const gainLoss = calculateGainLoss(investment);
-              const percentageGainLoss =
-                calculatePercentageGainLoss(investment);
+              const percentageGainLoss = calculatePercentageGainLoss(investment);
               const isPositive = gainLoss >= 0;
 
               return (
@@ -125,19 +119,13 @@ const InvestmentList: FC<InvestmentListProps> = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div>
-                        <div className="font-medium text-gray-900">
-                          {investment.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {investment.ticker}
-                        </div>
+                        <div className="font-medium text-gray-900">{investment.name}</div>
+                        <div className="text-sm text-gray-500">{investment.ticker}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm text-gray-900">
-                      {investment.shares}
-                    </div>
+                    <div className="text-sm text-gray-900">{investment.shares}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="text-sm text-gray-900">
@@ -153,18 +141,10 @@ const InvestmentList: FC<InvestmentListProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div
-                      className={`text-sm ${
-                        isPositive ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
+                    <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                       {formatCurrency(gainLoss)}
                     </div>
-                    <div
-                      className={`text-xs ${
-                        isPositive ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
+                    <div className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                       {formatPercentage(percentageGainLoss)}
                     </div>
                   </td>
@@ -197,9 +177,7 @@ const InvestmentList: FC<InvestmentListProps> = ({
       {investments.length === 0 && (
         <div className="text-center py-8">
           <p className="text-gray-500">No investments found</p>
-          <p className="text-sm text-gray-400 mt-1">
-            Add your first investment
-          </p>
+          <p className="text-sm text-gray-400 mt-1">Add your first investment</p>
         </div>
       )}
     </div>

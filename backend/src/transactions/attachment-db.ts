@@ -1,11 +1,12 @@
-import { Collection, Db, ObjectId } from "mongodb";
-import { Attachment } from "./types/interface";
+import { Collection, Db, ObjectId } from 'mongodb';
+
+import { Attachment } from './types/interface';
 
 export class AttachmentModel {
   private collection: Collection<Attachment>;
 
   constructor(db: Db) {
-    this.collection = db.collection<Attachment>("attachments");
+    this.collection = db.collection<Attachment>('attachments');
   }
 
   async initialize(): Promise<void> {
@@ -14,7 +15,7 @@ export class AttachmentModel {
     await this.collection.createIndex({ uploadedAt: 1 });
   }
 
-  async create(attachment: Omit<Attachment, "_id">): Promise<Attachment> {
+  async create(attachment: Omit<Attachment, '_id'>): Promise<Attachment> {
     const result = await this.collection.insertOne(attachment);
     return { ...attachment, _id: result.insertedId };
   }

@@ -1,11 +1,12 @@
-import { Collection, Db, ObjectId } from "mongodb";
-import { UserPreferences } from "./types/interface";
+import { Collection, Db, ObjectId } from 'mongodb';
+
+import { UserPreferences } from './types/interface';
 
 export class UserPreferencesModel {
   private collection: Collection<UserPreferences>;
 
   constructor(db: Db) {
-    this.collection = db.collection<UserPreferences>("userPreferences");
+    this.collection = db.collection<UserPreferences>('userPreferences');
   }
 
   async initialize(): Promise<void> {
@@ -19,7 +20,7 @@ export class UserPreferencesModel {
 
   async createOrUpdate(
     userId: string,
-    preferences: Partial<UserPreferences>
+    preferences: Partial<UserPreferences>,
   ): Promise<UserPreferences> {
     const now = new Date();
 
@@ -36,7 +37,7 @@ export class UserPreferencesModel {
             updatedAt: now,
           },
         },
-        { returnDocument: "after" }
+        { returnDocument: 'after' },
       );
 
       return updatedPreferences.value!;
@@ -44,11 +45,11 @@ export class UserPreferencesModel {
       // Create new preferences with defaults
       const defaultPreferences: UserPreferences = {
         userId,
-        currency: "USD",
-        dateFormat: "MM/DD/YYYY",
-        theme: "system",
-        startOfWeek: "sunday",
-        language: "en",
+        currency: 'USD',
+        dateFormat: 'MM/DD/YYYY',
+        theme: 'system',
+        startOfWeek: 'sunday',
+        language: 'en',
         createdAt: now,
         updatedAt: now,
       };

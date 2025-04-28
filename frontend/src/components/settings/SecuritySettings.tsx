@@ -1,6 +1,7 @@
 // src/components/settings/SecuritySettings.tsx
-import { FC, useState } from "react";
-import { Shield, Smartphone, Key } from "lucide-react";
+import { FC, useState } from 'react';
+
+import { Key, Shield, Smartphone } from 'lucide-react';
 
 const SecuritySettings: FC = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -21,9 +22,7 @@ const SecuritySettings: FC = () => {
             </div>
             <div className="flex-1">
               <h3 className="font-medium">Password</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Last changed 30 days ago
-              </p>
+              <p className="text-sm text-gray-500 mt-1">Last changed 30 days ago</p>
 
               {!showChangePassword ? (
                 <button
@@ -103,9 +102,8 @@ const SecuritySettings: FC = () => {
               ) : (
                 <div className="mt-4 space-y-3">
                   <p className="text-sm">
-                    Two-factor authentication adds an additional layer of
-                    security to your account by requiring a verification code
-                    along with your password.
+                    Two-factor authentication adds an additional layer of security to your account
+                    by requiring a verification code along with your password.
                   </p>
 
                   <div>
@@ -144,30 +142,22 @@ const SecuritySettings: FC = () => {
             </div>
             <div className="flex-1">
               <h3 className="font-medium">Login History</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Recent login activity on your account
-              </p>
+              <p className="text-sm text-gray-500 mt-1">Recent login activity on your account</p>
 
               <div className="mt-4 space-y-3">
                 <div className="border-b border-gray-100 pb-3">
                   <p className="font-medium">Today at 10:30 AM</p>
-                  <p className="text-sm text-gray-500">
-                    Safari on MacOS - New York, USA
-                  </p>
+                  <p className="text-sm text-gray-500">Safari on MacOS - New York, USA</p>
                 </div>
 
                 <div className="border-b border-gray-100 pb-3">
                   <p className="font-medium">Yesterday at 8:15 PM</p>
-                  <p className="text-sm text-gray-500">
-                    Chrome on Windows - New York, USA
-                  </p>
+                  <p className="text-sm text-gray-500">Chrome on Windows - New York, USA</p>
                 </div>
 
                 <div>
                   <p className="font-medium">April 20, 2025 at 3:45 PM</p>
-                  <p className="text-sm text-gray-500">
-                    Chrome on iOS - Boston, USA
-                  </p>
+                  <p className="text-sm text-gray-500">Chrome on iOS - Boston, USA</p>
                 </div>
               </div>
 

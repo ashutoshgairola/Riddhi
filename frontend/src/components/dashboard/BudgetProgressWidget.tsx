@@ -1,56 +1,57 @@
 // src/components/dashboard/BudgetProgressWidget.tsx
-import { FC } from "react";
-import { BudgetCategory } from "../../types/budget.types";
+import { FC } from 'react';
+
+import { BudgetCategory } from '../../types/budget.types';
 
 // Dummy data
 const budgetCategories: BudgetCategory[] = [
   {
-    id: "1",
-    name: "Housing",
+    id: '1',
+    name: 'Housing',
     allocated: 1500,
     spent: 1500,
-    categoryId: "1",
-    color: "#4CAF50",
+    categoryId: '1',
+    color: '#4CAF50',
   },
   {
-    id: "2",
-    name: "Food",
+    id: '2',
+    name: 'Food',
     allocated: 600,
     spent: 450,
-    categoryId: "2",
-    color: "#2196F3",
+    categoryId: '2',
+    color: '#2196F3',
   },
   {
-    id: "3",
-    name: "Transport",
+    id: '3',
+    name: 'Transport',
     allocated: 300,
     spent: 275,
-    categoryId: "3",
-    color: "#FFC107",
+    categoryId: '3',
+    color: '#FFC107',
   },
   {
-    id: "4",
-    name: "Entertainment",
+    id: '4',
+    name: 'Entertainment',
     allocated: 400,
     spent: 385,
-    categoryId: "4",
-    color: "#9C27B0",
+    categoryId: '4',
+    color: '#9C27B0',
   },
   {
-    id: "5",
-    name: "Utilities",
+    id: '5',
+    name: 'Utilities',
     allocated: 350,
     spent: 310,
-    categoryId: "5",
-    color: "#FF5722",
+    categoryId: '5',
+    color: '#FF5722',
   },
 ];
 
 const BudgetProgressWidget: FC = () => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -72,20 +73,15 @@ const BudgetProgressWidget: FC = () => {
             <div className="flex justify-between items-center mb-1">
               <p className="font-medium">{category.name}</p>
               <p className="text-sm">
-                {formatCurrency(category.spent)}{" "}
-                <span className="text-gray-500">
-                  / {formatCurrency(category.allocated)}
-                </span>
+                {formatCurrency(category.spent)}{' '}
+                <span className="text-gray-500">/ {formatCurrency(category.allocated)}</span>
               </p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="h-2 rounded-full"
                 style={{
-                  width: `${calculatePercentage(
-                    category.spent,
-                    category.allocated
-                  )}%`,
+                  width: `${calculatePercentage(category.spent, category.allocated)}%`,
                   backgroundColor: category.color,
                 }}
               ></div>

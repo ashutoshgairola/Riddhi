@@ -4,16 +4,16 @@ export interface AccountSummaryQuery {
   startDate?: string;
   endDate?: string;
 }
-
+export type Timeframe = 'week' | 'month' | 'quarter' | 'year' | 'custom';
 export interface IncomeExpenseQuery {
-  period: "week" | "month" | "quarter" | "year";
+  period: Timeframe;
   startDate?: string;
   endDate?: string;
 }
 
 export interface CategoryReportQuery {
   categoryId: string;
-  period: "week" | "month" | "quarter" | "year";
+  period: Timeframe;
   startDate?: string;
   endDate?: string;
 }
@@ -21,21 +21,21 @@ export interface CategoryReportQuery {
 export interface BudgetPerformanceQuery {
   budgetId?: string;
 }
-
+export type NetWorthPeriod = 'month' | 'quarter' | 'year' | 'all';
 export interface NetWorthQuery {
-  period: "month" | "quarter" | "year" | "all";
+  period: NetWorthPeriod;
 }
-
+export type GroupByOption = 'day' | 'week' | 'month' | 'category';
 export interface CustomReportRequest {
   title: string;
-  type: "spending" | "income" | "net_worth" | "category" | "custom";
-  timeframe: "week" | "month" | "quarter" | "year" | "custom";
+  type: 'spending' | 'income' | 'net_worth' | 'category' | 'custom';
+  timeframe: Timeframe;
   startDate?: string;
   endDate?: string;
   categoryIds?: string[];
   accountIds?: string[];
   compareWithPrevious?: boolean;
-  groupBy?: "day" | "week" | "month" | "category";
+  groupBy?: GroupByOption;
 }
 
 // Response types
@@ -112,7 +112,7 @@ export interface BudgetPerformanceResponse {
     spent: number;
     remaining: number;
     percentUsed: number;
-    status: "under" | "on_track" | "over";
+    status: 'under' | 'on_track' | 'over';
   }[];
   trends: {
     dailyAverage: number;

@@ -1,16 +1,17 @@
 // src/components/reports/CategoryComparisonChart.tsx
-import { FC } from "react";
+import { FC } from 'react';
+
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
+  Tooltip,
   TooltipProps,
-} from "recharts";
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 interface CategoryData {
   name: string;
@@ -22,21 +23,15 @@ interface CategoryComparisonChartProps {
   data: CategoryData[];
 }
 
-const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({
-  data,
-}) => {
+const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({ data }) => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(value);
   };
 
-  const customTooltip = ({
-    active,
-    payload,
-    label,
-  }: TooltipProps<number, string>) => {
+  const customTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (
       active &&
       payload &&
@@ -47,20 +42,12 @@ const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({
       return (
         <div className="bg-white p-3 border border-gray-200 rounded shadow-sm">
           <p className="font-medium">{label}</p>
-          <p className="text-green-600">
-            Current: {formatCurrency(payload[0].value)}
-          </p>
-          <p className="text-blue-600">
-            Previous: {formatCurrency(payload[1].value)}
-          </p>
+          <p className="text-green-600">Current: {formatCurrency(payload[0].value)}</p>
+          <p className="text-blue-600">Previous: {formatCurrency(payload[1].value)}</p>
           <p className="text-gray-600 text-sm mt-1">
             {payload[0].value > payload[1].value
-              ? `Increased by ${formatCurrency(
-                  payload[0].value - payload[1].value
-                )}`
-              : `Decreased by ${formatCurrency(
-                  payload[1].value - payload[0].value
-                )}`}
+              ? `Increased by ${formatCurrency(payload[0].value - payload[1].value)}`
+              : `Decreased by ${formatCurrency(payload[1].value - payload[0].value)}`}
           </p>
         </div>
       );
@@ -87,30 +74,20 @@ const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({
                 type="number"
                 tickFormatter={(value) => `${value}`}
                 tick={{ fontSize: 12 }}
-                axisLine={{ stroke: "#E0E0E0" }}
+                axisLine={{ stroke: '#E0E0E0' }}
                 tickLine={false}
               />
               <YAxis
                 type="category"
                 dataKey="name"
                 tick={{ fontSize: 12 }}
-                axisLine={{ stroke: "#E0E0E0" }}
+                axisLine={{ stroke: '#E0E0E0' }}
                 tickLine={false}
               />
               <Tooltip content={customTooltip} />
               <Legend />
-              <Bar
-                dataKey="current"
-                name="Current Period"
-                fill="#4CAF50"
-                barSize={10}
-              />
-              <Bar
-                dataKey="previous"
-                name="Previous Period"
-                fill="#2196F3"
-                barSize={10}
-              />
+              <Bar dataKey="current" name="Current Period" fill="#4CAF50" barSize={10} />
+              <Bar dataKey="previous" name="Previous Period" fill="#2196F3" barSize={10} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -1,35 +1,27 @@
 // src/components/investments/AssetAllocationChart.tsx
-import { FC } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-  TooltipProps,
-} from "recharts";
-import { AssetAllocation } from "../../types/investment.types";
+import { FC } from 'react';
+
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
+
+import { AssetAllocation } from '../../types/investment.types';
 
 interface AssetAllocationChartProps {
   allocations: AssetAllocation[];
 }
 
-const AssetAllocationChart: FC<AssetAllocationChartProps> = ({
-  allocations,
-}) => {
+const AssetAllocationChart: FC<AssetAllocationChartProps> = ({ allocations }) => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(value);
   };
 
   const formatAssetClass = (assetClass: string): string => {
     return assetClass
-      .split("_")
+      .split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+      .join(' ');
   };
 
   const customTooltip = ({ active, payload }: TooltipProps<number, string>) => {
@@ -46,10 +38,7 @@ const AssetAllocationChart: FC<AssetAllocationChartProps> = ({
           <p className="text-gray-600">
             {(
               ((data.payload as AssetAllocation).amount /
-                allocations.reduce(
-                  (sum, allocation) => sum + allocation.amount,
-                  0
-                )) *
+                allocations.reduce((sum, allocation) => sum + allocation.amount, 0)) *
               100
             ).toFixed(2)}
             %

@@ -1,30 +1,29 @@
 // src/routes.tsx
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 
 // Layouts
 // import AuthLayout from "./layouts/AuthLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
-
+import DashboardLayout from './layouts/DashboardLayout';
+import Budgets from './pages/Budgets';
 // Auth pages
 // import Login from "./pages/auth/Login";
 // import Register from "./pages/auth/Register";
 // import ResetPassword from "./pages/auth/ResetPassword";
 
 // Main pages
-import Dashboard from "./pages/Dashboard";
-import Transactions from "./pages/Transactions";
-import Budgets from "./pages/Budgets";
-import Goals from "./pages/Goals";
-import Investments from "./pages/Investments";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
+import Dashboard from './pages/Dashboard';
+import Goals from './pages/Goals';
+import Investments from './pages/Investments';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
+import Transactions from './pages/Transactions';
 
 // Auth guard component
 // import AuthGuard from "./components/auth/AuthGuard";
 
 const routes = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <Navigate to="/dashboard" replace />,
   },
   // {
@@ -46,7 +45,7 @@ const routes = createBrowserRouter([
   //   ],
   // },
   {
-    path: "/",
+    path: '/',
     element: (
       // <AuthGuard>
       <DashboardLayout />
@@ -54,37 +53,37 @@ const routes = createBrowserRouter([
     ),
     children: [
       {
-        path: "dashboard",
+        path: 'dashboard',
         element: <Dashboard />,
       },
       {
-        path: "transactions",
+        path: 'transactions',
         element: <Transactions />,
       },
       {
-        path: "budgets",
+        path: 'budgets',
         element: <Budgets />,
       },
       {
-        path: "goals",
+        path: 'goals',
         element: <Goals />,
       },
       {
-        path: "investments",
+        path: 'investments',
         element: <Investments />,
       },
       {
-        path: "reports",
+        path: 'reports',
         element: <Reports />,
       },
       {
-        path: "settings",
+        path: 'settings',
         element: <Settings />,
       },
     ],
   },
   {
-    path: "*",
+    path: '*',
     element: <Navigate to="/dashboard" replace />,
   },
 ]);

@@ -1,14 +1,15 @@
 // src/components/goals/GoalProgressChart.tsx
-import { FC } from "react";
+import { FC } from 'react';
+
 import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+} from 'recharts';
 
 interface ProgressChartData {
   date: string;
@@ -20,30 +21,27 @@ interface GoalProgressChartProps {
   targetAmount: number;
 }
 
-const GoalProgressChart: FC<GoalProgressChartProps> = ({
-  data,
-  targetAmount,
-}) => {
+const GoalProgressChart: FC<GoalProgressChartProps> = ({ data, targetAmount }) => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(value);
   };
 
   const formatDate = (dateString: string) => {
-    const [year, month] = dateString.split("-");
+    const [year, month] = dateString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      year: "numeric",
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
     });
   };
 
   // Add projection data points
   const lastDataPoint = data[data.length - 1];
   const lastAmount = lastDataPoint.amount;
-  const [lastYear, lastMonth] = lastDataPoint.date.split("-");
+  const [lastYear, lastMonth] = lastDataPoint.date.split('-');
 
   const projectionData = [...data];
 
@@ -54,15 +52,10 @@ const GoalProgressChart: FC<GoalProgressChartProps> = ({
 
     // Project 6 months into the future
     for (let i = 1; i <= 6; i++) {
-      const projectionDate = new Date(
-        parseInt(lastYear),
-        parseInt(lastMonth) - 1 + i
-      );
+      const projectionDate = new Date(parseInt(lastYear), parseInt(lastMonth) - 1 + i);
       const projectionYear = projectionDate.getFullYear();
       const projectionMonth = projectionDate.getMonth() + 1;
-      const formattedDate = `${projectionYear}-${projectionMonth
-        .toString()
-        .padStart(2, "0")}`;
+      const formattedDate = `${projectionYear}-${projectionMonth.toString().padStart(2, '0')}`;
       const projectedAmount = lastAmount + monthlyGrowth * i;
 
       projectionData.push({
@@ -105,12 +98,7 @@ const GoalProgressChart: FC<GoalProgressChartProps> = ({
                 strokeWidth={2}
                 activeDot={{ r: 8 }}
               />
-              <Line
-                type="monotone"
-                dataKey="target"
-                stroke="#F44336"
-                strokeDasharray="5 5"
-              />
+              <Line type="monotone" dataKey="target" stroke="#F44336" strokeDasharray="5 5" />
             </LineChart>
           </ResponsiveContainer>
         </div>

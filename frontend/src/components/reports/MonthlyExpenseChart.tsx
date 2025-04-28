@@ -1,14 +1,7 @@
 // src/components/reports/MonthlyExpenseChart.tsx
-import { FC } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-  TooltipProps,
-} from "recharts";
+import { FC } from 'react';
+
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
 
 interface ExpenseData {
   name: string;
@@ -19,13 +12,13 @@ interface MonthlyExpenseChartProps {
   data: ExpenseData[];
 }
 
-const COLORS = ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0"];
+const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#9C27B0'];
 
 const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(value);
   };
 
@@ -76,10 +69,7 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
                     dataKey="amount"
                   >
                     {data.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip content={customTooltip} />
@@ -113,12 +103,8 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
                           <span>{item.name}</span>
                         </div>
                       </td>
-                      <td className="text-right">
-                        {formatCurrency(item.amount)}
-                      </td>
-                      <td className="text-right">
-                        {((item.amount / total) * 100).toFixed(1)}%
-                      </td>
+                      <td className="text-right">{formatCurrency(item.amount)}</td>
+                      <td className="text-right">{((item.amount / total) * 100).toFixed(1)}%</td>
                     </tr>
                   ))}
                   <tr className="font-medium">

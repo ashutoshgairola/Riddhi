@@ -1,6 +1,7 @@
 // src/components/settings/AccountConnectionCard.tsx
-import { FC } from "react";
-import { RefreshCw, Link as LinkIcon } from "lucide-react";
+import { FC } from 'react';
+
+import { Link as LinkIcon, RefreshCw } from 'lucide-react';
 
 interface AccountConnectionCardProps {
   name: string;
@@ -18,14 +19,14 @@ const AccountConnectionCard: FC<AccountConnectionCardProps> = ({
   logo,
 }) => {
   const formatLastUpdated = (dateString?: string): string => {
-    if (!dateString) return "Never";
+    if (!dateString) return 'Never';
 
     const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
       hour12: true,
     });
   };

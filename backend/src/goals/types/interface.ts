@@ -1,14 +1,9 @@
 // Goals domain types
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
-export type GoalType =
-  | "savings"
-  | "debt"
-  | "retirement"
-  | "major_purchase"
-  | "other";
-export type GoalStatus = "active" | "completed" | "paused";
-export type ContributionFrequency = "weekly" | "biweekly" | "monthly";
+export type GoalType = 'savings' | 'debt' | 'retirement' | 'major_purchase' | 'other';
+export type GoalStatus = 'active' | 'completed' | 'paused';
+export type ContributionFrequency = 'weekly' | 'biweekly' | 'monthly';
 
 export interface Goal {
   _id?: string | ObjectId;

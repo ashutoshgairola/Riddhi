@@ -1,12 +1,13 @@
-import { Request, Response } from "express";
-import { TransactionService } from "./service";
+import { Request, Response } from 'express';
+
+import { TransactionService } from './service';
 import {
-  GetTransactionsQuery,
-  CreateTransactionRequest,
-  UpdateTransactionRequest,
   CreateCategoryRequest,
+  CreateTransactionRequest,
+  GetTransactionsQuery,
   UpdateCategoryRequest,
-} from "./types/interface";
+  UpdateTransactionRequest,
+} from './types/interface';
 
 export class TransactionController {
   private transactionService: TransactionService;
@@ -38,14 +39,11 @@ export class TransactionController {
         query.limit = parseInt(query.limit as any, 10);
       }
 
-      const transactions = await this.transactionService.getTransactions(
-        userId,
-        query
-      );
+      const transactions = await this.transactionService.getTransactions(userId, query);
       res.status(200).json(transactions);
     } catch (error: any) {
-      console.error("Error fetching transactions:", error);
-      res.status(500).json({ error: "Failed to fetch transactions" });
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ error: 'Failed to fetch transactions' });
     }
   };
 
@@ -55,17 +53,14 @@ export class TransactionController {
       delete req.body.user;
       const { id } = req.params;
 
-      const transaction = await this.transactionService.getTransactionById(
-        id,
-        userId
-      );
+      const transaction = await this.transactionService.getTransactionById(id, userId);
       res.status(200).json(transaction);
     } catch (error: any) {
-      if (error.message === "Transaction not found") {
+      if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
       } else {
-        console.error("Error fetching transaction:", error);
-        res.status(500).json({ error: "Failed to fetch transaction" });
+        console.error('Error fetching transaction:', error);
+        res.status(500).json({ error: 'Failed to fetch transaction' });
       }
     }
   };
@@ -86,21 +81,18 @@ export class TransactionController {
         !transactionData.accountId ||
         !transactionData.status
       ) {
-        res.status(400).json({ error: "Missing required fields" });
+        res.status(400).json({ error: 'Missing required fields' });
         return;
       }
 
-      const transaction = await this.transactionService.createTransaction(
-        userId,
-        transactionData
-      );
+      const transaction = await this.transactionService.createTransaction(userId, transactionData);
       res.status(201).json(transaction);
     } catch (error: any) {
-      if (error.message === "Category not found") {
+      if (error.message === 'Category not found') {
         res.status(400).json({ error: error.message });
       } else {
-        console.error("Error creating transaction:", error);
-        res.status(500).json({ error: "Failed to create transaction" });
+        console.error('Error creating transaction:', error);
+        res.status(500).json({ error: 'Failed to create transaction' });
       }
     }
   };
@@ -112,20 +104,16 @@ export class TransactionController {
       const { id } = req.params;
       const updates: UpdateTransactionRequest = req.body;
 
-      const transaction = await this.transactionService.updateTransaction(
-        id,
-        userId,
-        updates
-      );
+      const transaction = await this.transactionService.updateTransaction(id, userId, updates);
       res.status(200).json(transaction);
     } catch (error: any) {
-      if (error.message === "Transaction not found") {
+      if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
-      } else if (error.message === "Category not found") {
+      } else if (error.message === 'Category not found') {
         res.status(400).json({ error: error.message });
       } else {
-        console.error("Error updating transaction:", error);
-        res.status(500).json({ error: "Failed to update transaction" });
+        console.error('Error updating transaction:', error);
+        res.status(500).json({ error: 'Failed to update transaction' });
       }
     }
   };
@@ -139,11 +127,11 @@ export class TransactionController {
       await this.transactionService.deleteTransaction(id, userId);
       res.status(204).send();
     } catch (error: any) {
-      if (error.message === "Transaction not found") {
+      if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
       } else {
-        console.error("Error deleting transaction:", error);
-        res.status(500).json({ error: "Failed to delete transaction" });
+        console.error('Error deleting transaction:', error);
+        res.status(500).json({ error: 'Failed to delete transaction' });
       }
     }
   };
@@ -155,22 +143,18 @@ export class TransactionController {
       const { id } = req.params;
 
       if (!req.file) {
-        res.status(400).json({ error: "No file uploaded" });
+        res.status(400).json({ error: 'No file uploaded' });
         return;
       }
 
-      const attachment = await this.transactionService.uploadAttachment(
-        id,
-        userId,
-        req.file
-      );
+      const attachment = await this.transactionService.uploadAttachment(id, userId, req.file);
       res.status(201).json(attachment);
     } catch (error: any) {
-      if (error.message === "Transaction not found") {
+      if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
       } else {
-        console.error("Error uploading attachment:", error);
-        res.status(500).json({ error: "Failed to upload attachment" });
+        console.error('Error uploading attachment:', error);
+        res.status(500).json({ error: 'Failed to upload attachment' });
       }
     }
   };
@@ -183,8 +167,8 @@ export class TransactionController {
       const categories = await this.transactionService.getCategories(userId);
       res.status(200).json(categories);
     } catch (error: any) {
-      console.error("Error fetching categories:", error);
-      res.status(500).json({ error: "Failed to fetch categories" });
+      console.error('Error fetching categories:', error);
+      res.status(500).json({ error: 'Failed to fetch categories' });
     }
   };
 
@@ -195,7 +179,7 @@ export class TransactionController {
       const { name, color, icon, parentId }: CreateCategoryRequest = req.body;
 
       if (!name) {
-        res.status(400).json({ error: "Name is required" });
+        res.status(400).json({ error: 'Name is required' });
         return;
       }
 
@@ -204,18 +188,18 @@ export class TransactionController {
         name,
         color,
         icon,
-        parentId
+        parentId,
       );
       res.status(201).json(category);
     } catch (error: any) {
       if (
-        error.message === "Category with this name already exists" ||
-        error.message === "Parent category not found"
+        error.message === 'Category with this name already exists' ||
+        error.message === 'Parent category not found'
       ) {
         res.status(400).json({ error: error.message });
       } else {
-        console.error("Error creating category:", error);
-        res.status(500).json({ error: "Failed to create category" });
+        console.error('Error creating category:', error);
+        res.status(500).json({ error: 'Failed to create category' });
       }
     }
   };
@@ -233,21 +217,21 @@ export class TransactionController {
         name,
         color,
         icon,
-        parentId
+        parentId,
       );
       res.status(200).json(category);
     } catch (error: any) {
-      if (error.message === "Category not found") {
+      if (error.message === 'Category not found') {
         res.status(404).json({ error: error.message });
       } else if (
-        error.message === "Category with this name already exists" ||
-        error.message === "Parent category not found" ||
-        error.message === "Category cannot be its own parent"
+        error.message === 'Category with this name already exists' ||
+        error.message === 'Parent category not found' ||
+        error.message === 'Category cannot be its own parent'
       ) {
         res.status(400).json({ error: error.message });
       } else {
-        console.error("Error updating category:", error);
-        res.status(500).json({ error: "Failed to update category" });
+        console.error('Error updating category:', error);
+        res.status(500).json({ error: 'Failed to update category' });
       }
     }
   };
@@ -261,17 +245,16 @@ export class TransactionController {
       await this.transactionService.deleteCategory(id, userId);
       res.status(204).send();
     } catch (error: any) {
-      if (error.message === "Category not found") {
+      if (error.message === 'Category not found') {
         res.status(404).json({ error: error.message });
       } else if (
-        error.message ===
-          "Cannot delete category with associated transactions" ||
-        error.message === "Cannot delete category with child categories"
+        error.message === 'Cannot delete category with associated transactions' ||
+        error.message === 'Cannot delete category with child categories'
       ) {
         res.status(409).json({ error: error.message });
       } else {
-        console.error("Error deleting category:", error);
-        res.status(500).json({ error: "Failed to delete category" });
+        console.error('Error deleting category:', error);
+        res.status(500).json({ error: 'Failed to delete category' });
       }
     }
   };

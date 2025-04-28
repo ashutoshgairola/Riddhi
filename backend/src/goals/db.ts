@@ -1,17 +1,12 @@
-import { Collection, Db, ObjectId, Filter } from "mongodb";
-import {
-  Goal,
-  GoalStatus,
-  GetGoalsQuery,
-  PaginationResponse,
-  GoalType,
-} from "./types/interface";
+import { Collection, Db, Filter, ObjectId } from 'mongodb';
+
+import { GetGoalsQuery, Goal, GoalStatus, GoalType, PaginationResponse } from './types/interface';
 
 export class GoalModel {
   public collection: Collection<Goal>;
 
   constructor(db: Db) {
-    this.collection = db.collection<Goal>("goals");
+    this.collection = db.collection<Goal>('goals');
   }
 
   async initialize(): Promise<void> {
@@ -23,9 +18,7 @@ export class GoalModel {
     await this.collection.createIndex({ userId: 1, priority: 1 });
   }
 
-  async create(
-    goal: Omit<Goal, "_id" | "createdAt" | "updatedAt">
-  ): Promise<Goal> {
+  async create(goal: Omit<Goal, '_id' | 'createdAt' | 'updatedAt'>): Promise<Goal> {
     const now = new Date();
     const newGoal: Goal = {
       ...goal,
@@ -47,7 +40,7 @@ export class GoalModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<Omit<Goal, "_id" | "userId" | "createdAt" | "updatedAt">>
+    updates: Partial<Omit<Goal, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<Goal | null> {
     const updatedGoal = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id), userId },
@@ -57,7 +50,7 @@ export class GoalModel {
           updatedAt: new Date(),
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedGoal.value;
@@ -74,19 +67,19 @@ export class GoalModel {
 
   async findAll(
     userId: string,
-    query: GetGoalsQuery
+    query: GetGoalsQuery,
   ): Promise<{ goals: Goal[]; pagination: PaginationResponse }> {
     const filter: Filter<Goal> = { userId };
 
     // Apply type filter if provided
     if (query.type) {
-      const types = query.type.split(",");
+      const types = query.type.split(',');
       filter.type = { $in: types as GoalType[] };
     }
 
     // Apply status filter if provided
     if (query.status) {
-      const statuses = query.status.split(",");
+      const statuses = query.status.split(',');
       filter.status = { $in: statuses as GoalStatus[] };
     }
 
@@ -117,15 +110,11 @@ export class GoalModel {
     return { goals, pagination };
   }
 
-  async updateStatus(
-    id: string,
-    userId: string,
-    status: GoalStatus
-  ): Promise<Goal | null> {
+  async updateStatus(id: string, userId: string, status: GoalStatus): Promise<Goal | null> {
     // For completing a goal, set currentAmount to targetAmount
     const updates: any = { status };
 
-    if (status === "completed") {
+    if (status === 'completed') {
       const goal = await this.findById(id, userId);
       if (goal) {
         updates.currentAmount = goal.targetAmount;

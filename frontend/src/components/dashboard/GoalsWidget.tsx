@@ -1,45 +1,47 @@
 // src/components/dashboard/GoalsWidget.tsx
-import { FC } from "react";
-import { Calendar } from "lucide-react";
-import { Goal } from "../../types/goal.types";
+import { FC } from 'react';
+
+import { Calendar } from 'lucide-react';
+
+import { Goal } from '../../types/goal.types';
 
 // Dummy data
 const financialGoals: Goal[] = [
   {
-    id: "1",
-    name: "Emergency Fund",
-    type: "savings",
+    id: '1',
+    name: 'Emergency Fund',
+    type: 'savings',
     targetAmount: 15000,
     currentAmount: 10000,
-    startDate: "2024-01-01",
-    targetDate: "2025-12-31",
+    startDate: '2024-01-01',
+    targetDate: '2025-12-31',
     priority: 1,
-    status: "active",
-    color: "#4CAF50",
+    status: 'active',
+    color: '#4CAF50',
   },
   {
-    id: "2",
-    name: "Vacation",
-    type: "savings",
+    id: '2',
+    name: 'Vacation',
+    type: 'savings',
     targetAmount: 5000,
     currentAmount: 2500,
-    startDate: "2025-01-01",
-    targetDate: "2025-08-15",
+    startDate: '2025-01-01',
+    targetDate: '2025-08-15',
     priority: 2,
-    status: "active",
-    color: "#2196F3",
+    status: 'active',
+    color: '#2196F3',
   },
   {
-    id: "3",
-    name: "New Car",
-    type: "major_purchase",
+    id: '3',
+    name: 'New Car',
+    type: 'major_purchase',
     targetAmount: 30000,
     currentAmount: 7500,
-    startDate: "2024-06-01",
-    targetDate: "2026-06-30",
+    startDate: '2024-06-01',
+    targetDate: '2026-06-30',
     priority: 3,
-    status: "active",
-    color: "#FFC107",
+    status: 'active',
+    color: '#FFC107',
   },
 ];
 
@@ -49,9 +51,9 @@ interface GoalCardProps {
 
 const GoalCard: FC<GoalCardProps> = ({ goal }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -61,10 +63,10 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -75,9 +77,7 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
       <h3 className="font-medium mb-2">{goal.name}</h3>
       <div className="flex justify-between text-sm mb-2">
         <span>{formatCurrency(goal.currentAmount)}</span>
-        <span className="text-gray-500">
-          {formatCurrency(goal.targetAmount)}
-        </span>
+        <span className="text-gray-500">{formatCurrency(goal.targetAmount)}</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
         <div
@@ -105,9 +105,7 @@ const GoalsWidget: FC = () => {
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Financial Goals</h2>
-          <button className="text-blue-600 text-sm font-medium">
-            Add Goal
-          </button>
+          <button className="text-blue-600 text-sm font-medium">Add Goal</button>
         </div>
       </div>
       <div className="p-6">

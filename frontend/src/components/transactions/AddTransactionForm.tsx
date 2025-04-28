@@ -1,6 +1,8 @@
-import { FC, useState } from "react";
-import { X } from "lucide-react";
-import { TransactionType } from "../../types/transaction.types";
+import { FC, useState } from 'react';
+
+import { X } from 'lucide-react';
+
+import { TransactionType } from '../../types/transaction.types';
 
 interface AddTransactionFormProps {
   onClose: () => void;
@@ -27,31 +29,25 @@ interface AddTransactionFormProps {
 }
 
 const categories = {
-  1: { id: "1", name: "Food" },
-  2: { id: "2", name: "Rent" },
-  3: { id: "3", name: "Utilities" },
+  1: { id: '1', name: 'Food' },
+  2: { id: '2', name: 'Rent' },
+  3: { id: '3', name: 'Utilities' },
 };
 
-const AddTransactionForm: FC<AddTransactionFormProps> = ({
-  onClose,
-  onSubmit,
-  initialData,
-}) => {
+const AddTransactionForm: FC<AddTransactionFormProps> = ({ onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
-    description: initialData?.description || "",
-    amount: initialData?.amount || "",
-    date: initialData?.date || new Date().toISOString().split("T")[0],
-    type: initialData?.type || ("expense" as TransactionType),
-    categoryId: initialData?.categoryId || "",
-    accountId: initialData?.accountId || "",
-    notes: initialData?.notes || "",
-    tags: initialData?.tags?.join(", ") || "",
+    description: initialData?.description || '',
+    amount: initialData?.amount || '',
+    date: initialData?.date || new Date().toISOString().split('T')[0],
+    type: initialData?.type || ('expense' as TransactionType),
+    categoryId: initialData?.categoryId || '',
+    accountId: initialData?.accountId || '',
+    notes: initialData?.notes || '',
+    tags: initialData?.tags?.join(', ') || '',
   });
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData({
@@ -73,9 +69,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
     // Process tags
     const processedData = {
       ...formData,
-      tags: formData.tags
-        ? formData.tags.split(",").map((tag) => tag.trim())
-        : [],
+      tags: formData.tags ? formData.tags.split(',').map((tag) => tag.trim()) : [],
       amount: parseFloat(formData.amount as string),
     };
 
@@ -91,13 +85,9 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">
-          {initialData ? "Edit Transaction" : "Add Transaction"}
+          {initialData ? 'Edit Transaction' : 'Add Transaction'}
         </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
-        >
+        <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X size={20} />
         </button>
       </div>
@@ -107,33 +97,33 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
           <button
             type="button"
             className={`px-4 py-2 rounded-lg flex-1 ${
-              formData.type === "expense"
-                ? "bg-red-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'expense'
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("expense")}
+            onClick={() => handleTypeChange('expense')}
           >
             Expense
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-lg flex-1 ${
-              formData.type === "income"
-                ? "bg-green-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'income'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("income")}
+            onClick={() => handleTypeChange('income')}
           >
             Income
           </button>
           <button
             type="button"
             className={`px-4 py-2 rounded-lg flex-1 ${
-              formData.type === "transfer"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              formData.type === 'transfer'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleTypeChange("transfer")}
+            onClick={() => handleTypeChange('transfer')}
           >
             Transfer
           </button>
@@ -141,9 +131,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description*
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Description*</label>
         <input
           type="text"
           name="description"
@@ -156,9 +144,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Amount*
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Amount*</label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
             ₹
@@ -179,9 +165,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date*
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Date*</label>
           <input
             type="date"
             name="date"
@@ -193,9 +177,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Category
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select
             name="categoryId"
             value={formData.categoryId}
@@ -213,9 +195,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Account
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Account</label>
         <select
           name="accountId"
           value={formData.accountId}
@@ -230,9 +210,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notes
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
         <textarea
           name="notes"
           value={formData.notes}
@@ -244,9 +222,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Tags
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
         <input
           type="text"
           name="tags"
@@ -255,9 +231,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="Enter tags separated by commas"
         />
-        <p className="text-xs text-gray-500 mt-1">
-          E.g. food, bills, subscriptions
-        </p>
+        <p className="text-xs text-gray-500 mt-1">E.g. food, bills, subscriptions</p>
       </div>
 
       <div className="flex justify-end space-x-2">
@@ -272,7 +246,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
           type="submit"
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
-          {initialData ? "Update" : "Add"} Transaction
+          {initialData ? 'Update' : 'Add'} Transaction
         </button>
       </div>
     </form>

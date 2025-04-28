@@ -1,92 +1,93 @@
 // src/pages/Goals.tsx
-import { FC, useState } from "react";
-import PageHeader from "../components/common/PageHeader";
-import GoalList from "../components/goals/GoalList";
-import GoalForm from "../components/goals/GoalForm";
-import GoalProgressChart from "../components/goals/GoalProgressChart";
-import { Goal } from "../types/goal.types";
+import { FC, useState } from 'react';
+
+import PageHeader from '../components/common/PageHeader';
+import GoalForm from '../components/goals/GoalForm';
+import GoalList from '../components/goals/GoalList';
+import GoalProgressChart from '../components/goals/GoalProgressChart';
+import { Goal } from '../types/goal.types';
 
 // Dummy goals data
 const goalsData: Goal[] = [
   {
-    id: "1",
-    name: "Emergency Fund",
-    type: "savings",
+    id: '1',
+    name: 'Emergency Fund',
+    type: 'savings',
     targetAmount: 15000,
     currentAmount: 10000,
-    startDate: "2024-01-01",
-    targetDate: "2025-12-31",
+    startDate: '2024-01-01',
+    targetDate: '2025-12-31',
     priority: 1,
-    status: "active",
-    color: "#4CAF50",
-    notes: "Save 6 months of expenses for emergencies",
+    status: 'active',
+    color: '#4CAF50',
+    notes: 'Save 6 months of expenses for emergencies',
   },
   {
-    id: "2",
-    name: "Vacation to Europe",
-    type: "savings",
+    id: '2',
+    name: 'Vacation to Europe',
+    type: 'savings',
     targetAmount: 5000,
     currentAmount: 2500,
-    startDate: "2025-01-01",
-    targetDate: "2025-08-15",
+    startDate: '2025-01-01',
+    targetDate: '2025-08-15',
     priority: 2,
-    status: "active",
-    color: "#2196F3",
-    notes: "Summer vacation to France and Italy",
+    status: 'active',
+    color: '#2196F3',
+    notes: 'Summer vacation to France and Italy',
   },
   {
-    id: "3",
-    name: "New Car",
-    type: "major_purchase",
+    id: '3',
+    name: 'New Car',
+    type: 'major_purchase',
     targetAmount: 30000,
     currentAmount: 7500,
-    startDate: "2024-06-01",
-    targetDate: "2026-06-30",
+    startDate: '2024-06-01',
+    targetDate: '2026-06-30',
     priority: 3,
-    status: "active",
-    color: "#FFC107",
-    contributionFrequency: "monthly",
+    status: 'active',
+    color: '#FFC107',
+    contributionFrequency: 'monthly',
     contributionAmount: 1000,
   },
   {
-    id: "4",
-    name: "Home Down Payment",
-    type: "major_purchase",
+    id: '4',
+    name: 'Home Down Payment',
+    type: 'major_purchase',
     targetAmount: 60000,
     currentAmount: 15000,
-    startDate: "2023-01-01",
-    targetDate: "2027-01-01",
+    startDate: '2023-01-01',
+    targetDate: '2027-01-01',
     priority: 1,
-    status: "active",
-    color: "#9C27B0",
-    contributionFrequency: "monthly",
+    status: 'active',
+    color: '#9C27B0',
+    contributionFrequency: 'monthly',
     contributionAmount: 1200,
   },
   {
-    id: "5",
-    name: "Pay off Student Loan",
-    type: "debt",
+    id: '5',
+    name: 'Pay off Student Loan',
+    type: 'debt',
     targetAmount: 18000,
     currentAmount: 12000,
-    startDate: "2023-05-01",
-    targetDate: "2026-05-01",
+    startDate: '2023-05-01',
+    targetDate: '2026-05-01',
     priority: 2,
-    status: "active",
-    color: "#FF5722",
-    contributionFrequency: "monthly",
+    status: 'active',
+    color: '#FF5722',
+    contributionFrequency: 'monthly',
     contributionAmount: 500,
   },
 ];
 
 // Dummy chart data
 const progressChartData = [
-  { date: "2024-10", amount: 29000 },
-  { date: "2024-11", amount: 32000 },
-  { date: "2024-12", amount: 35500 },
-  { date: "2025-01", amount: 39000 },
-  { date: "2025-02", amount: 42000 },
-  { date: "2025-03", amount: 45000 },
-  { date: "2025-04", amount: 47000 },
+  { date: '2024-10', amount: 29000 },
+  { date: '2024-11', amount: 32000 },
+  { date: '2024-12', amount: 35500 },
+  { date: '2025-01', amount: 39000 },
+  { date: '2025-02', amount: 42000 },
+  { date: '2025-03', amount: 45000 },
+  { date: '2025-04', amount: 47000 },
 ];
 
 const Goals: FC = () => {
@@ -133,9 +134,7 @@ const Goals: FC = () => {
       <div className="mt-6 flex space-x-2">
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === null
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            activeFilter === null ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
           onClick={() => setActiveFilter(null)}
         >
@@ -143,31 +142,25 @@ const Goals: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === "savings"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            activeFilter === 'savings' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setActiveFilter("savings")}
+          onClick={() => setActiveFilter('savings')}
         >
           Savings
         </button>
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === "debt"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            activeFilter === 'debt' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setActiveFilter("debt")}
+          onClick={() => setActiveFilter('debt')}
         >
           Debt Payoff
         </button>
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === "major_purchase"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            activeFilter === 'major_purchase' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setActiveFilter("major_purchase")}
+          onClick={() => setActiveFilter('major_purchase')}
         >
           Major Purchases
         </button>

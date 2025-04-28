@@ -1,46 +1,45 @@
 // src/pages/Reports.tsx
-import { FC, useState } from "react";
-import PageHeader from "../components/common/PageHeader";
-import SpendingTrendsChart from "../components/reports/SpendingTrendsChart";
-import CategoryComparisonChart from "../components/reports/CategoryComparisonChart";
-import MonthlyExpenseChart from "../components/reports/MonthlyExpenseChart";
-import ReportExportControls from "../components/reports/ReportExportControls";
-import { ReportTimeframe, ReportType } from "../types/report.types";
+import { FC, useState } from 'react';
+
+import PageHeader from '../components/common/PageHeader';
+import CategoryComparisonChart from '../components/reports/CategoryComparisonChart';
+import MonthlyExpenseChart from '../components/reports/MonthlyExpenseChart';
+import ReportExportControls from '../components/reports/ReportExportControls';
+import SpendingTrendsChart from '../components/reports/SpendingTrendsChart';
+import { ReportTimeframe, ReportType } from '../types/report.types';
 
 // Dummy data for spending trends
 const spendingTrendsData = [
-  { date: "2025-01", amount: 3800 },
-  { date: "2025-02", amount: 3600 },
-  { date: "2025-03", amount: 3900 },
-  { date: "2025-04", amount: 3310 },
+  { date: '2025-01', amount: 3800 },
+  { date: '2025-02', amount: 3600 },
+  { date: '2025-03', amount: 3900 },
+  { date: '2025-04', amount: 3310 },
 ];
 
 // Dummy data for category comparison
 const categoryComparisonData = [
-  { name: "Housing", current: 1500, previous: 1500 },
-  { name: "Food", current: 450, previous: 500 },
-  { name: "Transport", current: 275, previous: 300 },
-  { name: "Entertainment", current: 385, previous: 400 },
-  { name: "Utilities", current: 310, previous: 325 },
-  { name: "Shopping", current: 180, previous: 220 },
-  { name: "Health", current: 120, previous: 150 },
-  { name: "Personal Care", current: 90, previous: 110 },
+  { name: 'Housing', current: 1500, previous: 1500 },
+  { name: 'Food', current: 450, previous: 500 },
+  { name: 'Transport', current: 275, previous: 300 },
+  { name: 'Entertainment', current: 385, previous: 400 },
+  { name: 'Utilities', current: 310, previous: 325 },
+  { name: 'Shopping', current: 180, previous: 220 },
+  { name: 'Health', current: 120, previous: 150 },
+  { name: 'Personal Care', current: 90, previous: 110 },
 ];
 
 // Dummy data for monthly expense breakdown
 const monthlyExpenseData = [
-  { name: "Week 1", amount: 1050 },
-  { name: "Week 2", amount: 890 },
-  { name: "Week 3", amount: 750 },
-  { name: "Week 4", amount: 620 },
+  { name: 'Week 1', amount: 1050 },
+  { name: 'Week 2', amount: 890 },
+  { name: 'Week 3', amount: 750 },
+  { name: 'Week 4', amount: 620 },
 ];
 
 // Continuing src/pages/Reports.tsx
 const Reports: FC = () => {
-  const [selectedTimeframe, setSelectedTimeframe] =
-    useState<ReportTimeframe>("month");
-  const [selectedReportType, setSelectedReportType] =
-    useState<ReportType>("spending");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<ReportTimeframe>('month');
+  const [selectedReportType, setSelectedReportType] = useState<ReportType>('spending');
 
   return (
     <div>
@@ -52,9 +51,7 @@ const Reports: FC = () => {
             <select
               className="px-3 py-2 border border-gray-200 rounded-lg"
               value={selectedTimeframe}
-              onChange={(e) =>
-                setSelectedTimeframe(e.target.value as ReportTimeframe)
-              }
+              onChange={(e) => setSelectedTimeframe(e.target.value as ReportTimeframe)}
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
@@ -73,51 +70,43 @@ const Reports: FC = () => {
       <div className="mt-6 flex space-x-2 overflow-x-auto pb-2">
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === "spending"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            selectedReportType === 'spending' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setSelectedReportType("spending")}
+          onClick={() => setSelectedReportType('spending')}
         >
           Spending Report
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === "income"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            selectedReportType === 'income' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setSelectedReportType("income")}
+          onClick={() => setSelectedReportType('income')}
         >
           Income Report
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === "net_worth"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            selectedReportType === 'net_worth'
+              ? 'bg-green-600 text-white'
+              : 'bg-white text-gray-700'
           }`}
-          onClick={() => setSelectedReportType("net_worth")}
+          onClick={() => setSelectedReportType('net_worth')}
         >
           Net Worth Report
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === "category"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            selectedReportType === 'category' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setSelectedReportType("category")}
+          onClick={() => setSelectedReportType('category')}
         >
           Category Report
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === "custom"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700"
+            selectedReportType === 'custom' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
           }`}
-          onClick={() => setSelectedReportType("custom")}
+          onClick={() => setSelectedReportType('custom')}
         >
           Custom Report
         </button>

@@ -1,11 +1,12 @@
 // src/App.tsx
-import { RouterProvider } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { BudgetProvider } from "./contexts/BudgetContext";
-import { TransactionProvider } from "./contexts/TransactionContext";
-import { GoalsProvider } from "./contexts/GoalsContext";
-import { SettingsProvider } from "./contexts/SettingsContext";
-import routes from "./routes";
+import { RouterProvider } from 'react-router-dom';
+
+import { AuthProvider } from './contexts/AuthContext';
+import { BudgetProvider } from './contexts/BudgetContext';
+import { GoalsProvider } from './contexts/GoalsContext';
+import { SettingsProvider } from './contexts/SettingsContext';
+import { TransactionProvider } from './contexts/TransactionContext';
+import routes from './routes';
 
 function App() {
   return (

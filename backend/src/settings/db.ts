@@ -1,11 +1,12 @@
-import { Collection, Db, ObjectId, Filter } from "mongodb";
-import { Account, AccountType } from "./types/interface";
+import { Collection, Db, Filter, ObjectId } from 'mongodb';
+
+import { Account, AccountType } from './types/interface';
 
 export class AccountModel {
   private collection: Collection<Account>;
 
   constructor(db: Db) {
-    this.collection = db.collection<Account>("accounts");
+    this.collection = db.collection<Account>('accounts');
   }
 
   async initialize(): Promise<void> {
@@ -15,9 +16,7 @@ export class AccountModel {
     await this.collection.createIndex({ userId: 1, includeInNetWorth: 1 });
   }
 
-  async create(
-    account: Omit<Account, "_id" | "createdAt" | "updatedAt">
-  ): Promise<Account> {
+  async create(account: Omit<Account, '_id' | 'createdAt' | 'updatedAt'>): Promise<Account> {
     const now = new Date();
     const newAccount: Account = {
       ...account,
@@ -39,9 +38,7 @@ export class AccountModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<
-      Omit<Account, "_id" | "userId" | "createdAt" | "updatedAt">
-    >
+    updates: Partial<Omit<Account, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<Account | null> {
     // Always update the lastUpdated timestamp
     updates.lastUpdated = new Date();
@@ -52,7 +49,7 @@ export class AccountModel {
       {
         $set: updates,
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedAccount.value;

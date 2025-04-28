@@ -1,6 +1,7 @@
-import { Router } from "express";
-import { GoalController } from "./controller";
-import { AuthMiddleware } from "../middleware/auth";
+import { Router } from 'express';
+
+import { AuthMiddleware } from '../middleware/auth';
+import { GoalController } from './controller';
 
 export class GoalRoutes {
   private router: Router;
@@ -19,16 +20,16 @@ export class GoalRoutes {
     this.router.use(this.authMiddleware.authenticate);
 
     // Goal routes
-    this.router.get("/", this.controller.getGoals);
-    this.router.get("/:id", this.controller.getGoalById);
-    this.router.post("/", this.controller.createGoal);
-    this.router.put("/:id", this.controller.updateGoal);
-    this.router.delete("/:id", this.controller.deleteGoal);
+    this.router.get('/', this.controller.getGoals);
+    this.router.get('/:id', this.controller.getGoalById);
+    this.router.post('/', this.controller.createGoal);
+    this.router.put('/:id', this.controller.updateGoal);
+    this.router.delete('/:id', this.controller.deleteGoal);
 
     // Goal status routes
-    this.router.post("/:id/complete", this.controller.completeGoal);
-    this.router.post("/:id/pause", this.controller.pauseGoal);
-    this.router.post("/:id/resume", this.controller.resumeGoal);
+    this.router.post('/:id/complete', this.controller.completeGoal);
+    this.router.post('/:id/pause', this.controller.pauseGoal);
+    this.router.post('/:id/resume', this.controller.resumeGoal);
   }
 
   getRouter(): Router {

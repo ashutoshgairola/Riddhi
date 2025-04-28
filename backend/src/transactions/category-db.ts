@@ -1,14 +1,13 @@
-import { Collection, Db, ObjectId } from "mongodb";
-import { TransactionCategory } from "./types/interface";
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import { Collection, Db, ObjectId } from 'mongodb';
+
+import { TransactionCategory } from './types/interface';
 
 export class CategoryModel {
   private collection: Collection<TransactionCategory>;
 
   constructor(db: Db) {
-    this.collection = db.collection<TransactionCategory>(
-      "transactionCategories"
-    );
+    this.collection = db.collection<TransactionCategory>('transactionCategories');
   }
 
   async initialize(): Promise<void> {
@@ -18,7 +17,7 @@ export class CategoryModel {
   }
 
   async create(
-    category: Omit<TransactionCategory, "_id" | "createdAt" | "updatedAt">
+    category: Omit<TransactionCategory, '_id' | 'createdAt' | 'updatedAt'>,
   ): Promise<TransactionCategory> {
     const now = dayjs().toDate();
     const newCategory: TransactionCategory = {
@@ -31,20 +30,14 @@ export class CategoryModel {
     return { ...newCategory, _id: result.insertedId };
   }
 
-  async findById(
-    id: string,
-    userId: string
-  ): Promise<TransactionCategory | null> {
+  async findById(id: string, userId: string): Promise<TransactionCategory | null> {
     return this.collection.findOne({
       _id: new ObjectId(id),
       userId,
     });
   }
 
-  async findByName(
-    name: string,
-    userId: string
-  ): Promise<TransactionCategory | null> {
+  async findByName(name: string, userId: string): Promise<TransactionCategory | null> {
     return this.collection.findOne({
       name,
       userId,
@@ -54,9 +47,7 @@ export class CategoryModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<
-      Omit<TransactionCategory, "_id" | "userId" | "createdAt" | "updatedAt">
-    >
+    updates: Partial<Omit<TransactionCategory, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<TransactionCategory | null> {
     const updatedCategory = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id), userId },
@@ -66,7 +57,7 @@ export class CategoryModel {
           updatedAt: dayjs().toDate(),
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedCategory.value;
@@ -85,12 +76,14 @@ export class CategoryModel {
     return this.collection.find({ userId }).sort({ name: 1 }).toArray();
   }
 
-  async findByParentId(
-    parentId: string,
-    userId: string
-  ): Promise<TransactionCategory[]> {
+  async findByParentId(parentId: string, userId: string): Promise<TransactionCategory[]> {
+    return this.collection.find({ parentId, userId }).sort({ name: 1 }).toArray();
+  }
+
+  async findByIds(categoryIds: string[], userId: string): Promise<TransactionCategory[]> {
+    const objectIds = categoryIds.map((id) => new ObjectId(id));
     return this.collection
-      .find({ parentId, userId })
+      .find({ _id: { $in: objectIds }, userId })
       .sort({ name: 1 })
       .toArray();
   }

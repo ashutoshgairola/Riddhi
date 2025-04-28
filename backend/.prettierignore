@@ -1,0 +1,11 @@
+# Build outputs
+dist/
+build/
+coverage/
+
+# Node modules
+node_modules/
+
+# Other files
+.cache/
+.env

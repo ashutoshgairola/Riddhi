@@ -1,14 +1,9 @@
 // src/components/budgets/BudgetSummary.tsx
-import { FC } from "react";
-import { Budget } from "../../types/budget.types";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from "recharts";
+import { FC } from 'react';
+
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+
+import { Budget } from '../../types/budget.types';
 
 interface BudgetSummaryProps {
   budget: Budget;
@@ -16,9 +11,9 @@ interface BudgetSummaryProps {
 
 const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -31,9 +26,9 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
 
   // Chart data
   const chartData = [
-    { name: "Spent", value: budget.totalSpent, color: "#F44336" },
-    { name: "Remaining Budget", value: remainingBudget, color: "#4CAF50" },
-    { name: "Unallocated Income", value: remainingIncome, color: "#2196F3" },
+    { name: 'Spent', value: budget.totalSpent, color: '#F44336' },
+    { name: 'Remaining Budget', value: remainingBudget, color: '#4CAF50' },
+    { name: 'Unallocated Income', value: remainingIncome, color: '#2196F3' },
   ];
 
   return (
@@ -48,9 +43,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
             <div className="grid grid-cols-1 gap-4">
               <div className="p-4 border border-gray-100 rounded-lg">
                 <p className="text-sm text-gray-500 mb-1">Income</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(budget.income)}
-                </p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(budget.income)}</p>
               </div>
 
               <div className="p-4 border border-gray-100 rounded-lg">
@@ -60,8 +53,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                     {formatCurrency(budget.totalAllocated)}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {calculatePercentage(budget.totalAllocated, budget.income)}{" "}
-                    of income
+                    {calculatePercentage(budget.totalAllocated, budget.income)} of income
                   </p>
                 </div>
               </div>
@@ -73,11 +65,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                     {formatCurrency(budget.totalSpent)}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {calculatePercentage(
-                      budget.totalSpent,
-                      budget.totalAllocated
-                    )}{" "}
-                    of budget
+                    {calculatePercentage(budget.totalSpent, budget.totalAllocated)} of budget
                   </p>
                 </div>
               </div>
@@ -89,11 +77,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                     {formatCurrency(remainingBudget)}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {calculatePercentage(
-                      remainingBudget,
-                      budget.totalAllocated
-                    )}{" "}
-                    of budget
+                    {calculatePercentage(remainingBudget, budget.totalAllocated)} of budget
                   </p>
                 </div>
               </div>
@@ -116,9 +100,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip
-                  formatter={(value) => formatCurrency(value as number)}
-                />
+                <Tooltip formatter={(value) => formatCurrency(value as number)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>

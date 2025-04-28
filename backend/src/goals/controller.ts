@@ -1,10 +1,7 @@
-import { Request, Response } from "express";
-import { GoalService } from "./service";
-import {
-  GetGoalsQuery,
-  CreateGoalRequest,
-  UpdateGoalRequest,
-} from "./types/interface";
+import { Request, Response } from 'express';
+
+import { GoalService } from './service';
+import { CreateGoalRequest, GetGoalsQuery, UpdateGoalRequest } from './types/interface';
 
 export class GoalController {
   private goalService: GoalService;
@@ -30,8 +27,8 @@ export class GoalController {
       const goals = await this.goalService.getGoals(userId, query);
       res.status(200).json(goals);
     } catch (error: any) {
-      console.error("Error fetching goals:", error);
-      res.status(500).json({ error: "Failed to fetch goals" });
+      console.error('Error fetching goals:', error);
+      res.status(500).json({ error: 'Failed to fetch goals' });
     }
   };
 
@@ -44,15 +41,15 @@ export class GoalController {
         const goal = await this.goalService.getGoalById(id, userId);
         res.status(200).json(goal);
       } catch (error: any) {
-        if (error.message === "Goal not found") {
+        if (error.message === 'Goal not found') {
           res.status(404).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error fetching goal:", error);
-      res.status(500).json({ error: "Failed to fetch goal" });
+      console.error('Error fetching goal:', error);
+      res.status(500).json({ error: 'Failed to fetch goal' });
     }
   };
 
@@ -71,7 +68,7 @@ export class GoalController {
         !goalData.targetDate ||
         goalData.priority === undefined
       ) {
-        res.status(400).json({ error: "Missing required fields" });
+        res.status(400).json({ error: 'Missing required fields' });
         return;
       }
 
@@ -80,9 +77,9 @@ export class GoalController {
         res.status(201).json(goal);
       } catch (error: any) {
         if (
-          error.message.includes("date") ||
-          error.message.includes("amount") ||
-          error.message.includes("priority")
+          error.message.includes('date') ||
+          error.message.includes('amount') ||
+          error.message.includes('priority')
         ) {
           res.status(400).json({ error: error.message });
         } else {
@@ -90,8 +87,8 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error("Error creating goal:", error);
-      res.status(500).json({ error: "Failed to create goal" });
+      console.error('Error creating goal:', error);
+      res.status(500).json({ error: 'Failed to create goal' });
     }
   };
 
@@ -105,12 +102,12 @@ export class GoalController {
         const goal = await this.goalService.updateGoal(id, userId, updates);
         res.status(200).json(goal);
       } catch (error: any) {
-        if (error.message === "Goal not found") {
+        if (error.message === 'Goal not found') {
           res.status(404).json({ error: error.message });
         } else if (
-          error.message.includes("date") ||
-          error.message.includes("amount") ||
-          error.message.includes("priority")
+          error.message.includes('date') ||
+          error.message.includes('amount') ||
+          error.message.includes('priority')
         ) {
           res.status(400).json({ error: error.message });
         } else {
@@ -118,8 +115,8 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error("Error updating goal:", error);
-      res.status(500).json({ error: "Failed to update goal" });
+      console.error('Error updating goal:', error);
+      res.status(500).json({ error: 'Failed to update goal' });
     }
   };
 
@@ -132,15 +129,15 @@ export class GoalController {
         await this.goalService.deleteGoal(id, userId);
         res.status(204).send();
       } catch (error: any) {
-        if (error.message === "Goal not found") {
+        if (error.message === 'Goal not found') {
           res.status(404).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error deleting goal:", error);
-      res.status(500).json({ error: "Failed to delete goal" });
+      console.error('Error deleting goal:', error);
+      res.status(500).json({ error: 'Failed to delete goal' });
     }
   };
 
@@ -153,17 +150,17 @@ export class GoalController {
         const goal = await this.goalService.completeGoal(id, userId);
         res.status(200).json(goal);
       } catch (error: any) {
-        if (error.message === "Goal not found") {
+        if (error.message === 'Goal not found') {
           res.status(404).json({ error: error.message });
-        } else if (error.message.includes("already completed")) {
+        } else if (error.message.includes('already completed')) {
           res.status(400).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error completing goal:", error);
-      res.status(500).json({ error: "Failed to complete goal" });
+      console.error('Error completing goal:', error);
+      res.status(500).json({ error: 'Failed to complete goal' });
     }
   };
 
@@ -176,11 +173,11 @@ export class GoalController {
         const goal = await this.goalService.pauseGoal(id, userId);
         res.status(200).json(goal);
       } catch (error: any) {
-        if (error.message === "Goal not found") {
+        if (error.message === 'Goal not found') {
           res.status(404).json({ error: error.message });
         } else if (
-          error.message.includes("already paused") ||
-          error.message.includes("cannot be paused")
+          error.message.includes('already paused') ||
+          error.message.includes('cannot be paused')
         ) {
           res.status(400).json({ error: error.message });
         } else {
@@ -188,8 +185,8 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error("Error pausing goal:", error);
-      res.status(500).json({ error: "Failed to pause goal" });
+      console.error('Error pausing goal:', error);
+      res.status(500).json({ error: 'Failed to pause goal' });
     }
   };
 
@@ -202,17 +199,17 @@ export class GoalController {
         const goal = await this.goalService.resumeGoal(id, userId);
         res.status(200).json(goal);
       } catch (error: any) {
-        if (error.message === "Goal not found") {
+        if (error.message === 'Goal not found') {
           res.status(404).json({ error: error.message });
-        } else if (error.message.includes("Only paused goals")) {
+        } else if (error.message.includes('Only paused goals')) {
           res.status(400).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error("Error resuming goal:", error);
-      res.status(500).json({ error: "Failed to resume goal" });
+      console.error('Error resuming goal:', error);
+      res.status(500).json({ error: 'Failed to resume goal' });
     }
   };
 }

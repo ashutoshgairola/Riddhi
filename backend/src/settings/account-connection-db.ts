@@ -1,11 +1,12 @@
-import { Collection, Db, ObjectId } from "mongodb";
-import { AccountConnection } from "./types/interface";
+import { Collection, Db, ObjectId } from 'mongodb';
+
+import { AccountConnection } from './types/interface';
 
 export class AccountConnectionModel {
   public collection: Collection<AccountConnection>;
 
   constructor(db: Db) {
-    this.collection = db.collection<AccountConnection>("accountConnections");
+    this.collection = db.collection<AccountConnection>('accountConnections');
   }
 
   async initialize(): Promise<void> {
@@ -18,10 +19,7 @@ export class AccountConnectionModel {
     return this.collection.find({ userId }).toArray();
   }
 
-  async findById(
-    id: string,
-    userId: string
-  ): Promise<AccountConnection | null> {
+  async findById(id: string, userId: string): Promise<AccountConnection | null> {
     return this.collection.findOne({
       _id: new ObjectId(id),
       userId,
@@ -29,7 +27,7 @@ export class AccountConnectionModel {
   }
 
   async create(
-    connection: Omit<AccountConnection, "_id" | "createdAt" | "updatedAt">
+    connection: Omit<AccountConnection, '_id' | 'createdAt' | 'updatedAt'>,
   ): Promise<AccountConnection> {
     const now = new Date();
     const newConnection: AccountConnection = {
@@ -45,7 +43,7 @@ export class AccountConnectionModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<AccountConnection>
+    updates: Partial<AccountConnection>,
   ): Promise<AccountConnection | null> {
     const now = new Date();
 
@@ -57,7 +55,7 @@ export class AccountConnectionModel {
           updatedAt: now,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedConnection.value;

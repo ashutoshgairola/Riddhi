@@ -1,10 +1,12 @@
 // src/layouts/DashboardLayout.tsx
-import { FC, useState } from "react";
-import { Outlet } from "react-router-dom";
-import Sidebar from "../components/common/Sidebar";
-import Navbar from "../components/common/Navbar";
-import { Plus } from "lucide-react";
-import AddTransactionForm from "../components/transactions/AddTransactionForm";
+import { FC, useState } from 'react';
+import { Outlet } from 'react-router-dom';
+
+import { Plus } from 'lucide-react';
+
+import Navbar from '../components/common/Navbar';
+import Sidebar from '../components/common/Sidebar';
+import AddTransactionForm from '../components/transactions/AddTransactionForm';
 
 const DashboardLayout: FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

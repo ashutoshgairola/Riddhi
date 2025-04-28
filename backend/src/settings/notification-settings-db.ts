@@ -1,13 +1,12 @@
-import { Collection, Db, ObjectId } from "mongodb";
-import { NotificationSetting } from "./types/interface";
+import { Collection, Db, ObjectId } from 'mongodb';
+
+import { NotificationSetting } from './types/interface';
 
 export class NotificationSettingModel {
   private collection: Collection<NotificationSetting>;
 
   constructor(db: Db) {
-    this.collection = db.collection<NotificationSetting>(
-      "notificationSettings"
-    );
+    this.collection = db.collection<NotificationSetting>('notificationSettings');
   }
 
   async initialize(): Promise<void> {
@@ -19,10 +18,7 @@ export class NotificationSettingModel {
     return this.collection.find({ userId }).toArray();
   }
 
-  async findById(
-    id: string,
-    userId: string
-  ): Promise<NotificationSetting | null> {
+  async findById(id: string, userId: string): Promise<NotificationSetting | null> {
     return this.collection.findOne({
       _id: new ObjectId(id),
       userId,
@@ -32,7 +28,7 @@ export class NotificationSettingModel {
   async update(
     id: string,
     userId: string,
-    updates: Partial<NotificationSetting>
+    updates: Partial<NotificationSetting>,
   ): Promise<NotificationSetting | null> {
     const now = new Date();
 
@@ -44,7 +40,7 @@ export class NotificationSettingModel {
           updatedAt: now,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: 'after' },
     );
 
     return updatedSetting.value;
@@ -54,11 +50,11 @@ export class NotificationSettingModel {
     const now = new Date();
 
     // Define default notification settings
-    const defaultSettings: Omit<NotificationSetting, "_id">[] = [
+    const defaultSettings: Omit<NotificationSetting, '_id'>[] = [
       {
         userId,
-        name: "Budget Alerts",
-        description: "Notifications when you approach or exceed budget limits",
+        name: 'Budget Alerts',
+        description: 'Notifications when you approach or exceed budget limits',
         email: true,
         push: true,
         sms: false,
@@ -67,8 +63,8 @@ export class NotificationSettingModel {
       },
       {
         userId,
-        name: "Goal Progress",
-        description: "Updates on your progress towards financial goals",
+        name: 'Goal Progress',
+        description: 'Updates on your progress towards financial goals',
         email: true,
         push: true,
         sms: false,
@@ -77,8 +73,8 @@ export class NotificationSettingModel {
       },
       {
         userId,
-        name: "Large Transactions",
-        description: "Alerts for unusually large transactions",
+        name: 'Large Transactions',
+        description: 'Alerts for unusually large transactions',
         email: true,
         push: true,
         sms: true,
@@ -87,8 +83,8 @@ export class NotificationSettingModel {
       },
       {
         userId,
-        name: "Monthly Reports",
-        description: "Monthly summary of your financial activity",
+        name: 'Monthly Reports',
+        description: 'Monthly summary of your financial activity',
         email: true,
         push: false,
         sms: false,
@@ -97,8 +93,8 @@ export class NotificationSettingModel {
       },
       {
         userId,
-        name: "Security Alerts",
-        description: "Notifications about security-related events",
+        name: 'Security Alerts',
+        description: 'Notifications about security-related events',
         email: true,
         push: true,
         sms: true,

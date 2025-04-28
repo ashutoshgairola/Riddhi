@@ -1,17 +1,18 @@
-import { Db } from "mongodb";
+import { Db } from 'mongodb';
+
+import { GoalModel } from './db';
 import {
+  ContributionFrequency,
+  CreateGoalRequest,
+  GetGoalsQuery,
   Goal,
   GoalDTO,
   GoalDetailDTO,
   GoalStatus,
-  ContributionFrequency,
-  CreateGoalRequest,
-  UpdateGoalRequest,
-  GetGoalsQuery,
   GoalsResponse,
   PaginationResponse,
-} from "./types/interface";
-import { GoalModel } from "./db";
+  UpdateGoalRequest,
+} from './types/interface';
 
 export class GoalService {
   private goalModel: GoalModel;
@@ -37,48 +38,45 @@ export class GoalService {
   async getGoalById(id: string, userId: string): Promise<GoalDetailDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error("Goal not found");
+      throw new Error('Goal not found');
     }
 
     return this.mapGoalToDetailDTO(goal);
   }
 
-  async createGoal(
-    userId: string,
-    goalData: CreateGoalRequest
-  ): Promise<GoalDTO> {
+  async createGoal(userId: string, goalData: CreateGoalRequest): Promise<GoalDTO> {
     // Validate dates
     const startDate = new Date(goalData.startDate);
     const targetDate = new Date(goalData.targetDate);
 
     if (isNaN(startDate.getTime()) || isNaN(targetDate.getTime())) {
-      throw new Error("Invalid date format");
+      throw new Error('Invalid date format');
     }
 
     if (startDate >= targetDate) {
-      throw new Error("Start date must be before target date");
+      throw new Error('Start date must be before target date');
     }
 
     // Validate amounts
     if (goalData.targetAmount <= 0) {
-      throw new Error("Target amount must be greater than zero");
+      throw new Error('Target amount must be greater than zero');
     }
 
     if (goalData.currentAmount < 0) {
-      throw new Error("Current amount cannot be negative");
+      throw new Error('Current amount cannot be negative');
     }
 
     if (goalData.currentAmount > goalData.targetAmount) {
-      throw new Error("Current amount cannot exceed target amount");
+      throw new Error('Current amount cannot exceed target amount');
     }
 
     // Validate priority
     if (goalData.priority < 1 || goalData.priority > 3) {
-      throw new Error("Priority must be between 1 and 3");
+      throw new Error('Priority must be between 1 and 3');
     }
 
     // Create the goal
-    const goalToCreate: Omit<Goal, "_id" | "createdAt" | "updatedAt"> = {
+    const goalToCreate: Omit<Goal, '_id' | 'createdAt' | 'updatedAt'> = {
       userId,
       name: goalData.name,
       type: goalData.type,
@@ -90,7 +88,7 @@ export class GoalService {
       notes: goalData.notes,
       color: goalData.color,
       priority: goalData.priority,
-      status: "active", // New goals always start as active
+      status: 'active', // New goals always start as active
       contributionFrequency: goalData.contributionFrequency,
       contributionAmount: goalData.contributionAmount,
     };
@@ -99,14 +97,10 @@ export class GoalService {
     return this.mapGoalToDTO(createdGoal);
   }
 
-  async updateGoal(
-    id: string,
-    userId: string,
-    updates: UpdateGoalRequest
-  ): Promise<GoalDTO> {
+  async updateGoal(id: string, userId: string, updates: UpdateGoalRequest): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error("Goal not found");
+      throw new Error('Goal not found');
     }
 
     // Prepare updates
@@ -125,7 +119,7 @@ export class GoalService {
     // Handle amount updates
     if (updates.targetAmount !== undefined) {
       if (updates.targetAmount <= 0) {
-        throw new Error("Target amount must be greater than zero");
+        throw new Error('Target amount must be greater than zero');
       }
 
       // If we're lowering the target amount and it's now less than the current amount,
@@ -139,22 +133,20 @@ export class GoalService {
 
     if (updates.currentAmount !== undefined) {
       if (updates.currentAmount < 0) {
-        throw new Error("Current amount cannot be negative");
+        throw new Error('Current amount cannot be negative');
       }
 
       const targetAmount =
-        updates.targetAmount !== undefined
-          ? updates.targetAmount
-          : goal.targetAmount;
+        updates.targetAmount !== undefined ? updates.targetAmount : goal.targetAmount;
       if (updates.currentAmount > targetAmount) {
-        throw new Error("Current amount cannot exceed target amount");
+        throw new Error('Current amount cannot exceed target amount');
       }
 
       goalUpdates.currentAmount = updates.currentAmount;
 
       // If current amount equals target amount, automatically mark the goal as completed
       if (updates.currentAmount === targetAmount) {
-        goalUpdates.status = "completed";
+        goalUpdates.status = 'completed';
       }
     }
 
@@ -165,7 +157,7 @@ export class GoalService {
     if (updates.startDate) {
       startDate = new Date(updates.startDate);
       if (isNaN(startDate.getTime())) {
-        throw new Error("Invalid start date format");
+        throw new Error('Invalid start date format');
       }
       goalUpdates.startDate = startDate;
     }
@@ -173,14 +165,14 @@ export class GoalService {
     if (updates.targetDate) {
       targetDate = new Date(updates.targetDate);
       if (isNaN(targetDate.getTime())) {
-        throw new Error("Invalid target date format");
+        throw new Error('Invalid target date format');
       }
       goalUpdates.targetDate = targetDate;
     }
 
     // Validate date order
     if (startDate >= targetDate) {
-      throw new Error("Start date must be before target date");
+      throw new Error('Start date must be before target date');
     }
 
     // Handle other updates
@@ -198,7 +190,7 @@ export class GoalService {
 
     if (updates.priority !== undefined) {
       if (updates.priority < 1 || updates.priority > 3) {
-        throw new Error("Priority must be between 1 and 3");
+        throw new Error('Priority must be between 1 and 3');
       }
       goalUpdates.priority = updates.priority;
     }
@@ -215,7 +207,7 @@ export class GoalService {
     const updatedGoal = await this.goalModel.update(id, userId, goalUpdates);
 
     if (!updatedGoal) {
-      throw new Error("Failed to update goal");
+      throw new Error('Failed to update goal');
     }
 
     return this.mapGoalToDTO(updatedGoal);
@@ -224,34 +216,30 @@ export class GoalService {
   async deleteGoal(id: string, userId: string): Promise<void> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error("Goal not found");
+      throw new Error('Goal not found');
     }
 
     const deleted = await this.goalModel.delete(id, userId);
 
     if (!deleted) {
-      throw new Error("Failed to delete goal");
+      throw new Error('Failed to delete goal');
     }
   }
 
   async completeGoal(id: string, userId: string): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error("Goal not found");
+      throw new Error('Goal not found');
     }
 
-    if (goal.status === "completed") {
-      throw new Error("Goal is already completed");
+    if (goal.status === 'completed') {
+      throw new Error('Goal is already completed');
     }
 
-    const updatedGoal = await this.goalModel.updateStatus(
-      id,
-      userId,
-      "completed"
-    );
+    const updatedGoal = await this.goalModel.updateStatus(id, userId, 'completed');
 
     if (!updatedGoal) {
-      throw new Error("Failed to complete goal");
+      throw new Error('Failed to complete goal');
     }
 
     return this.mapGoalToDTO(updatedGoal);
@@ -260,21 +248,21 @@ export class GoalService {
   async pauseGoal(id: string, userId: string): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error("Goal not found");
+      throw new Error('Goal not found');
     }
 
-    if (goal.status === "completed") {
-      throw new Error("Completed goals cannot be paused");
+    if (goal.status === 'completed') {
+      throw new Error('Completed goals cannot be paused');
     }
 
-    if (goal.status === "paused") {
-      throw new Error("Goal is already paused");
+    if (goal.status === 'paused') {
+      throw new Error('Goal is already paused');
     }
 
-    const updatedGoal = await this.goalModel.updateStatus(id, userId, "paused");
+    const updatedGoal = await this.goalModel.updateStatus(id, userId, 'paused');
 
     if (!updatedGoal) {
-      throw new Error("Failed to pause goal");
+      throw new Error('Failed to pause goal');
     }
 
     return this.mapGoalToDTO(updatedGoal);
@@ -283,17 +271,17 @@ export class GoalService {
   async resumeGoal(id: string, userId: string): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error("Goal not found");
+      throw new Error('Goal not found');
     }
 
-    if (goal.status !== "paused") {
-      throw new Error("Only paused goals can be resumed");
+    if (goal.status !== 'paused') {
+      throw new Error('Only paused goals can be resumed');
     }
 
-    const updatedGoal = await this.goalModel.updateStatus(id, userId, "active");
+    const updatedGoal = await this.goalModel.updateStatus(id, userId, 'active');
 
     if (!updatedGoal) {
-      throw new Error("Failed to resume goal");
+      throw new Error('Failed to resume goal');
     }
 
     return this.mapGoalToDTO(updatedGoal);
@@ -328,15 +316,11 @@ export class GoalService {
     let projectedCompletion: string | undefined = undefined;
 
     // Calculate projected completion date if we have contribution info
-    if (
-      goal.contributionFrequency &&
-      goal.contributionAmount &&
-      goal.contributionAmount > 0
-    ) {
+    if (goal.contributionFrequency && goal.contributionAmount && goal.contributionAmount > 0) {
       const daysLeft = this.calculateDaysToCompletion(
         remaining,
         goal.contributionAmount,
-        goal.contributionFrequency
+        goal.contributionFrequency,
       );
 
       if (daysLeft > 0) {
@@ -359,20 +343,20 @@ export class GoalService {
   private calculateDaysToCompletion(
     remainingAmount: number,
     contributionAmount: number,
-    frequency: ContributionFrequency
+    frequency: ContributionFrequency,
   ): number {
     const contributions = Math.ceil(remainingAmount / contributionAmount);
 
     // Convert contributions to days based on frequency
     let daysPerContribution: number;
     switch (frequency) {
-      case "weekly":
+      case 'weekly':
         daysPerContribution = 7;
         break;
-      case "biweekly":
+      case 'biweekly':
         daysPerContribution = 14;
         break;
-      case "monthly":
+      case 'monthly':
         daysPerContribution = 30; // approximation
         break;
       default:

@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { AuthService } from "../auth/service";
+import { NextFunction, Request, Response } from 'express';
+
+import { AuthService } from '../auth/service';
 
 // Extend Express Request interface to include user property
 declare global {
@@ -24,15 +25,15 @@ export class AuthMiddleware {
     try {
       const authHeader = req.headers.authorization;
 
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        res.status(401).json({ error: "Unauthorized - No token provided" });
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Unauthorized - No token provided' });
         return;
       }
 
-      const token = authHeader.split(" ")[1];
+      const token = authHeader.split(' ')[1];
 
       if (!token) {
-        res.status(401).json({ error: "Unauthorized - Invalid token format" });
+        res.status(401).json({ error: 'Unauthorized - Invalid token format' });
         return;
       }
 
@@ -44,12 +45,10 @@ export class AuthMiddleware {
         };
         next();
       } catch (error) {
-        res
-          .status(401)
-          .json({ error: "Unauthorized - Invalid or expired token" });
+        res.status(401).json({ error: 'Unauthorized - Invalid or expired token' });
       }
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: 'Internal server error' });
     }
   };
 }

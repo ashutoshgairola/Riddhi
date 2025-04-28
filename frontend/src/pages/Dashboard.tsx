@@ -1,15 +1,16 @@
 // src/pages/Dashboard.tsx
-import { FC, useState } from "react";
-import FinancialSummaryWidget from "../components/dashboard/FinancialSummaryWidget";
-import RecentTransactionsWidget from "../components/dashboard/RecentTransactionsWidget";
-import BudgetProgressWidget from "../components/dashboard/BudgetProgressWidget";
-import GoalsWidget from "../components/dashboard/GoalsWidget";
-import CashFlowWidget from "../components/dashboard/CashFlowWidget";
-import ExpenseBreakdownWidget from "../components/dashboard/ExpenseBreakdownWidget";
-import PageHeader from "../components/common/PageHeader";
+import { FC, useState } from 'react';
+
+import PageHeader from '../components/common/PageHeader';
+import BudgetProgressWidget from '../components/dashboard/BudgetProgressWidget';
+import CashFlowWidget from '../components/dashboard/CashFlowWidget';
+import ExpenseBreakdownWidget from '../components/dashboard/ExpenseBreakdownWidget';
+import FinancialSummaryWidget from '../components/dashboard/FinancialSummaryWidget';
+import GoalsWidget from '../components/dashboard/GoalsWidget';
+import RecentTransactionsWidget from '../components/dashboard/RecentTransactionsWidget';
 
 const Dashboard: FC = () => {
-  const [selectedMonth, setSelectedMonth] = useState("April 2025");
+  const [selectedMonth, setSelectedMonth] = useState('April 2025');
 
   return (
     <div>

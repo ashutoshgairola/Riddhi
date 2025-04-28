@@ -1,9 +1,9 @@
 // Transaction domain types
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
-export type TransactionType = "income" | "expense" | "transfer";
-export type TransactionStatus = "cleared" | "pending" | "reconciled";
-export type RecurringFrequency = "daily" | "weekly" | "monthly" | "yearly";
+export type TransactionType = 'income' | 'expense' | 'transfer';
+export type TransactionStatus = 'cleared' | 'pending' | 'reconciled';
+export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 export interface Transaction {
   _id?: string | ObjectId;
@@ -100,7 +100,7 @@ export interface GetTransactionsQuery {
   page?: number;
   limit?: number;
   sort?: string;
-  order?: "asc" | "desc";
+  order?: 'asc' | 'desc';
 }
 
 export interface CreateTransactionRequest {
