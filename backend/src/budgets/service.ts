@@ -34,6 +34,7 @@ export class BudgetService {
 
   async getCurrentBudget(userId: string): Promise<BudgetDTO | null> {
     const budget = await this.budgetModel.findCurrent(userId);
+
     if (!budget) {
       return null;
     }
@@ -42,17 +43,17 @@ export class BudgetService {
   }
 
   async getBudgets(userId: string, query: GetBudgetsQuery): Promise<BudgetsResponse> {
-    const { budgets, pagination } = await this.budgetModel.findAll(userId, query);
-    const budgetDTOs = budgets.map(this.mapBudgetToSummaryDTO);
+    const data = await this.budgetModel.findAll(userId, query);
+    const budgetDTOs = data.items.map(this.mapBudgetToSummaryDTO);
 
     return {
-      data: budgetDTOs,
-      pagination,
+      ...data,
+      items: budgetDTOs,
     };
   }
 
-  async getBudgetById(id: string, userId: string): Promise<BudgetDTO> {
-    const budget = await this.budgetModel.findById(id, userId);
+  async getBudgetById(id: string): Promise<BudgetDTO> {
+    const budget = await this.budgetModel.findById(id);
     if (!budget) {
       throw new Error('Budget not found');
     }
@@ -119,7 +120,7 @@ export class BudgetService {
     await this.updateBudgetSpentAmounts(createdBudget._id!.toString(), userId);
 
     // Fetch the updated budget with accurate spent values
-    const updatedBudget = await this.budgetModel.findById(createdBudget._id!.toString(), userId);
+    const updatedBudget = await this.budgetModel.findById(createdBudget._id!.toString());
     if (!updatedBudget) {
       throw new Error('Failed to retrieve created budget');
     }
@@ -128,7 +129,7 @@ export class BudgetService {
   }
 
   async updateBudget(id: string, userId: string, updates: UpdateBudgetRequest): Promise<BudgetDTO> {
-    const budget = await this.budgetModel.findById(id, userId);
+    const budget = await this.budgetModel.findById(id);
     if (!budget) {
       throw new Error('Budget not found');
     }
@@ -194,7 +195,7 @@ export class BudgetService {
     // If dates changed, update the spent amounts based on the new date range
     if (updates.startDate || updates.endDate) {
       await this.updateBudgetSpentAmounts(id, userId);
-      const refreshedBudget = await this.budgetModel.findById(id, userId);
+      const refreshedBudget = await this.budgetModel.findById(id);
       if (!refreshedBudget) {
         throw new Error('Failed to retrieve updated budget');
       }
@@ -205,7 +206,7 @@ export class BudgetService {
   }
 
   async deleteBudget(id: string, userId: string): Promise<void> {
-    const budget = await this.budgetModel.findById(id, userId);
+    const budget = await this.budgetModel.findById(id);
     if (!budget) {
       throw new Error('Budget not found');
     }
@@ -222,7 +223,7 @@ export class BudgetService {
     userId: string,
     categoryData: CreateBudgetCategoryRequest,
   ): Promise<BudgetCategoryDTO> {
-    const budget = await this.budgetModel.findById(budgetId, userId);
+    const budget = await this.budgetModel.findById(budgetId);
     if (!budget) {
       throw new Error('Budget not found');
     }
@@ -263,7 +264,7 @@ export class BudgetService {
     await this.updateCategorySpentAmount(budgetId, userId, createdCategory.categoryId);
 
     // Get the updated category with actual spent amount
-    const updatedBudget = await this.budgetModel.findById(budgetId, userId);
+    const updatedBudget = await this.budgetModel.findById(budgetId);
     if (!updatedBudget) {
       throw new Error('Failed to retrieve updated budget');
     }
@@ -285,7 +286,7 @@ export class BudgetService {
     userId: string,
     updates: UpdateBudgetCategoryRequest,
   ): Promise<BudgetCategoryDTO> {
-    const budget = await this.budgetModel.findById(budgetId, userId);
+    const budget = await this.budgetModel.findById(budgetId);
     if (!budget) {
       throw new Error('Budget not found');
     }
@@ -339,7 +340,7 @@ export class BudgetService {
   }
 
   async deleteBudgetCategory(budgetId: string, categoryId: string, userId: string): Promise<void> {
-    const budget = await this.budgetModel.findById(budgetId, userId);
+    const budget = await this.budgetModel.findById(budgetId);
     if (!budget) {
       throw new Error('Budget not found');
     }
@@ -358,7 +359,7 @@ export class BudgetService {
   }
 
   private async updateBudgetSpentAmounts(budgetId: string, userId: string): Promise<void> {
-    const budget = await this.budgetModel.findById(budgetId, userId);
+    const budget = await this.budgetModel.findById(budgetId);
     if (!budget) {
       return;
     }
@@ -420,7 +421,7 @@ export class BudgetService {
     userId: string,
     categoryId: string,
   ): Promise<void> {
-    const budget = await this.budgetModel.findById(budgetId, userId);
+    const budget = await this.budgetModel.findById(budgetId);
     if (!budget) {
       return;
     }

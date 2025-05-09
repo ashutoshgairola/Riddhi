@@ -1,19 +1,38 @@
 // src/contexts/AuthContext.tsx
 import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
-import { AuthState, User } from '../types/auth.types';
+import { ApiError } from '../services/api/apiClient';
+import authService from '../services/api/authService';
+import {
+  ChangePasswordDTO,
+  LoginDTO,
+  RegisterDTO,
+  ResetPasswordConfirmDTO,
+  UpdateProfileDTO,
+  User,
+} from '../types/auth.types';
 
-interface AuthContextType {
-  authState: AuthState;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: Partial<User>, password: string) => Promise<void>;
-  logout: () => void;
-  resetPassword: (email: string) => Promise<void>;
-  updateProfile: (userData: Partial<User>) => Promise<void>;
+interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
-  error: string | null;
+  error: ApiError | null;
+}
+
+interface AuthContextType {
+  authState: AuthState;
+  login: (data: LoginDTO) => Promise<boolean>;
+  register: (data: RegisterDTO) => Promise<boolean>;
+  logout: () => void;
+  requestPasswordReset: (email: string) => Promise<boolean>;
+  confirmPasswordReset: (data: ResetPasswordConfirmDTO) => Promise<boolean>;
+  changePassword: (data: ChangePasswordDTO) => Promise<boolean>;
+  updateProfile: (data: UpdateProfileDTO) => Promise<boolean>;
+  isAuthenticated: boolean;
+  user: User | null;
+  loading: boolean;
+  error: ApiError | null;
+  clearError: () => void;
 }
 
 // Initial auth state
@@ -27,17 +46,6 @@ const initialAuthState: AuthState = {
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo user for testing purposes
-const demoUser: User = {
-  id: '1',
-  email: 'john.doe@example.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  profileImageUrl: undefined,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  lastLogin: new Date().toISOString(),
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>(initialAuthState);
 
@@ -45,17 +53,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // In a real app, this would verify the token with your backend
-        const token = localStorage.getItem('auth_token');
+        if (authService.isAuthenticated()) {
+          // Get user from localStorage or fetch from API
+          const currentUser = authService.getCurrentUser();
 
-        if (token) {
-          // Simulating a successful authentication check
-          setAuthState({
-            isAuthenticated: true,
-            user: demoUser,
-            loading: false,
-            error: null,
-          });
+          if (currentUser) {
+            setAuthState({
+              isAuthenticated: true,
+              user: currentUser,
+              loading: false,
+              error: null,
+            });
+          } else {
+            // Try to fetch user from API if we have a token but no user
+            try {
+              const response = await authService.getProfile();
+              setAuthState({
+                isAuthenticated: true,
+                user: response.data,
+                loading: false,
+                error: null,
+              });
+            } catch {
+              // If API call fails, logout
+              authService.logout();
+              setAuthState({
+                isAuthenticated: false,
+                user: null,
+                loading: false,
+                error: null,
+              });
+            }
+          }
         } else {
           setAuthState({
             isAuthenticated: false,
@@ -64,12 +93,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             error: null,
           });
         }
-      } catch {
+      } catch (err) {
         setAuthState({
           isAuthenticated: false,
           user: null,
           loading: false,
-          error: 'Failed to verify authentication',
+          error: err as ApiError,
         });
       }
     };
@@ -78,78 +107,58 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   // Login function
-  const login = async (email: string, password: string) => {
+  const login = async (data: LoginDTO): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      // Simulating API call
-      // In a real app, you would make an actual API call to authenticate
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await authService.login(data);
 
-      // Demo validation (replace with actual API validation)
-      if (email === 'john.doe@example.com' && password === 'password') {
-        // Store auth token in localStorage
-        localStorage.setItem('auth_token', 'demo_token_123');
+      setAuthState({
+        isAuthenticated: true,
+        user: response.data.user,
+        loading: false,
+        error: null,
+      });
 
-        setAuthState({
-          isAuthenticated: true,
-          user: demoUser,
-          loading: false,
-          error: null,
-        });
-      } else {
-        throw new Error('Invalid credentials');
-      }
-    } catch (error) {
+      return true;
+    } catch (err) {
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Login failed',
+        error: err as ApiError,
       }));
+      return false;
     }
   };
 
   // Register function
-  const register = async (userData: Partial<User>) => {
+  const register = async (data: RegisterDTO): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Create new user (in a real app, this would be done by the backend)
-      const newUser: User = {
-        id: Date.now().toString(),
-        email: userData.email || '',
-        firstName: userData.firstName || '',
-        lastName: userData.lastName || '',
-        profileImageUrl: userData.profileImageUrl,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-      };
-
-      // Store auth token
-      localStorage.setItem('auth_token', 'demo_token_123');
+      const response = await authService.register(data);
 
       setAuthState({
         isAuthenticated: true,
-        user: newUser,
+        user: response.data.user,
         loading: false,
         error: null,
       });
-    } catch (error) {
+
+      return true;
+    } catch (err) {
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Registration failed',
+        error: err as ApiError,
       }));
+      return false;
     }
   };
 
   // Logout function
   const logout = () => {
-    // Remove token from localStorage
-    localStorage.removeItem('auth_token');
+    authService.logout();
 
     setAuthState({
       isAuthenticated: false,
@@ -159,73 +168,126 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  // Reset password function
-  const resetPassword = async () => {
+  // Request password reset function
+  const requestPasswordReset = async (email: string): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // In a real app, this would trigger a password reset email
+      await authService.requestPasswordReset({ email });
 
       setAuthState((prev) => ({
         ...prev,
         loading: false,
         error: null,
       }));
-    } catch (error) {
+
+      return true;
+    } catch (err) {
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Password reset failed',
+        error: err as ApiError,
       }));
+      return false;
+    }
+  };
+
+  // Confirm password reset function
+  const confirmPasswordReset = async (data: ResetPasswordConfirmDTO): Promise<boolean> => {
+    try {
+      setAuthState((prev) => ({ ...prev, loading: true, error: null }));
+
+      await authService.confirmPasswordReset(data);
+
+      setAuthState((prev) => ({
+        ...prev,
+        loading: false,
+        error: null,
+      }));
+
+      return true;
+    } catch (err) {
+      setAuthState((prev) => ({
+        ...prev,
+        loading: false,
+        error: err as ApiError,
+      }));
+      return false;
+    }
+  };
+
+  // Change password function
+  const changePassword = async (data: ChangePasswordDTO): Promise<boolean> => {
+    try {
+      setAuthState((prev) => ({ ...prev, loading: true, error: null }));
+
+      await authService.changePassword(data);
+
+      setAuthState((prev) => ({
+        ...prev,
+        loading: false,
+        error: null,
+      }));
+
+      return true;
+    } catch (err) {
+      setAuthState((prev) => ({
+        ...prev,
+        loading: false,
+        error: err as ApiError,
+      }));
+      return false;
     }
   };
 
   // Update profile function
-  const updateProfile = async (userData: Partial<User>) => {
+  const updateProfile = async (data: UpdateProfileDTO): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await authService.updateProfile(data);
 
-      // Update user data (in a real app, this would be done by the backend)
-      if (authState.user) {
-        const updatedUser = {
-          ...authState.user,
-          ...userData,
-        };
+      setAuthState((prev) => ({
+        ...prev,
+        isAuthenticated: true,
+        user: response.data,
+        loading: false,
+        error: null,
+      }));
 
-        setAuthState({
-          isAuthenticated: true,
-          user: updatedUser,
-          loading: false,
-          error: null,
-        });
-      }
-    } catch (error) {
+      return true;
+    } catch (err) {
       setAuthState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Profile update failed',
+        error: err as ApiError,
       }));
+      return false;
     }
   };
 
+  // Clear error function
+  const clearError = () => {
+    setAuthState((prev) => ({
+      ...prev,
+      error: null,
+    }));
+  };
+
   const value = {
-    // Removed password parameter from register function
     authState,
     login,
     register,
     logout,
-    resetPassword,
+    requestPasswordReset,
+    confirmPasswordReset,
+    changePassword,
     updateProfile,
     isAuthenticated: authState.isAuthenticated,
     user: authState.user,
     loading: authState.loading,
     error: authState.error,
+    clearError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

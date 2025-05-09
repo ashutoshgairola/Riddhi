@@ -1,5 +1,5 @@
 // src/layouts/DashboardLayout.tsx
-import { FC, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { Plus } from 'lucide-react';
@@ -7,18 +7,32 @@ import { Plus } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Sidebar from '../components/common/Sidebar';
 import AddTransactionForm from '../components/transactions/AddTransactionForm';
+import { useTransactionCategories } from '../hooks/useTransactionCategories';
+import { useTransactions } from '../hooks/useTransactions';
+import { TransactionCreateDTO } from '../types/transaction.types';
 
 const DashboardLayout: FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
 
+  const { createTransaction } = useTransactions();
+  const { categories, loading: categoriesLoading } = useTransactionCategories();
+
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  const toggleAddTransaction = () => {
-    setShowAddTransaction(!showAddTransaction);
-  };
+  const toggleAddTransaction = useCallback(() => {
+    setShowAddTransaction((prev) => !prev);
+  }, []);
+
+  const handleTransactionSubmit = useCallback(
+    async (data: TransactionCreateDTO) => {
+      await createTransaction(data);
+      toggleAddTransaction();
+    },
+    [createTransaction, toggleAddTransaction],
+  );
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -44,8 +58,13 @@ const DashboardLayout: FC = () => {
       {showAddTransaction && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Add Transaction</h2>
-            <AddTransactionForm onClose={toggleAddTransaction} />
+            {/* <h2 className="text-xl font-bold mb-4">Add Transaction</h2> */}
+            <AddTransactionForm
+              onClose={toggleAddTransaction}
+              onSubmit={handleTransactionSubmit}
+              categories={categories}
+              categoriesLoading={categoriesLoading}
+            />
           </div>
         </div>
       )}

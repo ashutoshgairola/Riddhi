@@ -1,9 +1,15 @@
 // src/components/transactions/TransactionFilters.tsx
-import { FC, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 
+import debounce from 'lodash/debounce';
 import { Filter, Search, X } from 'lucide-react';
 
-import { TransactionFilters as FilterType, TransactionType } from '../../types/transaction.types';
+import { useTransactionCategories } from '../../hooks/useTransactionCategories';
+import {
+  TransactionFilters as FilterType,
+  TransactionStatus,
+  TransactionType,
+} from '../../types/transaction.types';
 
 interface TransactionFiltersProps {
   filters: FilterType;
@@ -12,34 +18,140 @@ interface TransactionFiltersProps {
 
 const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChange }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [localFilters, setLocalFilters] = useState<FilterType>(filters);
+  const { categories } = useTransactionCategories();
+
+  // Create a reference to store the previous filters for comparison
+  const prevFiltersRef = useRef<FilterType>(filters);
+
+  // Create a memoized debounced filter change function
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedFilterChange = useCallback(
+    debounce((newFilters: FilterType) => {
+      onFilterChange(newFilters);
+    }, 500),
+    [onFilterChange],
+  );
+
+  // Update local filters when parent filters change
+  useEffect(() => {
+    if (JSON.stringify(filters) !== JSON.stringify(prevFiltersRef.current)) {
+      setLocalFilters(filters);
+      prevFiltersRef.current = filters;
+    }
+  }, [filters]);
+
+  // Apply filters when local filters change
+  useEffect(() => {
+    // Don't trigger on initial render if filters are empty
+    if (JSON.stringify(localFilters) !== JSON.stringify(prevFiltersRef.current)) {
+      debouncedFilterChange(localFilters);
+      prevFiltersRef.current = localFilters;
+    }
+
+    // Cleanup debounced function on unmount
+    return () => {
+      debouncedFilterChange.cancel();
+    };
+  }, [localFilters, debouncedFilterChange]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({
-      ...filters,
+    setLocalFilters((prev) => ({
+      ...prev,
       searchTerm: e.target.value,
-    });
+    }));
   };
 
   const handleTypeChange = (type: TransactionType) => {
-    const currentTypes = filters.types || [];
+    const currentTypes = localFilters.types || [];
     const newTypes = currentTypes.includes(type)
       ? currentTypes.filter((t) => t !== type)
       : [...currentTypes, type];
 
-    onFilterChange({
-      ...filters,
+    setLocalFilters((prev) => ({
+      ...prev,
       types: newTypes.length > 0 ? newTypes : undefined,
-    });
+    }));
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategories = Array.from(e.target.selectedOptions).map((option) => option.value);
+
+    setLocalFilters((prev) => ({
+      ...prev,
+      categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
+    }));
+  };
+
+  const handleAmountChange = (field: 'minAmount' | 'maxAmount', value: string) => {
+    const numValue = value ? parseFloat(value) : undefined;
+
+    setLocalFilters((prev) => ({
+      ...prev,
+      [field]: numValue,
+    }));
+  };
+
+  const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+    setLocalFilters((prev) => ({
+      ...prev,
+      [field]: value || undefined,
+    }));
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setLocalFilters((prev) => ({
+      ...prev,
+      status: e.target.value ? [e.target.value as TransactionStatus] : undefined,
+    }));
+  };
+
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const tagsString = e.target.value;
+    const tagsArray = tagsString
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
+
+    setLocalFilters((prev) => ({
+      ...prev,
+      tags: tagsArray.length > 0 ? tagsArray : undefined,
+    }));
   };
 
   const handleClearFilters = () => {
-    onFilterChange({
+    const clearedFilters = {
       startDate: undefined,
       endDate: undefined,
       types: undefined,
+      categoryIds: undefined,
+      minAmount: undefined,
+      maxAmount: undefined,
       searchTerm: '',
-    });
+      tags: undefined,
+      status: undefined,
+      page: 1,
+      limit: filters.limit,
+      sort: filters.sort,
+      order: filters.order,
+    };
+
+    setLocalFilters(clearedFilters);
+    // Apply changes immediately for clear filters
+    onFilterChange(clearedFilters);
   };
+
+  const hasActiveFilters = Boolean(
+    localFilters.types?.length ||
+      localFilters.startDate ||
+      localFilters.endDate ||
+      localFilters.categoryIds?.length ||
+      localFilters.minAmount ||
+      localFilters.maxAmount ||
+      localFilters.tags?.length ||
+      localFilters.status?.length ||
+      localFilters.searchTerm,
+  );
 
   const toggleAdvancedFilters = () => {
     setShowAdvancedFilters(!showAdvancedFilters);
@@ -57,7 +169,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
             type="text"
             placeholder="Search transactions..."
             className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-            value={filters.searchTerm || ''}
+            value={localFilters.searchTerm || ''}
             onChange={handleSearchChange}
           />
         </div>
@@ -68,15 +180,17 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
               showAdvancedFilters ? 'bg-gray-100 border-gray-300' : 'border-gray-200'
             } transition-colors flex items-center gap-2`}
             onClick={toggleAdvancedFilters}
+            type="button"
           >
             <Filter size={18} />
             <span>Filters</span>
           </button>
 
-          {(filters.types?.length || filters.startDate || filters.endDate) && (
+          {hasActiveFilters && (
             <button
               className="px-4 py-2 rounded-lg border border-gray-200 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
               onClick={handleClearFilters}
+              type="button"
             >
               <X size={18} />
               <span>Clear</span>
@@ -87,15 +201,16 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
 
       {showAdvancedFilters && (
         <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Transaction Type
               </label>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   className={`px-3 py-1 rounded-full text-sm ${
-                    filters.types?.includes('income')
+                    localFilters.types?.includes('income')
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}
@@ -104,8 +219,9 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
                   Income
                 </button>
                 <button
+                  type="button"
                   className={`px-3 py-1 rounded-full text-sm ${
-                    filters.types?.includes('expense')
+                    localFilters.types?.includes('expense')
                       ? 'bg-red-100 text-red-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}
@@ -114,8 +230,9 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
                   Expense
                 </button>
                 <button
+                  type="button"
                   className={`px-3 py-1 rounded-full text-sm ${
-                    filters.types?.includes('transfer')
+                    localFilters.types?.includes('transfer')
                       ? 'bg-blue-100 text-blue-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}
@@ -132,33 +249,90 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
                 <input
                   type="date"
                   className="px-3 py-2 rounded-lg border border-gray-200"
-                  value={filters.startDate || ''}
-                  onChange={(e) =>
-                    onFilterChange({
-                      ...filters,
-                      startDate: e.target.value || undefined,
-                    })
-                  }
+                  value={localFilters.startDate || ''}
+                  onChange={(e) => handleDateChange('startDate', e.target.value)}
                 />
                 <input
                   type="date"
                   className="px-3 py-2 rounded-lg border border-gray-200"
-                  value={filters.endDate || ''}
-                  onChange={(e) =>
-                    onFilterChange({
-                      ...filters,
-                      endDate: e.target.value || undefined,
-                    })
-                  }
+                  value={localFilters.endDate || ''}
+                  onChange={(e) => handleDateChange('endDate', e.target.value)}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Advanced</label>
-              <button className="w-full px-3 py-2 border border-gray-200 rounded-lg text-left text-gray-500">
-                More filters...
-              </button>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Amount Range</label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-200"
+                    value={localFilters.minAmount || ''}
+                    onChange={(e) => handleAmountChange('minAmount', e.target.value)}
+                  />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-200"
+                    value={localFilters.maxAmount || ''}
+                    onChange={(e) => handleAmountChange('maxAmount', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
+              <select
+                className="px-3 py-2 w-full rounded-lg border border-gray-200"
+                multiple
+                size={3}
+                value={localFilters.categoryIds || []}
+                onChange={handleCategoryChange}
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select
+                className="px-3 py-2 w-full rounded-lg border border-gray-200"
+                value={localFilters.status?.[0] || ''}
+                onChange={handleStatusChange}
+              >
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="cleared">Cleared</option>
+                <option value="reconciled">Reconciled</option>
+                <option value="void">Void</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <input
+                type="text"
+                placeholder="food, bills, etc."
+                className="px-3 py-2 w-full rounded-lg border border-gray-200"
+                value={localFilters.tags?.join(', ') || ''}
+                onChange={handleTagsChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { Calendar } from 'lucide-react';
 
 import { Goal } from '../../types/goal.types';
+import { formatCurrency } from '../../utils';
 
 // Dummy data
 const financialGoals: Goal[] = [
@@ -50,13 +51,6 @@ interface GoalCardProps {
 }
 
 const GoalCard: FC<GoalCardProps> = ({ goal }) => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const calculatePercentage = (current: number, target: number): number => {
     return Math.min(Math.round((current / target) * 100), 100);
   };
@@ -76,8 +70,8 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
     <div className="p-4 border border-gray-100 rounded-lg">
       <h3 className="font-medium mb-2">{goal.name}</h3>
       <div className="flex justify-between text-sm mb-2">
-        <span>{formatCurrency(goal.currentAmount)}</span>
-        <span className="text-gray-500">{formatCurrency(goal.targetAmount)}</span>
+        <span>{formatCurrency(goal.currentAmount, 'INR')}</span>
+        <span className="text-gray-500">{formatCurrency(goal.targetAmount, 'INR')}</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
         <div

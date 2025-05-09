@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 
+import { sendResponse } from '../common/utils';
 import { TransactionService } from './service';
 import {
   CreateCategoryRequest,
@@ -40,7 +41,7 @@ export class TransactionController {
       }
 
       const transactions = await this.transactionService.getTransactions(userId, query);
-      res.status(200).json(transactions);
+      sendResponse({ res, data: transactions, message: 'Transactions fetched successfully' });
     } catch (error: any) {
       console.error('Error fetching transactions:', error);
       res.status(500).json({ error: 'Failed to fetch transactions' });
@@ -54,7 +55,7 @@ export class TransactionController {
       const { id } = req.params;
 
       const transaction = await this.transactionService.getTransactionById(id, userId);
-      res.status(200).json(transaction);
+      sendResponse({ res, data: transaction, message: 'Transaction fetched successfully' });
     } catch (error: any) {
       if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
@@ -86,7 +87,12 @@ export class TransactionController {
       }
 
       const transaction = await this.transactionService.createTransaction(userId, transactionData);
-      res.status(201).json(transaction);
+      sendResponse({
+        res,
+        data: transaction,
+        message: 'Transaction created successfully',
+        status: 201,
+      });
     } catch (error: any) {
       if (error.message === 'Category not found') {
         res.status(400).json({ error: error.message });
@@ -105,7 +111,11 @@ export class TransactionController {
       const updates: UpdateTransactionRequest = req.body;
 
       const transaction = await this.transactionService.updateTransaction(id, userId, updates);
-      res.status(200).json(transaction);
+      sendResponse({
+        res,
+        data: transaction,
+        message: 'Transaction updated successfully',
+      });
     } catch (error: any) {
       if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
@@ -148,7 +158,12 @@ export class TransactionController {
       }
 
       const attachment = await this.transactionService.uploadAttachment(id, userId, req.file);
-      res.status(201).json(attachment);
+      sendResponse({
+        res,
+        data: attachment,
+        message: 'Attachment uploaded successfully',
+        status: 201,
+      });
     } catch (error: any) {
       if (error.message === 'Transaction not found') {
         res.status(404).json({ error: error.message });
@@ -162,10 +177,18 @@ export class TransactionController {
   getCategories = async (req: Request, res: Response): Promise<void> => {
     try {
       const userId = req.body.user!.userId;
+      const { includeSubcategories } = req.query;
       delete req.body.user;
 
-      const categories = await this.transactionService.getCategories(userId);
-      res.status(200).json(categories);
+      const categories = await this.transactionService.getCategories(
+        userId,
+        includeSubcategories === 'true',
+      );
+      sendResponse({
+        res,
+        data: categories,
+        message: 'Categories fetched successfully',
+      });
     } catch (error: any) {
       console.error('Error fetching categories:', error);
       res.status(500).json({ error: 'Failed to fetch categories' });
@@ -190,7 +213,12 @@ export class TransactionController {
         icon,
         parentId,
       );
-      res.status(201).json(category);
+      sendResponse({
+        res,
+        data: category,
+        message: 'Category created successfully',
+        status: 201,
+      });
     } catch (error: any) {
       if (
         error.message === 'Category with this name already exists' ||
@@ -219,7 +247,11 @@ export class TransactionController {
         icon,
         parentId,
       );
-      res.status(200).json(category);
+      sendResponse({
+        res,
+        data: category,
+        message: 'Category updated successfully',
+      });
     } catch (error: any) {
       if (error.message === 'Category not found') {
         res.status(404).json({ error: error.message });
@@ -243,7 +275,12 @@ export class TransactionController {
       const { id } = req.params;
 
       await this.transactionService.deleteCategory(id, userId);
-      res.status(204).send();
+      sendResponse({
+        res,
+        data: null,
+        message: 'Category deleted successfully',
+        status: 204,
+      });
     } catch (error: any) {
       if (error.message === 'Category not found') {
         res.status(404).json({ error: error.message });

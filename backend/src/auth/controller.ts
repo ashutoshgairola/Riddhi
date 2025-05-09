@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 
+import { sendResponse } from '../common/utils';
 import { AuthService } from './service';
 import {
   ChangePasswordRequest,
@@ -28,7 +29,12 @@ export class AuthController {
       }
 
       const user = await this.authService.register(userData);
-      res.status(201).json(user);
+      sendResponse({
+        res,
+        status: 201,
+        data: user,
+        message: 'User registered successfully',
+      });
     } catch (error: any) {
       if (error.message === 'Email already registered') {
         res.status(400).json({ error: error.message });
@@ -50,7 +56,11 @@ export class AuthController {
       }
 
       const user = await this.authService.login(credentials);
-      res.status(200).json(user);
+      sendResponse({
+        res,
+        data: user,
+        message: 'Login successful',
+      });
     } catch (error: any) {
       if (error.message === 'Invalid credentials') {
         res.status(401).json({ error: error.message });
@@ -71,7 +81,11 @@ export class AuthController {
       }
 
       await this.authService.requestPasswordReset(email);
-      res.status(200).json({ message: 'Password reset email sent' });
+      sendResponse({
+        res,
+        data: null,
+        message: 'Password reset email sent successfully',
+      });
     } catch (error: any) {
       if (error.message === 'Email not found') {
         res.status(404).json({ error: error.message });
@@ -92,7 +106,11 @@ export class AuthController {
       }
 
       await this.authService.confirmPasswordReset(token, newPassword);
-      res.status(200).json({ message: 'Password reset successful' });
+      sendResponse({
+        res,
+        data: null,
+        message: 'Password reset successfully',
+      });
     } catch (error: any) {
       if (error.message === 'Invalid or expired token') {
         res.status(400).json({ error: error.message });
@@ -113,7 +131,11 @@ export class AuthController {
       }
 
       const profile = await this.authService.getProfile(userId);
-      res.status(200).json(profile);
+      sendResponse({
+        res,
+        data: profile,
+        message: 'User profile retrieved successfully',
+      });
     } catch (error) {
       console.error('Get profile error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -132,7 +154,11 @@ export class AuthController {
       }
 
       const updatedProfile = await this.authService.updateProfile(userId, updates);
-      res.status(200).json(updatedProfile);
+      sendResponse({
+        res,
+        data: updatedProfile,
+        message: 'User profile updated successfully',
+      });
     } catch (error) {
       console.error('Update profile error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -155,7 +181,11 @@ export class AuthController {
       }
 
       await this.authService.changePassword(userId, currentPassword, newPassword);
-      res.status(200).json({ message: 'Password changed successfully' });
+      sendResponse({
+        res,
+        data: null,
+        message: 'Password changed successfully',
+      });
     } catch (error: any) {
       if (error.message === 'Current password is incorrect') {
         res.status(401).json({ error: error.message });

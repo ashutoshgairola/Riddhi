@@ -22,6 +22,12 @@ export class TransactionRoutes {
     // All routes require authentication
     this.router.use(this.authMiddleware.authenticate);
 
+    // Category routes
+    this.router.get('/categories', this.controller.getCategories);
+    this.router.post('/categories', this.controller.createCategory);
+    this.router.put('/categories/:id', this.controller.updateCategory);
+    this.router.delete('/categories/:id', this.controller.deleteCategory);
+
     // Transaction routes
     this.router.get('/', this.controller.getTransactions);
     this.router.get('/:id', this.controller.getTransactionById);
@@ -35,12 +41,6 @@ export class TransactionRoutes {
       this.uploadMiddleware.handleUpload,
       this.controller.uploadAttachment,
     );
-
-    // Category routes
-    this.router.get('/categories', this.controller.getCategories);
-    this.router.post('/categories', this.controller.createCategory);
-    this.router.put('/categories/:id', this.controller.updateCategory);
-    this.router.delete('/categories/:id', this.controller.deleteCategory);
   }
 
   getRouter(): Router {

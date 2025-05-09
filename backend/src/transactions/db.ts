@@ -86,7 +86,7 @@ export class TransactionModel {
   async findAll(
     userId: string,
     query: GetTransactionsQuery,
-  ): Promise<{ transactions: Transaction[]; pagination: PaginationResponse }> {
+  ): Promise<PaginationResponse<Transaction>> {
     const filter: Filter<Transaction> = { userId };
 
     // Apply date filters
@@ -174,14 +174,14 @@ export class TransactionModel {
       .toArray();
 
     // Calculate pagination metadata
-    const pagination: PaginationResponse = {
+    const pagination = {
       total,
       page,
       limit,
       pages: Math.ceil(total / limit),
     };
 
-    return { transactions, pagination };
+    return { items: transactions, ...pagination };
   }
 
   async countByCategory(userId: string, categoryId: string): Promise<number> {

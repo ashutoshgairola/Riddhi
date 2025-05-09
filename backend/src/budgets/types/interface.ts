@@ -110,14 +110,17 @@ export interface UpdateBudgetCategoryRequest {
   notes?: string;
 }
 
-export interface PaginationResponse {
+export interface BudgetsResponse {
+  items: BudgetSummaryDTO[];
   total: number;
   page: number;
   limit: number;
   pages: number;
 }
-
-export interface BudgetsResponse {
-  data: BudgetSummaryDTO[];
-  pagination: PaginationResponse;
+export interface PaginationResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
 }

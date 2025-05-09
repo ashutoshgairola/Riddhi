@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { CreditCard, DollarSign } from 'lucide-react';
 
 import { Transaction, TransactionType } from '../../types/transaction.types';
+import { formatCurrency } from '../../utils';
 
 // Dummy data
 const recentTransactions: Transaction[] = [
@@ -50,13 +51,6 @@ const recentTransactions: Transaction[] = [
 ];
 
 const RecentTransactionsWidget: FC = () => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -109,7 +103,7 @@ const RecentTransactionsWidget: FC = () => {
                 }`}
               >
                 {transaction.type === 'income' ? '+' : '-'}
-                {formatCurrency(transaction.amount)}
+                {formatCurrency(transaction.amount, 'INR')}
               </p>
             </div>
           </div>

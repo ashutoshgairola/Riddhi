@@ -2,6 +2,7 @@
 import { FC } from 'react';
 
 import { BudgetCategory } from '../../types/budget.types';
+import { formatCurrency } from '../../utils';
 
 // Dummy data
 const budgetCategories: BudgetCategory[] = [
@@ -48,13 +49,6 @@ const budgetCategories: BudgetCategory[] = [
 ];
 
 const BudgetProgressWidget: FC = () => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const calculatePercentage = (spent: number, allocated: number): number => {
     return Math.min(Math.round((spent / allocated) * 100), 100);
   };
@@ -73,8 +67,8 @@ const BudgetProgressWidget: FC = () => {
             <div className="flex justify-between items-center mb-1">
               <p className="font-medium">{category.name}</p>
               <p className="text-sm">
-                {formatCurrency(category.spent)}{' '}
-                <span className="text-gray-500">/ {formatCurrency(category.allocated)}</span>
+                {formatCurrency(category.spent, 'INR')}{' '}
+                <span className="text-gray-500">/ {formatCurrency(category.allocated, 'INR')}</span>
               </p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">

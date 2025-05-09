@@ -43,7 +43,7 @@ export class App {
   private configureMiddleware(): void {
     // Security middleware
     this.app.use(helmet());
-    this.app.use(cors());
+    this.app.use(cors({ origin: 'http://localhost:5173' }));
 
     // Request parsing middleware
     this.app.use(express.json());

@@ -14,6 +14,7 @@ export class BudgetModel {
     await this.collection.createIndex({ userId: 1 });
     await this.collection.createIndex({ startDate: 1, endDate: 1 });
     await this.collection.createIndex({ userId: 1, startDate: 1, endDate: 1 });
+    await this.collection.createIndex({ 'categories.categoryId': 1 });
   }
 
   async create(budget: Omit<Budget, '_id' | 'createdAt' | 'updatedAt'>): Promise<Budget> {
@@ -28,10 +29,9 @@ export class BudgetModel {
     return { ...newBudget, _id: result.insertedId };
   }
 
-  async findById(id: string, userId: string): Promise<Budget | null> {
+  async findById(id: string): Promise<Budget | null> {
     return this.collection.findOne({
       _id: new ObjectId(id),
-      userId,
     });
   }
 
@@ -63,10 +63,7 @@ export class BudgetModel {
     return result.deletedCount === 1;
   }
 
-  async findAll(
-    userId: string,
-    query: GetBudgetsQuery,
-  ): Promise<{ budgets: Budget[]; pagination: PaginationResponse }> {
+  async findAll(userId: string, query: GetBudgetsQuery): Promise<PaginationResponse<Budget>> {
     const filter: Filter<Budget> = { userId };
 
     // Apply date filters if provided
@@ -96,14 +93,14 @@ export class BudgetModel {
       .toArray();
 
     // Calculate pagination metadata
-    const pagination: PaginationResponse = {
+    const pagination = {
       total,
       page,
       limit,
       pages: Math.ceil(total / limit),
     };
 
-    return { budgets, pagination };
+    return { items: budgets, ...pagination };
   }
 
   async findCurrent(userId: string): Promise<Budget | null> {
@@ -159,7 +156,7 @@ export class BudgetModel {
     amount: number,
   ): Promise<boolean> {
     // Find the budget
-    const budget = await this.findById(budgetId, userId);
+    const budget = await this.findById(budgetId);
     if (!budget) {
       return false;
     }
@@ -212,12 +209,12 @@ export class BudgetModel {
       { returnDocument: 'after' },
     );
 
-    if (!result) {
+    if (!result.value) {
       return null;
     }
 
     // Find the added category
-    const addedCategory = result.value?.categories.find(
+    const addedCategory = result.value.categories.find(
       (c) => c._id?.toString() === categoryWithId._id.toString(),
     );
 
@@ -231,7 +228,7 @@ export class BudgetModel {
     updates: Partial<Omit<Budget['categories'][0], '_id' | 'categoryId' | 'spent'>>,
   ): Promise<Budget['categories'][0] | null> {
     // First get the current budget to calculate allocation difference
-    const budget = await this.findById(budgetId, userId);
+    const budget = await this.findById(budgetId);
     if (!budget) {
       return null;
     }
@@ -274,18 +271,18 @@ export class BudgetModel {
       { returnDocument: 'after' },
     );
 
-    if (!result) {
+    if (!result.value) {
       return null;
     }
 
     // Find the updated category
-    const updatedCategory = result.value?.categories.find((c) => c._id?.toString() === categoryId);
+    const updatedCategory = result.value.categories.find((c) => c._id?.toString() === categoryId);
     return updatedCategory || null;
   }
 
   async deleteCategory(budgetId: string, userId: string, categoryId: string): Promise<boolean> {
     // First get the current budget to calculate new totalAllocated
-    const budget = await this.findById(budgetId, userId);
+    const budget = await this.findById(budgetId);
     if (!budget) {
       return false;
     }
@@ -306,6 +303,223 @@ export class BudgetModel {
           totalSpent: -category.spent,
         },
         $set: { updatedAt: new Date() },
+      },
+    );
+
+    return result.modifiedCount === 1;
+  }
+
+  // New methods for transaction integration
+
+  /**
+   * Find budgets that contain a specific date range
+   */
+  async findByDateRange(userId: string, startDate: Date, endDate: Date): Promise<Budget[]> {
+    return this.collection
+      .find({
+        userId,
+        startDate: { $lte: endDate },
+        endDate: { $gte: startDate },
+      })
+      .toArray();
+  }
+
+  /**
+   * Adjust the spent amount for a specific category in a budget
+   * This method ensures spent amounts never go negative
+   */
+  async adjustCategorySpent(
+    budgetId: string,
+    userId: string,
+    categoryId: string,
+    amount: number,
+  ): Promise<boolean> {
+    const budget = await this.findById(budgetId);
+    if (!budget) {
+      return false;
+    }
+
+    // Find the budget category for this transaction category
+    const categoryIndex = budget.categories.findIndex((c) => c.categoryId === categoryId);
+    if (categoryIndex === -1) {
+      // Category not in budget, skip
+      return false;
+    }
+
+    // Calculate new spent amount, ensuring it doesn't go negative
+    const currentSpent = budget.categories[categoryIndex].spent;
+    const newSpent = Math.max(0, currentSpent + amount);
+    const actualChange = newSpent - currentSpent;
+
+    // Update the category spent amount and total spent
+    const result = await this.collection.updateOne(
+      {
+        _id: new ObjectId(budgetId),
+        userId,
+        'categories.categoryId': categoryId,
+      },
+      {
+        $set: {
+          'categories.$.spent': newSpent,
+          totalSpent: Math.max(0, budget.totalSpent + actualChange),
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    return result.modifiedCount === 1;
+  }
+
+  /**
+   * Get budget category by categoryId for a specific budget
+   */
+  async getBudgetCategory(
+    budgetId: string,
+    categoryId: string,
+  ): Promise<Budget['categories'][0] | null> {
+    const budget = await this.findById(budgetId);
+    if (!budget) {
+      return null;
+    }
+
+    return budget.categories.find((c) => c.categoryId === categoryId) || null;
+  }
+
+  /**
+   * Check if a budget contains a specific category
+   */
+  async hasBudgetCategory(budgetId: string, categoryId: string): Promise<boolean> {
+    const category = await this.getBudgetCategory(budgetId, categoryId);
+    return category !== null;
+  }
+
+  /**
+   * Reset all spent amounts for a budget (useful for budget recalculation)
+   */
+  async resetSpentAmounts(budgetId: string, userId: string): Promise<boolean> {
+    const budget = await this.findById(budgetId);
+    if (!budget) {
+      return false;
+    }
+
+    // Reset all categories' spent to 0
+    const resetCategories = budget.categories.map((category) => ({
+      ...category,
+      spent: 0,
+    }));
+
+    const result = await this.collection.updateOne(
+      { _id: new ObjectId(budgetId), userId },
+      {
+        $set: {
+          categories: resetCategories,
+          totalSpent: 0,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    return result.modifiedCount === 1;
+  }
+
+  /**
+   * Bulk update spent amounts for multiple categories
+   */
+  async bulkUpdateCategorySpent(
+    budgetId: string,
+    userId: string,
+    categoryUpdates: { categoryId: string; amount: number }[],
+  ): Promise<boolean> {
+    const budget = await this.findById(budgetId);
+    if (!budget) {
+      return false;
+    }
+
+    let newTotalSpent = 0;
+    const updatedCategories = budget.categories.map((category) => {
+      const update = categoryUpdates.find((u) => u.categoryId === category.categoryId);
+      if (update) {
+        const newSpent = Math.max(0, category.spent + update.amount);
+        newTotalSpent += newSpent;
+        return { ...category, spent: newSpent };
+      } else {
+        newTotalSpent += category.spent;
+        return category;
+      }
+    });
+
+    const result = await this.collection.updateOne(
+      { _id: new ObjectId(budgetId), userId },
+      {
+        $set: {
+          categories: updatedCategories,
+          totalSpent: newTotalSpent,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    return result.modifiedCount === 1;
+  }
+
+  /**
+   * Get all budget categories for a user's budgets
+   */
+  async getAllUserBudgetCategories(
+    userId: string,
+  ): Promise<{ budgetId: string; categoryId: string }[]> {
+    const budgets = await this.collection.find({ userId }).toArray();
+    const categoryMappings: { budgetId: string; categoryId: string }[] = [];
+
+    for (const budget of budgets) {
+      for (const category of budget.categories) {
+        categoryMappings.push({
+          budgetId: budget._id!.toString(),
+          categoryId: category.categoryId,
+        });
+      }
+    }
+
+    return categoryMappings;
+  }
+
+  /**
+   * Find budgets by category ID
+   */
+  async findBudgetsByCategoryId(userId: string, categoryId: string): Promise<Budget[]> {
+    return this.collection
+      .find({
+        userId,
+        'categories.categoryId': categoryId,
+      })
+      .toArray();
+  }
+
+  /**
+   * Update budget totals (recalculate totalAllocated and totalSpent)
+   */
+  async recalculateBudgetTotals(budgetId: string): Promise<boolean> {
+    const budget = await this.findById(budgetId);
+    if (!budget) {
+      return false;
+    }
+
+    let totalAllocated = 0;
+    let totalSpent = 0;
+
+    for (const category of budget.categories) {
+      totalAllocated += category.allocated;
+      totalSpent += category.spent;
+    }
+
+    const result = await this.collection.updateOne(
+      { _id: new ObjectId(budgetId) },
+      {
+        $set: {
+          totalAllocated,
+          totalSpent,
+          updatedAt: new Date(),
+        },
       },
     );
 

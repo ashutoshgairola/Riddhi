@@ -1,13 +1,16 @@
-// src/types/transaction.types.ts
-export type TransactionType = 'income' | 'expense' | 'transfer';
-export type TransactionStatus = 'cleared' | 'pending' | 'reconciled';
+export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 export interface TransactionCategory {
   id: string;
   name: string;
-  icon?: string;
   color?: string;
+  icon?: string;
+  description?: string;
   parentId?: string;
+  parent?: TransactionCategory;
+  subcategories?: TransactionCategory[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Transaction {
@@ -19,21 +22,25 @@ export interface Transaction {
   categoryId: string;
   category?: TransactionCategory;
   accountId: string;
-  notes?: string;
   status: TransactionStatus;
+  notes?: string;
   tags?: string[];
-  attachments?: Attachment[];
+  attachments?: string[];
   isRecurring?: boolean;
-  recurringId?: string;
+  recurringDetails?: RecurringDetails;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface Attachment {
-  id: string;
-  fileName: string;
-  fileType: string;
-  url: string;
-  thumbnailUrl?: string;
-  uploadedAt: string;
+export type TransactionType = 'income' | 'expense' | 'transfer';
+
+export type TransactionStatus = 'pending' | 'cleared' | 'reconciled' | 'void';
+
+export interface RecurringDetails {
+  frequency: RecurringFrequency;
+  interval: number;
+  endDate?: string;
+  nextDate?: string;
 }
 
 export interface TransactionFilters {
@@ -47,4 +54,51 @@ export interface TransactionFilters {
   searchTerm?: string;
   tags?: string[];
   status?: TransactionStatus[];
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
+}
+
+export interface TransactionSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  netAmount: number;
+  categorySummary: Array<{
+    categoryId: string;
+    categoryName: string;
+    totalAmount: number;
+    transactionCount: number;
+  }>;
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface TransactionCreateDTO {
+  date: string;
+  description: string;
+  amount: number;
+  type: TransactionType;
+  categoryId: string;
+  accountId: string;
+  status?: TransactionStatus;
+  notes?: string;
+  tags?: string[];
+  isRecurring?: boolean;
+  recurringDetails?: RecurringDetails;
+}
+
+export interface TransactionUpdateDTO {
+  id: string;
+  date?: string;
+  description?: string;
+  amount?: number;
+  type?: TransactionType;
+  categoryId?: string;
+  accountId?: string;
+  status?: TransactionStatus;
+  notes?: string;
+  tags?: string[];
+  isRecurring?: boolean;
+  recurringDetails?: RecurringDetails;
 }

@@ -48,7 +48,7 @@ export class AuthService {
     return this.mapUserToDTO(user, token);
   }
 
-  async login(credentials: LoginRequest): Promise<UserDTO> {
+  async login(credentials: LoginRequest) {
     const user = await this.userModel.findByEmail(credentials.email);
     if (!user) {
       throw new Error('Invalid credentials');
@@ -64,7 +64,7 @@ export class AuthService {
     user.lastLogin = dayjs().toDate();
 
     const token = this.generateToken(user);
-    return this.mapUserToDTO(user, token);
+    return { user, token };
   }
 
   async requestPasswordReset(email: string): Promise<void> {

@@ -4,19 +4,13 @@ import { FC } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { Budget } from '../../types/budget.types';
+import { formatCurrency } from '../../utils';
 
 interface BudgetSummaryProps {
   budget: Budget;
 }
 
 const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const calculatePercentage = (amount: number, total: number): string => {
     return `${Math.round((amount / total) * 100)}%`;
   };
@@ -43,14 +37,16 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
             <div className="grid grid-cols-1 gap-4">
               <div className="p-4 border border-gray-100 rounded-lg">
                 <p className="text-sm text-gray-500 mb-1">Income</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(budget.income)}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(budget.income, 'INR')}
+                </p>
               </div>
 
               <div className="p-4 border border-gray-100 rounded-lg">
                 <p className="text-sm text-gray-500 mb-1">Budgeted</p>
                 <div className="flex justify-between items-end">
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(budget.totalAllocated)}
+                    {formatCurrency(budget.totalAllocated, 'INR')}
                   </p>
                   <p className="text-sm text-gray-500">
                     {calculatePercentage(budget.totalAllocated, budget.income)} of income
@@ -62,7 +58,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                 <p className="text-sm text-gray-500 mb-1">Spent</p>
                 <div className="flex justify-between items-end">
                   <p className="text-2xl font-bold text-red-600">
-                    {formatCurrency(budget.totalSpent)}
+                    {formatCurrency(budget.totalSpent, 'INR')}
                   </p>
                   <p className="text-sm text-gray-500">
                     {calculatePercentage(budget.totalSpent, budget.totalAllocated)} of budget
@@ -74,7 +70,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                 <p className="text-sm text-gray-500 mb-1">Remaining Budget</p>
                 <div className="flex justify-between items-end">
                   <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(remainingBudget)}
+                    {formatCurrency(remainingBudget, 'INR')}
                   </p>
                   <p className="text-sm text-gray-500">
                     {calculatePercentage(remainingBudget, budget.totalAllocated)} of budget
@@ -100,7 +96,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                <Tooltip formatter={(value) => formatCurrency(value as number, 'INR')} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>

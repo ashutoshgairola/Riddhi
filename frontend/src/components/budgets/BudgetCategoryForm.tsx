@@ -1,13 +1,15 @@
 // src/components/budgets/BudgetCategoryForm.tsx
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
-import { X } from 'lucide-react';
+import { AlertCircle, X } from 'lucide-react';
 
-import { BudgetCategory } from '../../types/budget.types';
+import { useTransactionCategories } from '../../hooks/useTransactionCategories';
+import { BudgetCategory, BudgetCategoryCreateDTO } from '../../types/budget.types';
+import Spinner from '../common/Spinner';
 
 interface BudgetCategoryFormProps {
   onClose: () => void;
-  onSubmit?: (data: BudgetCategory) => void;
+  onSubmit?: (data: BudgetCategoryCreateDTO) => void;
   initialData?: BudgetCategory | null;
 }
 
@@ -26,15 +28,38 @@ const colorPalette = [
 ];
 
 const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, initialData }) => {
-  const [formData, setFormData] = useState({
+  // Fetch transaction categories to link budget categories to them
+  const { categories: transactionCategories, loading: categoriesLoading } =
+    useTransactionCategories();
+
+  const [formData, setFormData] = useState<BudgetCategoryCreateDTO>({
     name: initialData?.name || '',
-    allocated: initialData?.allocated?.toString() || '',
+    allocated: initialData?.allocated || 0,
+    categoryId: initialData?.categoryId || '',
     color: initialData?.color || colorPalette[0],
     notes: initialData?.notes || '',
     rollover: initialData?.rollover || false,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Update form data when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name,
+        allocated: initialData.allocated,
+        categoryId: initialData.categoryId,
+        color: initialData.color || colorPalette[0],
+        notes: initialData.notes || '',
+        rollover: initialData.rollover || false,
+      });
+    }
+  }, [initialData]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
 
     if (type === 'checkbox') {
@@ -43,10 +68,23 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
         ...formData,
         [name]: checkbox.checked,
       });
+    } else if (type === 'number') {
+      setFormData({
+        ...formData,
+        [name]: parseFloat(value) || 0,
+      });
     } else {
       setFormData({
         ...formData,
         [name]: value,
+      });
+    }
+
+    // Clear error for this field
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: '',
       });
     }
   };
@@ -58,26 +96,39 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
     });
   };
 
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      errors.name = 'Category name is required';
+    }
+
+    if (!formData.allocated || formData.allocated <= 0) {
+      errors.allocated = 'Budget amount must be a positive number';
+    }
+
+    if (!formData.categoryId) {
+      errors.categoryId = 'Please select a transaction category';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const processedData: BudgetCategory = {
-      ...formData,
-      allocated: parseFloat(formData.allocated),
-      id: initialData?.id || '',
-      spent: initialData?.spent || 0,
-      categoryId: initialData?.categoryId || '',
-    };
-
-    if (onSubmit) {
-      onSubmit(processedData);
+    if (!validateForm()) {
+      return;
     }
 
-    onClose();
+    if (onSubmit) {
+      onSubmit(formData);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto px-1">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">{initialData ? 'Edit Category' : 'Add Category'}</h2>
         <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -93,9 +144,16 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
           value={formData.name}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          className={`w-full px-3 py-2 border ${
+            formErrors.name ? 'border-red-500' : 'border-gray-300'
+          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
           placeholder="e.g. Housing, Food, Transport"
         />
+        {formErrors.name && (
+          <p className="mt-1 text-sm text-red-600 flex items-center">
+            <AlertCircle size={14} className="mr-1" /> {formErrors.name}
+          </p>
+        )}
       </div>
 
       <div className="mb-4">
@@ -107,15 +165,61 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
           <input
             type="number"
             name="allocated"
-            value={formData.allocated}
+            value={formData.allocated || ''}
             onChange={handleChange}
             required
             step="0.01"
             min="0"
-            className="w-full px-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className={`w-full px-8 py-2 border ${
+              formErrors.allocated ? 'border-red-500' : 'border-gray-300'
+            } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
             placeholder="0.00"
           />
         </div>
+        {formErrors.allocated && (
+          <p className="mt-1 text-sm text-red-600 flex items-center">
+            <AlertCircle size={14} className="mr-1" /> {formErrors.allocated}
+          </p>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Transaction Category*
+        </label>
+        {categoriesLoading ? (
+          <div className="flex items-center space-x-2 h-10">
+            <Spinner size="sm" />
+            <span className="text-gray-500">Loading categories...</span>
+          </div>
+        ) : (
+          <>
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              required
+              className={`w-full px-3 py-2 border ${
+                formErrors.categoryId ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            >
+              <option value="">Select a transaction category</option>
+              {transactionCategories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            {formErrors.categoryId && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <AlertCircle size={14} className="mr-1" /> {formErrors.categoryId}
+              </p>
+            )}
+          </>
+        )}
+        <p className="text-xs text-gray-500 mt-1">
+          Link this budget category to a transaction category
+        </p>
       </div>
 
       <div className="mb-4">
@@ -161,6 +265,9 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
             Roll over unused budget to next month
           </label>
         </div>
+        <p className="text-xs text-gray-500 mt-1">
+          If enabled, any unspent amount will be added to next month's budget for this category
+        </p>
       </div>
 
       <div className="flex justify-end space-x-2">

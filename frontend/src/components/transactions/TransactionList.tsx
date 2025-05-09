@@ -1,25 +1,24 @@
 // src/components/transactions/TransactionList.tsx
 import { FC, useState } from 'react';
 
-import { ChevronDown, ChevronUp, Edit2, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Edit2, Trash2 } from 'lucide-react';
 
+import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import { Transaction, TransactionCategory } from '../../types/transaction.types';
+import Spinner from '../common/Spinner';
+
+// Assuming you have a spinner component
 
 interface TransactionListProps {
   transactions: Transaction[];
+  loading: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onPageChange: (page: number) => void;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
 }
-
-// Dummy categories data
-const categories: Record<string, TransactionCategory> = {
-  '1': { id: '1', name: 'Housing', color: '#4CAF50' },
-  '2': { id: '2', name: 'Income', color: '#2196F3' },
-  '3': { id: '3', name: 'Dining', color: '#FFC107' },
-  '4': { id: '4', name: 'Utilities', color: '#FF5722' },
-  '5': { id: '5', name: 'Fitness', color: '#9C27B0' },
-  '6': { id: '6', name: 'Freelance', color: '#3F51B5' },
-  '7': { id: '7', name: 'Entertainment', color: '#E91E63' },
-  '8': { id: '8', name: 'Shopping', color: '#607D8B' },
-};
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -27,6 +26,7 @@ interface TransactionItemProps {
   onDelete: (id: string) => void;
   toggleDetails: (id: string) => void;
   showDetails: boolean;
+  category?: TransactionCategory;
 }
 
 const TransactionItem: FC<TransactionItemProps> = ({
@@ -35,24 +35,24 @@ const TransactionItem: FC<TransactionItemProps> = ({
   onDelete,
   toggleDetails,
   showDetails,
+  category,
 }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   };
-
-  const category = categories[transaction.categoryId];
 
   return (
     <div className="border border-gray-200 rounded-lg mb-2 overflow-hidden">
@@ -127,7 +127,7 @@ const TransactionItem: FC<TransactionItemProps> = ({
 
             <div>
               <p className="text-sm text-gray-500 mb-1">Account</p>
-              <p>Main Checking Account</p>
+              <p>{transaction.accountId || 'Unknown Account'}</p>
             </div>
 
             <div>
@@ -157,6 +157,22 @@ const TransactionItem: FC<TransactionItemProps> = ({
                 </div>
               </div>
             )}
+
+            {transaction.isRecurring && transaction.recurringDetails && (
+              <div className="col-span-3">
+                <p className="text-sm text-gray-500 mb-1">Recurring details</p>
+                <p>
+                  This transaction recurs{' '}
+                  {transaction.recurringDetails.interval > 1
+                    ? `every ${transaction.recurringDetails.interval} `
+                    : ''}
+                  {transaction.recurringDetails.frequency}
+                  {transaction.recurringDetails.endDate
+                    ? ` until ${new Date(transaction.recurringDetails.endDate).toLocaleDateString('en-IN')}`
+                    : ' indefinitely'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -164,33 +180,47 @@ const TransactionItem: FC<TransactionItemProps> = ({
   );
 };
 
-const TransactionList: FC<TransactionListProps> = ({ transactions }) => {
+const TransactionList: FC<TransactionListProps> = ({
+  transactions,
+  loading,
+  onEdit,
+  onDelete,
+  onPageChange,
+  currentPage,
+  totalPages,
+  totalItems,
+}) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { categories } = useTransactionCategories();
 
-  const handleEditTransaction = (id: string) => {
-    console.log('Edit transaction', id);
-    // Handle edit logic here
-  };
-
-  const handleDeleteTransaction = (id: string) => {
-    console.log('Delete transaction', id);
-    // Handle delete logic here
-  };
+  // Convert categories array to a map for quick lookup
+  const categoriesMap = categories.reduce<Record<string, TransactionCategory>>((acc, category) => {
+    acc[category.id] = category;
+    return acc;
+  }, {});
 
   const toggleDetails = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  // Pagination handler
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      onPageChange(page);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-medium">{transactions.length} Transactions</h2>
+        <h2 className="text-lg font-medium">{totalItems} Transactions</h2>
 
         <div className="flex items-center">
           <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm mr-2">
-            <option>Sort by Date</option>
-            <option>Sort by Amount</option>
-            <option>Sort by Category</option>
+            <option value="date:desc">Sort by Date (Newest First)</option>
+            <option value="date:asc">Sort by Date (Oldest First)</option>
+            <option value="amount:desc">Sort by Amount (Highest First)</option>
+            <option value="amount:asc">Sort by Amount (Lowest First)</option>
           </select>
 
           <button className="px-3 py-2 border border-gray-200 rounded-lg text-sm">Export</button>
@@ -198,17 +228,65 @@ const TransactionList: FC<TransactionListProps> = ({ transactions }) => {
       </div>
 
       <div className="p-4">
-        {transactions.length > 0 ? (
-          transactions.map((transaction) => (
-            <TransactionItem
-              key={transaction.id}
-              transaction={transaction}
-              onEdit={handleEditTransaction}
-              onDelete={handleDeleteTransaction}
-              toggleDetails={toggleDetails}
-              showDetails={expandedId === transaction.id}
-            />
-          ))
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <Spinner />
+          </div>
+        ) : transactions.length > 0 ? (
+          <>
+            {transactions.map((transaction) => (
+              <TransactionItem
+                key={transaction.id}
+                transaction={transaction}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                toggleDetails={toggleDetails}
+                showDetails={expandedId === transaction.id}
+                category={categoriesMap[transaction.categoryId]}
+              />
+            ))}
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center mt-6">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`p-2 rounded-full mr-2 ${
+                    currentPage === 1 ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                <div className="flex space-x-1">
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i + 1)}
+                      className={`w-8 h-8 rounded-full ${
+                        currentPage === i + 1
+                          ? 'bg-green-600 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`p-2 rounded-full ml-2 ${
+                    currentPage === totalPages ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-8">
             <p className="text-gray-500">No transactions found</p>

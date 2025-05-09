@@ -50,6 +50,7 @@ export interface TransactionCategory {
   parentId?: string;
   createdAt: Date;
   updatedAt: Date;
+  subcategories?: TransactionCategory[];
 }
 
 export interface CategoryDTO {
@@ -58,6 +59,7 @@ export interface CategoryDTO {
   color?: string;
   icon?: string;
   parentId?: string;
+  subcategories?: CategoryDTO[];
 }
 
 export interface Attachment {
@@ -149,18 +151,17 @@ export interface UpdateCategoryRequest {
   parentId?: string;
 }
 
-export interface PaginationResponse {
+export interface TransactionsResponse {
+  items: TransactionDTO[];
   total: number;
   page: number;
   limit: number;
   pages: number;
 }
-
-export interface TransactionsResponse {
-  data: TransactionDTO[];
-  pagination: PaginationResponse;
-}
-
-export interface CategoriesResponse {
-  data: CategoryDTO[];
+export interface PaginationResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
 }

@@ -11,13 +11,6 @@ interface InvestmentListProps {
 }
 
 const InvestmentList: FC<InvestmentListProps> = ({ investments, onEditInvestment }) => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const formatPercentage = (percentage: number): string => {
     return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
   };

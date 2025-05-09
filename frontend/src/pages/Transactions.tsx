@@ -1,159 +1,154 @@
 // src/pages/Transactions.tsx
-import { FC, useState } from 'react';
+import { FC, useCallback, useMemo, useState } from 'react';
 
+import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
+import AddTransactionCategoryForm from '../components/transactions/AddTransactionCategoryForm';
+import AddTransactionForm from '../components/transactions/AddTransactionForm';
 import TransactionFilters from '../components/transactions/TransactionFilters';
 import TransactionList from '../components/transactions/TransactionList';
-import { TransactionFilters as FilterType, Transaction } from '../types/transaction.types';
-
-// Dummy data
-const transactionsData: Transaction[] = [
-  {
-    id: '1',
-    date: '2025-04-22',
-    description: 'Grocery Store',
-    amount: 89.24,
-    type: 'expense',
-    categoryId: '1',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['food', 'groceries'],
-  },
-  {
-    id: '2',
-    date: '2025-04-21',
-    description: 'Monthly Salary',
-    amount: 5000,
-    type: 'income',
-    categoryId: '2',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['salary', 'income'],
-  },
-  {
-    id: '3',
-    date: '2025-04-20',
-    description: 'Restaurant',
-    amount: 64.5,
-    type: 'expense',
-    categoryId: '3',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['food', 'dining out'],
-  },
-  {
-    id: '4',
-    date: '2025-04-18',
-    description: 'Electricity Bill',
-    amount: 110.33,
-    type: 'expense',
-    categoryId: '4',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['utilities', 'bills'],
-  },
-  {
-    id: '5',
-    date: '2025-04-15',
-    description: 'Gym Membership',
-    amount: 49.99,
-    type: 'expense',
-    categoryId: '5',
-    accountId: '2',
-    status: 'cleared',
-    tags: ['fitness', 'subscriptions'],
-  },
-  {
-    id: '6',
-    date: '2025-04-14',
-    description: 'Client Payment',
-    amount: 1200,
-    type: 'income',
-    categoryId: '6',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['freelance', 'income'],
-  },
-  {
-    id: '7',
-    date: '2025-04-10',
-    description: 'Internet Bill',
-    amount: 75.0,
-    type: 'expense',
-    categoryId: '4',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['utilities', 'bills'],
-  },
-  {
-    id: '8',
-    date: '2025-04-05',
-    description: 'Movie Tickets',
-    amount: 32.5,
-    type: 'expense',
-    categoryId: '7',
-    accountId: '2',
-    status: 'cleared',
-    tags: ['entertainment'],
-  },
-  {
-    id: '9',
-    date: '2025-04-03',
-    description: 'Clothing Store',
-    amount: 128.75,
-    type: 'expense',
-    categoryId: '8',
-    accountId: '2',
-    status: 'cleared',
-    tags: ['shopping', 'clothing'],
-  },
-  {
-    id: '10',
-    date: '2025-04-01',
-    description: 'Rent Payment',
-    amount: 1500,
-    type: 'expense',
-    categoryId: '1',
-    accountId: '1',
-    status: 'cleared',
-    tags: ['housing', 'bills'],
-  },
-];
+import { useTransactionCategories } from '../hooks/useTransactionCategories';
+import { useTransactions } from '../hooks/useTransactions';
+import { CategoryCreateDTO, CategoryUpdateDTO } from '../services/api/categoryService';
+import {
+  TransactionFilters as FilterType,
+  RecurringFrequency,
+  TransactionCreateDTO,
+} from '../types/transaction.types';
 
 const Transactions: FC = () => {
+  // State for modals
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
+
+  // Filters state
   const [filters, setFilters] = useState<FilterType>({
     startDate: undefined,
     endDate: undefined,
     types: undefined,
     searchTerm: '',
+    page: 1,
+    limit: 10,
+    sort: 'date',
+    order: 'desc',
   });
 
-  // Filter transactions based on current filters
-  const filteredTransactions = transactionsData.filter((transaction) => {
-    // Filter by search term
-    if (
-      filters.searchTerm &&
-      !transaction.description.toLowerCase().includes(filters.searchTerm.toLowerCase())
-    ) {
-      return false;
-    }
+  // Memoize filters to prevent unnecessary re-renders
+  const memoizedFilters = useMemo(
+    () => filters,
+    [
+      filters.startDate,
+      filters.endDate,
+      filters.types,
+      filters.searchTerm,
+      filters.page,
+      filters.limit,
+      filters.sort,
+      filters.order,
+      filters.categoryIds,
+      filters.status,
+      filters.tags,
+      filters.minAmount,
+      filters.maxAmount,
+    ],
+  );
 
-    // Filter by transaction type
-    if (filters.types && filters.types.length > 0 && !filters.types.includes(transaction.type)) {
-      return false;
-    }
+  // Get transactions and categories using custom hooks
+  const {
+    transactions,
+    loading,
+    error,
+    totalItems,
+    totalPages,
+    currentPage,
+    createTransaction,
+    updateTransaction,
+    deleteTransaction,
+  } = useTransactions(memoizedFilters);
 
-    // Filter by date range
-    if (filters.startDate && new Date(transaction.date) < new Date(filters.startDate)) {
-      return false;
-    }
+  const {
+    categories,
+    loading: categoriesLoading,
+    createCategory,
+    updateCategory,
+  } = useTransactionCategories();
 
-    if (filters.endDate && new Date(transaction.date) > new Date(filters.endDate)) {
-      return false;
-    }
+  // Handle filter changes - debounce implemented in TransactionFilters component
+  const handleFilterChange = useCallback((newFilters: FilterType) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+      page: newFilters.page !== undefined ? newFilters.page : 1, // Reset to page 1 when filters change
+    }));
+  }, []);
 
-    return true;
-  });
+  // Handle pagination
+  const handlePageChange = useCallback((page: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      page,
+    }));
+  }, []);
+
+  // Open add transaction modal
+  const handleAddTransaction = useCallback(() => {
+    setEditingTransactionId(null);
+    setIsAddModalOpen(true);
+  }, []);
+
+  // Open edit transaction modal
+  const handleEditTransaction = useCallback((id: string) => {
+    setEditingTransactionId(id);
+    setIsAddModalOpen(true);
+  }, []);
+
+  // Handle transaction submission
+  const handleTransactionSubmit = useCallback(
+    async (data: TransactionCreateDTO) => {
+      if (editingTransactionId) {
+        await updateTransaction({
+          id: editingTransactionId,
+          ...data,
+        });
+      } else {
+        await createTransaction(data);
+      }
+
+      setIsAddModalOpen(false);
+      setEditingTransactionId(null);
+    },
+    [editingTransactionId, createTransaction, updateTransaction],
+  );
+
+  // Handle transaction deletion
+  const handleDeleteTransaction = useCallback(
+    async (id: string) => {
+      if (window.confirm('Are you sure you want to delete this transaction?')) {
+        await deleteTransaction(id);
+      }
+    },
+    [deleteTransaction],
+  );
+
+  // Handle category submission
+  const handleCategorySubmit = useCallback(
+    async (data: CategoryCreateDTO | CategoryUpdateDTO) => {
+      if ('id' in data) {
+        // Update existing category
+        await updateCategory(data as CategoryUpdateDTO);
+      } else {
+        // Create new category
+        await createCategory(data as CategoryCreateDTO);
+      }
+    },
+    [createCategory, updateCategory],
+  );
+
+  // Get the transaction being edited (if any)
+  const editingTransaction = editingTransactionId
+    ? transactions.find((t) => t.id === editingTransactionId)
+    : undefined;
 
   return (
     <div>
@@ -161,19 +156,81 @@ const Transactions: FC = () => {
         title="Transactions"
         subtitle="View and manage your financial transactions"
         actions={
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            Add Transaction
-          </button>
+          <div className="flex space-x-2">
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() => setIsAddCategoryModalOpen(true)}
+            >
+              Add Category
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              onClick={handleAddTransaction}
+            >
+              Add Transaction
+            </button>
+          </div>
         }
       />
 
       <div className="mt-6">
-        <TransactionFilters filters={filters} onFilterChange={setFilters} />
+        <TransactionFilters filters={filters} onFilterChange={handleFilterChange} />
       </div>
 
+      {error && (
+        <div className="mt-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-md">
+          Error loading transactions: {error.message}
+        </div>
+      )}
+
       <div className="mt-6">
-        <TransactionList transactions={filteredTransactions} />
+        <TransactionList
+          transactions={transactions}
+          loading={loading}
+          onEdit={handleEditTransaction}
+          onDelete={handleDeleteTransaction}
+          onPageChange={handlePageChange}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+        />
       </div>
+
+      {/* Add/Edit Transaction Modal */}
+      {isAddModalOpen && (
+        <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)}>
+          <AddTransactionForm
+            onClose={() => setIsAddModalOpen(false)}
+            onSubmit={handleTransactionSubmit}
+            initialData={
+              editingTransaction
+                ? {
+                    ...editingTransaction,
+                    recurringDetails: editingTransaction.recurringDetails
+                      ? {
+                          ...editingTransaction.recurringDetails,
+                          frequency: editingTransaction.recurringDetails
+                            .frequency as RecurringFrequency,
+                        }
+                      : undefined,
+                  }
+                : undefined
+            }
+            categories={categories}
+            categoriesLoading={categoriesLoading}
+          />
+        </Modal>
+      )}
+
+      {/* Add Category Modal */}
+      {isAddCategoryModalOpen && (
+        <Modal isOpen={isAddCategoryModalOpen} onClose={() => setIsAddCategoryModalOpen(false)}>
+          <AddTransactionCategoryForm
+            onClose={() => setIsAddCategoryModalOpen(false)}
+            onSubmit={handleCategorySubmit}
+          />
+        </Modal>
+      )}
     </div>
   );
 };

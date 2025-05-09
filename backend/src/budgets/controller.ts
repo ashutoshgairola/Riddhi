@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 
+import { sendResponse } from '../common/utils';
 import { BudgetService } from './service';
 import {
   CreateBudgetCategoryRequest,
@@ -18,16 +19,20 @@ export class BudgetController {
 
   getCurrentBudget = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
 
       const budget = await this.budgetService.getCurrentBudget(userId);
 
-      if (!budget) {
-        res.status(404).json({ error: 'No current budget found' });
-        return;
-      }
+      // if (!budget) {
+      //   res.status(404).json({ error: 'No current budget found' });
+      //   return;
+      // }
 
-      res.status(200).json(budget);
+      sendResponse({
+        res,
+        data: budget,
+        message: 'Current budget fetched successfully',
+      });
     } catch (error: any) {
       console.error('Error fetching current budget:', error);
       res.status(500).json({ error: 'Failed to fetch current budget' });
@@ -36,7 +41,7 @@ export class BudgetController {
 
   getBudgets = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
       const query: GetBudgetsQuery = req.query as any;
 
       // Convert numeric query params
@@ -49,7 +54,11 @@ export class BudgetController {
       }
 
       const budgets = await this.budgetService.getBudgets(userId, query);
-      res.status(200).json(budgets);
+      sendResponse({
+        res,
+        data: budgets,
+        message: 'Budgets fetched successfully',
+      });
     } catch (error: any) {
       console.error('Error fetching budgets:', error);
       res.status(500).json({ error: 'Failed to fetch budgets' });
@@ -58,12 +67,15 @@ export class BudgetController {
 
   getBudgetById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
       const { id } = req.params;
 
       try {
-        const budget = await this.budgetService.getBudgetById(id, userId);
-        res.status(200).json(budget);
+        const budget = await this.budgetService.getBudgetById(id);
+        sendResponse({
+          res,
+          data: budget,
+          message: 'Budget fetched successfully',
+        });
       } catch (error: any) {
         if (error.message === 'Budget not found') {
           res.status(404).json({ error: error.message });
@@ -79,7 +91,7 @@ export class BudgetController {
 
   createBudget = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
       const budgetData: CreateBudgetRequest = req.body;
 
       // Basic validation
@@ -96,7 +108,12 @@ export class BudgetController {
 
       try {
         const budget = await this.budgetService.createBudget(userId, budgetData);
-        res.status(201).json(budget);
+        sendResponse({
+          res,
+          status: 201,
+          data: budget,
+          message: 'Budget created successfully',
+        });
       } catch (error: any) {
         if (
           error.message.includes('overlap') ||
@@ -118,13 +135,17 @@ export class BudgetController {
 
   updateBudget = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
       const { id } = req.params;
       const updates: UpdateBudgetRequest = req.body;
 
       try {
         const budget = await this.budgetService.updateBudget(id, userId, updates);
-        res.status(200).json(budget);
+        sendResponse({
+          res,
+          data: budget,
+          message: 'Budget updated successfully',
+        });
       } catch (error: any) {
         if (error.message === 'Budget not found') {
           res.status(404).json({ error: error.message });
@@ -144,12 +165,17 @@ export class BudgetController {
 
   deleteBudget = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
       const { id } = req.params;
 
       try {
         await this.budgetService.deleteBudget(id, userId);
-        res.status(204).send();
+        sendResponse({
+          res,
+          status: 204,
+          data: null,
+          message: 'Budget deleted successfully',
+        });
       } catch (error: any) {
         if (error.message === 'Budget not found') {
           res.status(404).json({ error: error.message });
@@ -165,7 +191,8 @@ export class BudgetController {
 
   createBudgetCategory = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user.userId;
+      delete req.body.user;
       const { id } = req.params;
       const categoryData: CreateBudgetCategoryRequest = req.body;
 
@@ -177,7 +204,12 @@ export class BudgetController {
 
       try {
         const category = await this.budgetService.createBudgetCategory(id, userId, categoryData);
-        res.status(201).json(category);
+        sendResponse({
+          res,
+          status: 201,
+          data: category,
+          message: 'Budget category created successfully',
+        });
       } catch (error: any) {
         if (error.message === 'Budget not found') {
           res.status(404).json({ error: error.message });
@@ -198,7 +230,7 @@ export class BudgetController {
 
   updateBudgetCategory = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
       const { budgetId, categoryId } = req.params;
       const updates: UpdateBudgetCategoryRequest = req.body;
 
@@ -209,7 +241,11 @@ export class BudgetController {
           userId,
           updates,
         );
-        res.status(200).json(category);
+        sendResponse({
+          res,
+          data: category,
+          message: 'Budget category updated successfully',
+        });
       } catch (error: any) {
         if (error.message === 'Budget not found' || error.message === 'Budget category not found') {
           res.status(404).json({ error: error.message });
@@ -225,12 +261,17 @@ export class BudgetController {
 
   deleteBudgetCategory = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
       const { budgetId, categoryId } = req.params;
 
       try {
         await this.budgetService.deleteBudgetCategory(budgetId, categoryId, userId);
-        res.status(204).send();
+        sendResponse({
+          res,
+          status: 204,
+          data: null,
+          message: 'Budget category deleted successfully',
+        });
       } catch (error: any) {
         if (error.message === 'Budget not found' || error.message === 'Budget category not found') {
           res.status(404).json({ error: error.message });

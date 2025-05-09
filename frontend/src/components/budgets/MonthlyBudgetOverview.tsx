@@ -12,6 +12,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { formatCurrency } from '../../utils';
+
 interface MonthlyBudgetData {
   name: string;
   income: number;
@@ -24,13 +26,6 @@ interface MonthlyBudgetOverviewProps {
 }
 
 const MonthlyBudgetOverview: FC<MonthlyBudgetOverviewProps> = ({ data }) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-
   return (
     <div className="bg-white rounded-lg shadow h-full">
       <div className="p-6 border-b border-gray-100">
@@ -51,7 +46,7 @@ const MonthlyBudgetOverview: FC<MonthlyBudgetOverviewProps> = ({ data }) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => formatCurrency(value as number)} />
+              <Tooltip formatter={(value) => formatCurrency(value as number, 'INR')} />
               <Legend />
               <Bar dataKey="budget" name="Budget" fill="#9C27B0" />
               <Bar dataKey="expenses" name="Spent" fill="#F44336" />

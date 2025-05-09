@@ -1,118 +1,244 @@
 // src/pages/Budgets.tsx
-import { FC, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 
 import BudgetCategoryForm from '../components/budgets/BudgetCategoryForm';
 import BudgetCategoryList from '../components/budgets/BudgetCategoryList';
 import BudgetSummary from '../components/budgets/BudgetSummary';
+import CreateBudgetForm from '../components/budgets/CreateBudgetForm';
 import MonthlyBudgetOverview from '../components/budgets/MonthlyBudgetOverview';
+import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
-import { Budget, BudgetCategory } from '../types/budget.types';
+import Spinner from '../components/common/Spinner';
+import { useBudget } from '../hooks/useBudget';
+import { BudgetCategory, BudgetCategoryCreateDTO, BudgetCreateDTO } from '../types/budget.types';
 
-// Dummy budget data
-const currentBudget: Budget = {
-  id: '1',
-  name: 'April 2025',
-  startDate: '2025-04-01',
-  endDate: '2025-04-30',
-  categories: [
-    {
-      id: '1',
-      name: 'Housing',
-      allocated: 1500,
-      spent: 1500,
-      categoryId: '1',
-      color: '#4CAF50',
-    },
-    {
-      id: '2',
-      name: 'Food',
-      allocated: 600,
-      spent: 450,
-      categoryId: '2',
-      color: '#2196F3',
-    },
-    {
-      id: '3',
-      name: 'Transport',
-      allocated: 300,
-      spent: 275,
-      categoryId: '3',
-      color: '#FFC107',
-    },
-    {
-      id: '4',
-      name: 'Entertainment',
-      allocated: 400,
-      spent: 385,
-      categoryId: '4',
-      color: '#9C27B0',
-    },
-    {
-      id: '5',
-      name: 'Utilities',
-      allocated: 350,
-      spent: 310,
-      categoryId: '5',
-      color: '#FF5722',
-    },
-    {
-      id: '6',
-      name: 'Shopping',
-      allocated: 250,
-      spent: 180,
-      categoryId: '6',
-      color: '#607D8B',
-    },
-    {
-      id: '7',
-      name: 'Health',
-      allocated: 200,
-      spent: 120,
-      categoryId: '7',
-      color: '#795548',
-    },
-    {
-      id: '8',
-      name: 'Personal Care',
-      allocated: 150,
-      spent: 90,
-      categoryId: '8',
-      color: '#009688',
-    },
-  ],
-  totalAllocated: 3750,
-  totalSpent: 3310,
-  income: 5000,
-};
-
-// Monthly overview data
-const monthlyBudgetData = [
-  { name: 'Jan', income: 4800, expenses: 3900, budget: 4200 },
-  { name: 'Feb', income: 4800, expenses: 3800, budget: 4200 },
-  { name: 'Mar', income: 5000, expenses: 3900, budget: 4200 },
-  { name: 'Apr', income: 5000, expenses: 3310, budget: 3750 },
-  { name: 'May', income: 0, expenses: 0, budget: 4200 },
-  { name: 'Jun', income: 0, expenses: 0, budget: 4200 },
-];
+// Monthly overview data type
+interface MonthlyData {
+  name: string;
+  income: number;
+  expenses: number;
+  budget: number;
+}
 
 const Budgets: FC = () => {
-  const [selectedMonth, setSelectedMonth] = useState('April 2025');
+  // State for UI
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<BudgetCategory | null>(null);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [showCreateBudget, setShowCreateBudget] = useState(false);
 
-  const handleMonthChange = (month: string) => {
-    setSelectedMonth(month);
-  };
+  // Use our budget hook to interact with the API
+  const {
+    currentBudget,
+    budgetHistory,
+    loading,
+    error,
+    fetchCurrentBudget,
+    createBudget,
+    updateBudgetCategory,
+    deleteBudgetCategory,
+    createBudgetCategory,
+  } = useBudget({
+    limit: 6, // Last 6 months by default
+    page: 1,
+  });
 
-  const handleEditCategory = (category: BudgetCategory) => {
+  // When component loads or when budgets change, update the monthly data
+  useEffect(() => {
+    if (currentBudget) {
+      // Set the selected month to the current budget's name
+      setSelectedMonth(currentBudget.name);
+
+      // Create monthly data for the chart by combining current budget and history
+      const data: MonthlyData[] = [];
+
+      // Add history first (older to newer)
+      const sortedHistory = [...budgetHistory].sort(
+        (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      );
+
+      sortedHistory.forEach((budget) => {
+        // Extract month name (e.g., "Jan", "Feb") from the budget name or date
+        const date = new Date(budget.startDate);
+        const monthName = date.toLocaleString('default', { month: 'short' });
+
+        data.push({
+          name: monthName,
+          income: budget.income,
+          expenses: budget.totalSpent,
+          budget: budget.totalAllocated,
+        });
+      });
+
+      // Add current budget
+      const currentDate = new Date(currentBudget.startDate);
+      const currentMonthName = currentDate.toLocaleString('default', { month: 'short' });
+
+      data.push({
+        name: currentMonthName,
+        income: currentBudget.income,
+        expenses: currentBudget.totalSpent,
+        budget: currentBudget.totalAllocated,
+      });
+
+      // Add future months with zero values if needed to complete 6 months
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      while (data.length < 6) {
+        const lastDate =
+          data.length > 0
+            ? new Date(
+                currentDate.getFullYear(),
+                monthNames.indexOf(data[data.length - 1].name) + 1,
+                1,
+              )
+            : new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+        data.push({
+          name: monthNames[lastDate.getMonth()],
+          income: 0,
+          expenses: 0,
+          budget: 0,
+        });
+      }
+
+      // Keep only the last 6 months
+      setMonthlyData(data.slice(-6));
+    }
+  }, [currentBudget, budgetHistory]);
+
+  // Handle month selection change
+  const handleMonthChange = useCallback(
+    (month: string) => {
+      setSelectedMonth(month);
+
+      // Find the budget corresponding to the selected month
+      // In a real app, you'd fetch the specific budget by ID here
+      // For now, we just simulate this by checking the name
+      const selectedBudget =
+        month === currentBudget?.name
+          ? currentBudget
+          : budgetHistory.find((budget) => budget.name === month);
+
+      if (selectedBudget && selectedBudget.id !== currentBudget?.id) {
+        // If a past budget was selected, you'd fetch its details here
+        // fetchBudgetById(selectedBudget.id);
+      }
+    },
+    [currentBudget, budgetHistory],
+  );
+
+  // Handle opening the category edit modal
+  const handleEditCategory = useCallback((category: BudgetCategory) => {
     setEditingCategory(category);
     setShowAddCategory(true);
-  };
+  }, []);
 
-  const handleCloseForm = () => {
+  // Handle closing the category form
+  const handleCloseForm = useCallback(() => {
     setShowAddCategory(false);
     setEditingCategory(null);
+  }, []);
+
+  // Handle category form submission
+  const handleCategorySubmit = useCallback(
+    async (formData: BudgetCategoryCreateDTO) => {
+      if (!currentBudget) return;
+
+      if (editingCategory) {
+        // Update existing category
+        await updateBudgetCategory(currentBudget.id, editingCategory.id, formData);
+      } else {
+        // Create new category
+        await createBudgetCategory(currentBudget.id, formData);
+      }
+
+      handleCloseForm();
+    },
+    [currentBudget, editingCategory, createBudgetCategory, updateBudgetCategory, handleCloseForm],
+  );
+
+  // Handle category deletion
+  const handleDeleteCategory = useCallback(
+    async (categoryId: string) => {
+      if (!currentBudget) return;
+
+      if (window.confirm('Are you sure you want to delete this category?')) {
+        await deleteBudgetCategory(currentBudget.id, categoryId);
+      }
+    },
+    [currentBudget, deleteBudgetCategory],
+  );
+
+  // Render loading state
+  if (loading && !currentBudget) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  // Render error state
+  if (error && !currentBudget) {
+    return (
+      <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-lg">
+        <p>Error loading budget: {error.message}</p>
+        <button
+          onClick={() => fetchCurrentBudget()}
+          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // Handle budget creation
+  const handleCreateBudget = async (budgetData: BudgetCreateDTO) => {
+    await createBudget(budgetData);
+    // After creating, refresh the current budget data
+    fetchCurrentBudget();
   };
+
+  // If no current budget, render a button to create one
+  if (!currentBudget) {
+    return (
+      <div className="text-center p-8">
+        <h2 className="text-xl font-bold mb-4">No active budget found</h2>
+        <p className="mb-6 text-gray-600">Create a new budget to start tracking your expenses</p>
+        <button
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          onClick={() => setShowCreateBudget(true)}
+        >
+          Create New Budget
+        </button>
+
+        {/* Create Budget Modal */}
+        {showCreateBudget && (
+          <Modal isOpen={showCreateBudget} onClose={() => setShowCreateBudget(false)}>
+            <CreateBudgetForm
+              onClose={() => setShowCreateBudget(false)}
+              onSubmit={handleCreateBudget}
+            />
+          </Modal>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -126,10 +252,15 @@ const Budgets: FC = () => {
               value={selectedMonth}
               onChange={(e) => handleMonthChange(e.target.value)}
             >
-              <option>April 2025</option>
-              <option>March 2025</option>
-              <option>February 2025</option>
-              <option>January 2025</option>
+              {/* Current budget option */}
+              <option value={currentBudget.name}>{currentBudget.name}</option>
+
+              {/* Past budgets options */}
+              {budgetHistory.map((budget) => (
+                <option key={budget.id} value={budget.name}>
+                  {budget.name}
+                </option>
+              ))}
             </select>
             <button
               onClick={() => setShowAddCategory(true)}
@@ -137,37 +268,68 @@ const Budgets: FC = () => {
             >
               Add Category
             </button>
+            <button
+              onClick={() => setShowCreateBudget(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              New Budget
+            </button>
           </div>
         }
       />
 
       {/* Budget Summary */}
       <div className="mt-6">
-        <BudgetSummary budget={currentBudget} />
+        <BudgetSummary
+          budget={
+            selectedMonth === currentBudget.name
+              ? currentBudget
+              : budgetHistory.find((b) => b.name === selectedMonth) || currentBudget
+          }
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Budget Categories */}
         <div className="lg:col-span-2">
           <BudgetCategoryList
-            categories={currentBudget.categories}
+            categories={
+              selectedMonth === currentBudget.name
+                ? currentBudget.categories
+                : (budgetHistory.find((b) => b.name === selectedMonth) || currentBudget).categories
+            }
             onEditCategory={handleEditCategory}
+            onDeleteCategory={handleDeleteCategory}
+            readOnly={selectedMonth !== currentBudget.name} // Past budgets are read-only
+            loading={loading}
           />
         </div>
 
         {/* Monthly Overview */}
         <div className="lg:col-span-1">
-          <MonthlyBudgetOverview data={monthlyBudgetData} />
+          <MonthlyBudgetOverview data={monthlyData} />
         </div>
       </div>
 
       {/* Add/Edit Category Modal */}
       {showAddCategory && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <BudgetCategoryForm onClose={handleCloseForm} initialData={editingCategory} />
-          </div>
-        </div>
+        <Modal isOpen={showAddCategory} onClose={handleCloseForm}>
+          <BudgetCategoryForm
+            onClose={handleCloseForm}
+            onSubmit={handleCategorySubmit}
+            initialData={editingCategory}
+          />
+        </Modal>
+      )}
+
+      {/* Create Budget Modal */}
+      {showCreateBudget && (
+        <Modal isOpen={showCreateBudget} onClose={() => setShowCreateBudget(false)}>
+          <CreateBudgetForm
+            onClose={() => setShowCreateBudget(false)}
+            onSubmit={handleCreateBudget}
+          />
+        </Modal>
       )}
     </div>
   );
