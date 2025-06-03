@@ -1817,7 +1817,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3000",
+      "value": "http://localhost:4000",
       "type": "string",
       "description": "Base URL for the Finance Tracker API"
     }

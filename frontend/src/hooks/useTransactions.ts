@@ -1,6 +1,7 @@
-// src/hooks/useTransactions.ts
+// src/hooks/useTransactions.ts (updated)
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAuth } from '../contexts/AuthContext';
 import { ApiError } from '../services/api/apiClient';
 import transactionService from '../services/api/transactionService';
 import {
@@ -32,26 +33,37 @@ export const useTransactions = (initialFilters?: TransactionFilters): UseTransac
   const [totalPages, setTotalPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(initialFilters?.page || 1);
 
+  // Get auth context to check authentication status
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const previousFiltersRef = useRef<TransactionFilters | undefined>(initialFilters);
+  const hasInitializedRef = useRef(false);
 
-  const fetchTransactions = useCallback(async (filters?: TransactionFilters) => {
-    setLoading(true);
-    setError(null);
+  const fetchTransactions = useCallback(
+    async (filters?: TransactionFilters) => {
+      if (!isAuthenticated || authLoading) return;
 
-    try {
-      const response = await transactionService.getAll(filters);
-      setTransactions(response.data.items || []);
-      setTotalItems(response.data.total);
-      setTotalPages(response.data.pages);
-      setCurrentPage(response.data.page);
-    } catch (err) {
-      setError(err as ApiError);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await transactionService.getAll(filters);
+        setTransactions(response.data.items || []);
+        setTotalItems(response.data.total);
+        setTotalPages(response.data.pages);
+        setCurrentPage(response.data.page);
+      } catch (err) {
+        setError(err as ApiError);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [isAuthenticated, authLoading],
+  );
 
   const createTransaction = async (data: TransactionCreateDTO): Promise<Transaction | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     setError(null);
 
     try {
@@ -69,6 +81,8 @@ export const useTransactions = (initialFilters?: TransactionFilters): UseTransac
   };
 
   const updateTransaction = async (data: TransactionUpdateDTO): Promise<Transaction | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     setError(null);
 
     try {
@@ -88,6 +102,8 @@ export const useTransactions = (initialFilters?: TransactionFilters): UseTransac
   };
 
   const deleteTransaction = async (id: string): Promise<boolean> => {
+    if (!isAuthenticated || authLoading) return false;
+
     setError(null);
 
     try {
@@ -110,6 +126,8 @@ export const useTransactions = (initialFilters?: TransactionFilters): UseTransac
   };
 
   const uploadAttachment = async (id: string, file: File): Promise<string | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     setError(null);
 
     try {
@@ -121,28 +139,29 @@ export const useTransactions = (initialFilters?: TransactionFilters): UseTransac
     }
   };
 
-  const isFirstRenderRef = useRef(true);
-
   useEffect(() => {
-    if (isFirstRenderRef.current) {
-      isFirstRenderRef.current = false;
-      previousFiltersRef.current = initialFilters;
-      fetchTransactions(initialFilters);
-      return;
-    }
+    // Only fetch data if authenticated and auth check is complete
+    if (isAuthenticated && !authLoading) {
+      if (!hasInitializedRef.current) {
+        hasInitializedRef.current = true;
+        previousFiltersRef.current = initialFilters;
+        fetchTransactions(initialFilters);
+        return;
+      }
 
-    const filtersChanged =
-      JSON.stringify(initialFilters) !== JSON.stringify(previousFiltersRef.current);
+      const filtersChanged =
+        JSON.stringify(initialFilters) !== JSON.stringify(previousFiltersRef.current);
 
-    if (filtersChanged) {
-      previousFiltersRef.current = initialFilters;
-      fetchTransactions(initialFilters);
+      if (filtersChanged) {
+        previousFiltersRef.current = initialFilters;
+        fetchTransactions(initialFilters);
+      }
     }
-  }, [fetchTransactions, initialFilters]);
+  }, [fetchTransactions, initialFilters, isAuthenticated, authLoading]);
 
   return {
     transactions,
-    loading,
+    loading: loading || authLoading,
     error,
     totalItems,
     totalPages,

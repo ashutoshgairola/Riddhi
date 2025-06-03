@@ -27,9 +27,10 @@ interface NavItemProps {
   label: string;
   collapsed: boolean;
   children?: React.ReactNode;
+  disabled?: boolean;
 }
 
-const NavItem: FC<NavItemProps> = ({ to, icon, label, collapsed, children }) => {
+const NavItem: FC<NavItemProps> = ({ to, icon, label, collapsed, children, disabled = false }) => {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(
     () => location.pathname.startsWith(to) && to !== '/',
@@ -49,23 +50,25 @@ const NavItem: FC<NavItemProps> = ({ to, icon, label, collapsed, children }) => 
   return (
     <div>
       <NavLink
-        to={to}
-        onClick={handleClick}
+        to={disabled ? '#' : to}
+        onClick={disabled ? undefined : handleClick}
         className={({ isActive: routeActive }) => `
           flex items-center p-4 cursor-pointer
           ${
-            isActive || routeActive
-              ? 'bg-green-50 text-green-800 border-r-4 border-green-600'
-              : 'text-gray-700 hover:bg-gray-50'
+            disabled
+              ? ' text-gray-400 cursor-not-allowed'
+              : isActive || routeActive
+                ? 'bg-green-50 text-green-800 border-r-4 border-green-600'
+                : 'text-gray-700 hover:bg-gray-50'
           }
           ${collapsed ? 'justify-center' : ''}
         `}
       >
-        <div className="text-gray-500">{icon}</div>
+        <div className={`text-gray-500 ${disabled ? 'text-gray-400' : ''}`}>{icon}</div>
         {!collapsed && (
           <div className="flex items-center justify-between flex-1">
-            <span className="ml-4 font-medium">{label}</span>
-            {hasChildren && (
+            <span className={`ml-4 font-medium ${disabled ? 'text-gray-400' : ''}`}>{label}</span>
+            {hasChildren && !disabled && (
               <span className="ml-2">
                 {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
               </span>
@@ -124,6 +127,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<span className="text-xl">₹</span>}
           label="Dashboard"
           collapsed={collapsed}
+          disabled={false}
         />
 
         <NavItem
@@ -131,6 +135,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<CreditCard size={20} />}
           label="Transactions"
           collapsed={collapsed}
+          disabled={false}
         >
           <SubNavItem to="/transactions" icon={<List size={16} />} label="All Transactions" />
           <SubNavItem
@@ -145,15 +150,23 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<PieChart size={20} />}
           label="Budgets"
           collapsed={collapsed}
+          disabled={false}
         />
 
-        <NavItem to="/goals" icon={<Target size={20} />} label="Goals" collapsed={collapsed} />
+        <NavItem
+          to="/goals"
+          icon={<Target size={20} />}
+          label="Goals"
+          collapsed={collapsed}
+          disabled={false}
+        />
 
         <NavItem
           to="/investments"
           icon={<TrendingUp size={20} />}
           label="Investments"
           collapsed={collapsed}
+          disabled={true}
         />
 
         <NavItem
@@ -161,6 +174,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<BarChart2 size={20} />}
           label="Reports"
           collapsed={collapsed}
+          disabled={true}
         />
 
         <NavItem
@@ -168,6 +182,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<Settings size={20} />}
           label="Settings"
           collapsed={collapsed}
+          disabled={false}
         />
       </nav>
     </div>

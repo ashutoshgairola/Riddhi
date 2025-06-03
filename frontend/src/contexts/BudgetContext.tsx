@@ -1,4 +1,4 @@
-// src/contexts/BudgetContext.tsx
+// src/contexts/BudgetContext.tsx (updated)
 import React, { ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
 
 import { ApiError } from '../services/api/apiClient';
@@ -10,6 +10,7 @@ import {
   BudgetFilters,
   BudgetUpdateDTO,
 } from '../types/budget.types';
+import { useAuth } from './AuthContext';
 
 interface BudgetContextType {
   currentBudget: Budget | null;
@@ -43,51 +44,59 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
 
+  // Get auth context to check authentication status
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   // Refs to track loading status
   const hasLoadedCurrentRef = useRef(false);
   const hasLoadedHistoryRef = useRef(false);
 
-  // Load current budget and history on initial render
+  // Load current budget and history after authentication is confirmed
   useEffect(() => {
-    const loadInitialData = async () => {
-      if (!hasLoadedCurrentRef.current) {
-        setIsLoading(true);
-        try {
-          // First try to fetch current budget
-          const response = await budgetService.getCurrentBudget();
-          setCurrentBudget(response.data);
-          hasLoadedCurrentRef.current = true;
-          setError(null);
-        } catch (err) {
-          console.error('Error loading current budget:', err);
-          setError(err as ApiError);
-        } finally {
-          setIsLoading(false);
+    // Only fetch data if authenticated and auth check is complete
+    if (isAuthenticated && !authLoading) {
+      const loadInitialData = async () => {
+        // Load current budget if not already loaded
+        if (!hasLoadedCurrentRef.current) {
+          setIsLoading(true);
+          try {
+            const response = await budgetService.getCurrentBudget();
+            setCurrentBudget(response.data);
+            hasLoadedCurrentRef.current = true;
+            setError(null);
+          } catch (err) {
+            console.error('Error loading current budget:', err);
+            setError(err as ApiError);
+          } finally {
+            setIsLoading(false);
+          }
         }
-      }
 
-      if (!hasLoadedHistoryRef.current) {
-        setIsLoading(true);
-        try {
-          // Then fetch budget history
-          const response = await budgetService.getBudgetHistory();
-          setBudgetHistory(response.data.items || []);
-          hasLoadedHistoryRef.current = true;
-          setError(null);
-        } catch (err) {
-          console.error('Error loading budget history:', err);
-          setError(err as ApiError);
-        } finally {
-          setIsLoading(false);
+        // Load budget history if not already loaded
+        if (!hasLoadedHistoryRef.current) {
+          setIsLoading(true);
+          try {
+            const response = await budgetService.getBudgetHistory();
+            setBudgetHistory(response.data.items || []);
+            hasLoadedHistoryRef.current = true;
+            setError(null);
+          } catch (err) {
+            console.error('Error loading budget history:', err);
+            setError(err as ApiError);
+          } finally {
+            setIsLoading(false);
+          }
         }
-      }
-    };
+      };
 
-    loadInitialData();
-  }, []);
+      loadInitialData();
+    }
+  }, [isAuthenticated, authLoading]);
 
   // Get current budget
   const getCurrentBudget = async (): Promise<Budget | null> => {
+    if (!isAuthenticated) return null;
+
     try {
       setIsLoading(true);
       const response = await budgetService.getCurrentBudget();
@@ -105,6 +114,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Get budget history with optional filters
   const getBudgetHistory = async (filters?: BudgetFilters): Promise<Budget[]> => {
+    if (!isAuthenticated) return [];
+
     try {
       setIsLoading(true);
       const response = await budgetService.getBudgetHistory(filters);
@@ -122,6 +133,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Get budget by ID
   const getBudgetById = async (id: string): Promise<Budget | null> => {
+    if (!isAuthenticated) return null;
+
     try {
       setIsLoading(true);
       const response = await budgetService.getBudgetById(id);
@@ -137,6 +150,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Create a new budget
   const createBudget = async (data: BudgetCreateDTO): Promise<Budget | null> => {
+    if (!isAuthenticated) return null;
+
     try {
       setIsLoading(true);
       const response = await budgetService.createBudget(data);
@@ -166,6 +181,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Update an existing budget
   const updateBudget = async (id: string, data: BudgetUpdateDTO): Promise<Budget | null> => {
+    if (!isAuthenticated) return null;
+
     try {
       setIsLoading(true);
       const response = await budgetService.updateBudget(id, data);
@@ -192,6 +209,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Delete a budget
   const deleteBudget = async (id: string): Promise<boolean> => {
+    if (!isAuthenticated) return false;
+
     try {
       setIsLoading(true);
       await budgetService.deleteBudget(id);
@@ -218,6 +237,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     budgetId: string,
     category: Omit<BudgetCategory, 'id' | 'spent'>,
   ): Promise<BudgetCategory | null> => {
+    if (!isAuthenticated) return null;
+
     try {
       setIsLoading(true);
       const response = await budgetService.createBudgetCategory(budgetId, category);
@@ -253,6 +274,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     categoryId: string,
     categoryData: Partial<BudgetCategory>,
   ): Promise<BudgetCategory | null> => {
+    if (!isAuthenticated) return null;
+
     try {
       setIsLoading(true);
       const response = await budgetService.updateBudgetCategory(budgetId, categoryId, categoryData);
@@ -284,6 +307,8 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Delete a budget category
   const deleteBudgetCategory = async (budgetId: string, categoryId: string): Promise<boolean> => {
+    if (!isAuthenticated) return false;
+
     try {
       setIsLoading(true);
       await budgetService.deleteBudgetCategory(budgetId, categoryId);

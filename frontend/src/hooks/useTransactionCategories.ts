@@ -1,5 +1,7 @@
+// src/hooks/useTransactionCategories.ts (updated)
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAuth } from '../contexts/AuthContext';
 import { ApiError } from '../services/api/apiClient';
 import {
   CategoryCreateDTO,
@@ -23,10 +25,13 @@ export const useTransactionCategories = (): UseTransactionCategoriesReturn => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApiError | null>(null);
 
+  // Get auth context to check authentication status
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const hasFetchedRef = useRef(false);
 
   const fetchCategories = useCallback(async () => {
-    if (loading) return;
+    if (!isAuthenticated || authLoading || loading) return;
 
     setLoading(true);
     setError(null);
@@ -39,9 +44,11 @@ export const useTransactionCategories = (): UseTransactionCategoriesReturn => {
     } finally {
       setLoading(false);
     }
-  }, [loading]);
+  }, [loading, isAuthenticated, authLoading]);
 
   const createCategory = async (data: CategoryCreateDTO): Promise<TransactionCategory | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     setError(null);
 
     try {
@@ -56,6 +63,8 @@ export const useTransactionCategories = (): UseTransactionCategoriesReturn => {
   };
 
   const updateCategory = async (data: CategoryUpdateDTO): Promise<TransactionCategory | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     setError(null);
 
     try {
@@ -75,6 +84,8 @@ export const useTransactionCategories = (): UseTransactionCategoriesReturn => {
   };
 
   const deleteCategory = async (id: string): Promise<boolean> => {
+    if (!isAuthenticated || authLoading) return false;
+
     setError(null);
 
     try {
@@ -90,7 +101,8 @@ export const useTransactionCategories = (): UseTransactionCategoriesReturn => {
   };
 
   useEffect(() => {
-    if (!hasFetchedRef.current) {
+    // Only fetch data if authenticated and auth check is complete
+    if (isAuthenticated && !authLoading && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
       setLoading(true);
 
@@ -107,11 +119,11 @@ export const useTransactionCategories = (): UseTransactionCategoriesReturn => {
           setLoading(false);
         });
     }
-  }, []);
+  }, [isAuthenticated, authLoading]);
 
   return {
     categories,
-    loading,
+    loading: loading || authLoading,
     error,
     fetchCategories,
     createCategory,

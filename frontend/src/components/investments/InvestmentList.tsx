@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 
 import { AssetClass, Investment, InvestmentType } from '../../types/investment.types';
+import { formatCurrency } from '../../utils';
 
 interface InvestmentListProps {
   investments: Investment[];
@@ -122,20 +123,20 @@ const InvestmentList: FC<InvestmentListProps> = ({ investments, onEditInvestment
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="text-sm text-gray-900">
-                      {formatCurrency(investment.currentPrice)}
+                      {formatCurrency(investment.currentPrice, 'INR')}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Cost: {formatCurrency(investment.purchasePrice)}
+                      Cost: {formatCurrency(investment.purchasePrice, 'INR')}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="text-sm text-gray-900">
-                      {formatCurrency(calculateTotalValue(investment))}
+                      {formatCurrency(calculateTotalValue(investment), 'INR')}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(gainLoss)}
+                      {formatCurrency(gainLoss, 'INR')}
                     </div>
                     <div className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                       {formatPercentage(percentageGainLoss)}

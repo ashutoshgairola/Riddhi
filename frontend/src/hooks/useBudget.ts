@@ -1,6 +1,7 @@
-// src/hooks/useBudget.ts
+// src/hooks/useBudget.ts (updated)
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useAuth } from '../contexts/AuthContext';
 import { useBudgets } from '../contexts/BudgetContext';
 import { ApiError } from '../services/api/apiClient';
 import {
@@ -52,6 +53,9 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
     deleteBudgetCategory,
   } = useBudgets();
 
+  // Get auth context to check authentication status
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   // Local loading and error state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -62,6 +66,8 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
 
   // Fetch current budget
   const fetchCurrentBudget = useCallback(async () => {
+    if (!isAuthenticated || authLoading) return;
+
     try {
       setLoading(true);
       await getCurrentBudget();
@@ -71,11 +77,13 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
     } finally {
       setLoading(false);
     }
-  }, [getCurrentBudget]);
+  }, [getCurrentBudget, isAuthenticated, authLoading]);
 
   // Fetch budget history with optional filters
   const fetchBudgetHistory = useCallback(
     async (filters?: BudgetFilters) => {
+      if (!isAuthenticated || authLoading) return;
+
       try {
         setLoading(true);
         await getBudgetHistory(filters);
@@ -88,11 +96,13 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
         setLoading(false);
       }
     },
-    [getBudgetHistory],
+    [getBudgetHistory, isAuthenticated, authLoading],
   );
 
   // Fetch budget by ID
   const fetchBudgetById = async (id: string): Promise<Budget | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     try {
       setLoading(true);
       const budget = await getBudgetById(id);
@@ -111,6 +121,8 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
     budgetId: string,
     category: Omit<BudgetCategory, 'id' | 'spent'>,
   ): Promise<BudgetCategory | null> => {
+    if (!isAuthenticated || authLoading) return null;
+
     try {
       setLoading(true);
       const newCategory = await addBudgetCategory(budgetId, category);
@@ -126,6 +138,8 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
 
   // Fetch budget history with initial filters if provided
   useEffect(() => {
+    if (!isAuthenticated || authLoading) return;
+
     const filtersChanged =
       !historyLoadedWithFiltersRef.current ||
       JSON.stringify(initialFilters) !== JSON.stringify(previousFiltersRef.current);
@@ -133,10 +147,10 @@ export const useBudget = (initialFilters?: BudgetFilters): UseBudgetReturn => {
     if (filtersChanged && initialFilters) {
       fetchBudgetHistory(initialFilters);
     }
-  }, [fetchBudgetHistory, initialFilters]);
+  }, [fetchBudgetHistory, initialFilters, isAuthenticated, authLoading]);
 
   // Combine context and local loading/error states
-  const combinedLoading = contextLoading || loading;
+  const combinedLoading = contextLoading || loading || authLoading;
   const combinedError = error || contextError;
 
   return {

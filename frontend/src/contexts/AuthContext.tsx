@@ -33,6 +33,7 @@ interface AuthContextType {
   loading: boolean;
   error: ApiError | null;
   clearError: () => void;
+  checkAuth: () => Promise<boolean>;
 }
 
 // Initial auth state
@@ -48,13 +49,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>(initialAuthState);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   // Check for existing session on initial load
   useEffect(() => {
     const checkAuthStatus = async () => {
+      if (authInitialized) return;
+
       try {
+        setAuthState((prev) => ({ ...prev, loading: true }));
+
+        // First check if we have a token and it's not expired
         if (authService.isAuthenticated()) {
-          // Get user from localStorage or fetch from API
+          // Get user from localStorage
           const currentUser = authService.getCurrentUser();
 
           if (currentUser) {
@@ -75,7 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 error: null,
               });
             } catch {
-              // If API call fails, logout
+              // If API call fails, clear tokens and show as logged out
               authService.logout();
               setAuthState({
                 isAuthenticated: false,
@@ -86,6 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
           }
         } else {
+          // No valid token found, set as not authenticated
           setAuthState({
             isAuthenticated: false,
             user: null,
@@ -93,18 +101,88 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             error: null,
           });
         }
+
+        setAuthInitialized(true);
       } catch (err) {
+        console.error('Auth initialization error:', err);
+        // Handle any error during auth check by showing user as not authenticated
         setAuthState({
           isAuthenticated: false,
           user: null,
           loading: false,
           error: err as ApiError,
         });
+        setAuthInitialized(true);
       }
     };
 
+    // Start the auth check process
     checkAuthStatus();
-  }, []);
+  }, [authInitialized]);
+
+  // Force check authentication status
+  const checkAuth = async (): Promise<boolean> => {
+    try {
+      setAuthState((prev) => ({ ...prev, loading: true }));
+
+      // First check if we have a token and it's not expired
+      if (authService.isAuthenticated()) {
+        // Get user from localStorage
+        const currentUser = authService.getCurrentUser();
+
+        if (currentUser) {
+          setAuthState({
+            isAuthenticated: true,
+            user: currentUser,
+            loading: false,
+            error: null,
+          });
+          return true;
+        } else {
+          // Try to fetch user from API if we have a token but no user
+          try {
+            const response = await authService.getProfile();
+            setAuthState({
+              isAuthenticated: true,
+              user: response.data,
+              loading: false,
+              error: null,
+            });
+            return true;
+          } catch {
+            // If API call fails, clear tokens and show as logged out
+            authService.logout();
+            setAuthState({
+              isAuthenticated: false,
+              user: null,
+              loading: false,
+              error: null,
+            });
+            return false;
+          }
+        }
+      } else {
+        // No valid token found, set as not authenticated
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          loading: false,
+          error: null,
+        });
+        return false;
+      }
+    } catch (err) {
+      console.error('Auth check error:', err);
+      // Handle any error during auth check by showing user as not authenticated
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        loading: false,
+        error: err as ApiError,
+      });
+      return false;
+    }
+  };
 
   // Login function
   const login = async (data: LoginDTO): Promise<boolean> => {
@@ -288,6 +366,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loading: authState.loading,
     error: authState.error,
     clearError,
+    checkAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

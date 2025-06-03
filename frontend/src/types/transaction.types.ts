@@ -102,3 +102,24 @@ export interface TransactionUpdateDTO {
   isRecurring?: boolean;
   recurringDetails?: RecurringDetails;
 }
+export interface TransactionAttachment {
+  id: string;
+  transactionId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  uploadedAt: string;
+}
+
+export interface RecurringTransactionSettings {
+  id: string;
+  transactionId: string;
+  frequency: RecurringFrequency;
+  interval: number;
+  startDate: string;
+  endDate?: string;
+  nextOccurrence: string;
+  createdAt: string;
+  updatedAt: string;
+}

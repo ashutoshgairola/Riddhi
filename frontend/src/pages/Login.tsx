@@ -1,6 +1,6 @@
 // src/pages/Login.tsx
 import { FormEvent, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { motion } from 'framer-motion';
 import { AlertCircle, ArrowRight, Eye, EyeOff, LogIn } from 'lucide-react';
@@ -87,16 +87,14 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, error, loading, isAuthenticated, clearError } = useAuth();
+  const { login, error, loading, clearError } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
+  // Get the intended destination from location state, if available
+  const from = location.state?.from?.pathname || '/dashboard';
 
   // Clear API errors when form changes
   useEffect(() => {
@@ -106,6 +104,7 @@ const Login = () => {
     setFormError('');
   }, [email, password, clearError, error]);
 
+  // Validate the form
   const validateForm = (): boolean => {
     if (!email.trim()) {
       setFormError('Email is required');
@@ -126,16 +125,27 @@ const Login = () => {
     return true;
   };
 
+  // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() || isSubmitting) {
       return;
     }
 
-    const success = await login({ email, password });
-    if (success) {
-      navigate('/dashboard');
+    try {
+      setIsSubmitting(true);
+      const success = await login({ email, password });
+
+      if (success) {
+        navigate('/dashboard');
+        console.log('Login successful, redirecting to', from);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setFormError('An unexpected error occurred during login');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -296,6 +306,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full rounded-md border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6"
+                  disabled={loading || isSubmitting}
                 />
               </div>
             </motion.div>
@@ -331,11 +342,13 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full rounded-md border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 pr-10"
+                  disabled={loading || isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  disabled={loading || isSubmitting}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -355,6 +368,7 @@ const Login = () => {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-600"
+                disabled={loading || isSubmitting}
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                 Remember me
@@ -368,10 +382,10 @@ const Login = () => {
             >
               <button
                 type="submit"
-                disabled={loading}
-                className="flex w-full justify-center items-center rounded-md bg-green-600 px-3 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 transition-colors"
+                disabled={loading || isSubmitting}
+                className="flex w-full justify-center items-center rounded-md bg-green-600 px-3 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {loading ? (
+                {loading || isSubmitting ? (
                   <svg
                     className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                     xmlns="http://www.w3.org/2000/svg"
@@ -395,7 +409,7 @@ const Login = () => {
                 ) : (
                   <LogIn className="mr-2" size={18} />
                 )}
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading || isSubmitting ? 'Signing in...' : 'Sign in'}
               </button>
             </motion.div>
           </form>

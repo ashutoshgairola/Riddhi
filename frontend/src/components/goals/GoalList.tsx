@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { AlertCircle, Calendar, CheckCircle, DollarSign, Edit2 } from 'lucide-react';
 
 import { Goal, GoalType } from '../../types/goal.types';
+import { formatCurrency } from '../../utils';
 
 interface GoalListProps {
   goals: Goal[];
@@ -157,7 +158,8 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
 
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-sm">
-                        {formatCurrency(goal.currentAmount)} of {formatCurrency(goal.targetAmount)}
+                        {formatCurrency(goal.currentAmount, 'INR')} of{' '}
+                        {formatCurrency(goal.targetAmount, 'INR')}
                       </p>
                       <p className="text-sm font-medium">{progressPercentage}%</p>
                     </div>
@@ -185,7 +187,7 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                       <div className="mt-2 text-sm text-gray-500 flex items-center">
                         <DollarSign size={14} className="mr-1" />
                         <span>
-                          Contributing {formatCurrency(goal.contributionAmount)}{' '}
+                          Contributing {formatCurrency(goal.contributionAmount, 'INR')}{' '}
                           {goal.contributionFrequency}
                         </span>
                       </div>

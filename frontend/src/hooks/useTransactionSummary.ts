@@ -1,6 +1,7 @@
-// src/hooks/useTransactionSummary.ts
+// src/hooks/useTransactionSummary.ts (updated)
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAuth } from '../contexts/AuthContext';
 import { ApiError } from '../services/api/apiClient';
 import transactionService from '../services/api/transactionService';
 import { TransactionFilters, TransactionSummary } from '../types/transaction.types';
@@ -21,8 +22,13 @@ export const useTransactionSummary = (
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApiError | null>(null);
 
+  // Get auth context to check authentication status
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
   const fetchSummary = useCallback(
     async (filters?: Omit<TransactionFilters, 'page' | 'limit' | 'sort' | 'order'>) => {
+      if (!isAuthenticated || authLoading) return;
+
       setLoading(true);
       setError(null);
 
@@ -35,17 +41,19 @@ export const useTransactionSummary = (
         setLoading(false);
       }
     },
-    [],
+    [isAuthenticated, authLoading],
   );
 
-  // Fetch summary on initial render
+  // Fetch summary on initial render if authenticated
   useEffect(() => {
-    fetchSummary(initialFilters);
-  }, [fetchSummary, initialFilters]);
+    if (isAuthenticated && !authLoading) {
+      fetchSummary(initialFilters);
+    }
+  }, [fetchSummary, initialFilters, isAuthenticated, authLoading]);
 
   return {
     summary,
-    loading,
+    loading: loading || authLoading,
     error,
     fetchSummary,
   };
