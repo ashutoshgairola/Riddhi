@@ -35,14 +35,14 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
   const [formData, setFormData] = useState<BudgetCategoryCreateDTO>({
     name: initialData?.name || '',
     allocated: initialData?.allocated || 0,
-    categoryIds: initialData?.categoryId ? [initialData.categoryId] : [],
+    categoryIds: initialData?.categoryIds ?? [],
     color: initialData?.color || colorPalette[0],
     notes: initialData?.notes || '',
     rollover: initialData?.rollover || false,
   });
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialData?.categoryId ? [initialData.categoryId] : [],
+    initialData?.categoryIds ?? [],
   );
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -57,12 +57,12 @@ const BudgetCategoryForm: FC<BudgetCategoryFormProps> = ({ onClose, onSubmit, in
       setFormData({
         name: initialData.name,
         allocated: initialData.allocated,
-        categoryIds: initialData.categoryId ? [initialData.categoryId] : [],
+        categoryIds: initialData.categoryIds ?? [],
         color: initialData.color || colorPalette[0],
         notes: initialData.notes || '',
         rollover: initialData.rollover || false,
       });
-      setSelectedCategories(initialData.categoryId ? [initialData.categoryId] : []);
+      setSelectedCategories(initialData.categoryIds ?? []);
     }
   }, [initialData]);
 
