@@ -5,6 +5,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Edit2, Trash2 } from
 
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import { Transaction, TransactionCategory } from '../../types/transaction.types';
+import { getIconComponent } from '../../utils/iconUtils';
 import Spinner from '../common/Spinner';
 
 // Assuming you have a spinner component
@@ -55,29 +56,55 @@ const TransactionItem: FC<TransactionItemProps> = ({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg mb-2 overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg mb-2 overflow-hidden">
       <div
-        className="p-4 bg-white flex justify-between items-center cursor-pointer hover:bg-gray-50"
+        className="p-4 bg-white dark:bg-gray-800 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
         onClick={() => toggleDetails(transaction.id)}
       >
         <div className="flex items-center">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
             style={{
-              backgroundColor: category?.color ? `${category.color}20` : '#e0e0e0',
+              backgroundColor: category?.color || '#e0e0e0',
             }}
           >
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: category?.color || '#9e9e9e' }}
-            ></span>
+            {category?.icon ? (
+              (() => {
+                const IconComponent = getIconComponent(category.icon);
+                return <IconComponent size={16} className="text-white" />;
+              })()
+            ) : (
+              <span className="text-white text-sm">
+                {category?.name?.charAt(0).toUpperCase() || '?'}
+              </span>
+            )}
           </div>
 
           <div>
-            <p className="font-medium">{transaction.description}</p>
-            <p className="text-sm text-gray-500">
-              {formatDate(transaction.date)} • {category?.name || 'Uncategorized'}
-            </p>
+            <p className="font-medium dark:text-gray-100">{transaction.description}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {formatDate(transaction.date)}
+              </p>
+              {category && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  {category?.icon && (
+                    <>
+                      {(() => {
+                        const IconComponent = getIconComponent(category.icon);
+                        return (
+                          <IconComponent
+                            size={12}
+                            className="text-gray-600 dark:text-gray-400 mr-1"
+                          />
+                        );
+                      })()}
+                    </>
+                  )}
+                  {category.name}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -92,7 +119,7 @@ const TransactionItem: FC<TransactionItemProps> = ({
           </p>
 
           <button
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(transaction.id);
@@ -111,45 +138,45 @@ const TransactionItem: FC<TransactionItemProps> = ({
             <Trash2 size={18} />
           </button>
 
-          <div className="ml-2">
+          <div className="ml-2 dark:text-gray-400">
             {showDetails ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </div>
         </div>
       </div>
 
       {showDetails && (
-        <div className="p-4 bg-gray-50 border-t border-gray-200">
+        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Category</p>
-              <p>{category?.name || 'Uncategorized'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Category</p>
+              <p className="dark:text-gray-200">{category?.name || 'Uncategorized'}</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500 mb-1">Account</p>
-              <p>{transaction.accountId || 'Unknown Account'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Account</p>
+              <p className="dark:text-gray-200">{transaction.accountId || 'Unknown Account'}</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500 mb-1">Status</p>
-              <p className="capitalize">{transaction.status}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
+              <p className="capitalize dark:text-gray-200">{transaction.status}</p>
             </div>
 
             {transaction.notes && (
               <div className="col-span-3">
-                <p className="text-sm text-gray-500 mb-1">Notes</p>
-                <p>{transaction.notes}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Notes</p>
+                <p className="dark:text-gray-200">{transaction.notes}</p>
               </div>
             )}
 
             {transaction.tags && transaction.tags.length > 0 && (
               <div className="col-span-3">
-                <p className="text-sm text-gray-500 mb-1">Tags</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Tags</p>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {transaction.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs"
+                      className="px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-full text-xs"
                     >
                       {tag}
                     </span>
@@ -160,8 +187,8 @@ const TransactionItem: FC<TransactionItemProps> = ({
 
             {transaction.isRecurring && transaction.recurringDetails && (
               <div className="col-span-3">
-                <p className="text-sm text-gray-500 mb-1">Recurring details</p>
-                <p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Recurring details</p>
+                <p className="dark:text-gray-200">
                   This transaction recurs{' '}
                   {transaction.recurringDetails.interval > 1
                     ? `every ${transaction.recurringDetails.interval} `
@@ -211,19 +238,21 @@ const TransactionList: FC<TransactionListProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="text-lg font-medium">{totalItems} Transactions</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h2 className="text-lg font-medium dark:text-gray-100">{totalItems} Transactions</h2>
 
         <div className="flex items-center">
-          <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm mr-2">
+          <select className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm mr-2">
             <option value="date:desc">Sort by Date (Newest First)</option>
             <option value="date:asc">Sort by Date (Oldest First)</option>
             <option value="amount:desc">Sort by Amount (Highest First)</option>
             <option value="amount:asc">Sort by Amount (Lowest First)</option>
           </select>
 
-          <button className="px-3 py-2 border border-gray-200 rounded-lg text-sm">Export</button>
+          <button className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm">
+            Export
+          </button>
         </div>
       </div>
 
@@ -253,7 +282,9 @@ const TransactionList: FC<TransactionListProps> = ({
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                   className={`p-2 rounded-full mr-2 ${
-                    currentPage === 1 ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'
+                    currentPage === 1
+                      ? 'text-gray-400 dark:text-gray-600'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   <ChevronLeft size={20} />
@@ -267,7 +298,7 @@ const TransactionList: FC<TransactionListProps> = ({
                       className={`w-8 h-8 rounded-full ${
                         currentPage === i + 1
                           ? 'bg-green-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
                       {i + 1}
@@ -279,7 +310,9 @@ const TransactionList: FC<TransactionListProps> = ({
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                   className={`p-2 rounded-full ml-2 ${
-                    currentPage === totalPages ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'
+                    currentPage === totalPages
+                      ? 'text-gray-400 dark:text-gray-600'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
                   <ChevronRight size={20} />
@@ -289,7 +322,7 @@ const TransactionList: FC<TransactionListProps> = ({
           </>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-500">No transactions found</p>
+            <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
           </div>
         )}
       </div>

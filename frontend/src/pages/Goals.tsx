@@ -134,7 +134,9 @@ const Goals: FC = () => {
       <div className="mt-6 flex space-x-2">
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === null ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            activeFilter === null
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setActiveFilter(null)}
         >
@@ -142,7 +144,9 @@ const Goals: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === 'savings' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            activeFilter === 'savings'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setActiveFilter('savings')}
         >
@@ -150,7 +154,9 @@ const Goals: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === 'debt' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            activeFilter === 'debt'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setActiveFilter('debt')}
         >
@@ -158,7 +164,9 @@ const Goals: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg ${
-            activeFilter === 'major_purchase' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            activeFilter === 'major_purchase'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setActiveFilter('major_purchase')}
         >
@@ -184,7 +192,7 @@ const Goals: FC = () => {
       {/* Add/Edit Goal Modal */}
       {showAddGoal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
             <GoalForm onClose={handleCloseForm} initialData={editingGoal} />
           </div>
         </div>

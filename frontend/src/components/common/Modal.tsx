@@ -72,7 +72,7 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose, children, size = 'md' }) => {
     >
       <div
         ref={modalRef}
-        className={`${getModalWidth()} w-full bg-white rounded-lg shadow-xl`}
+        className={`${getModalWidth()} w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">{children}</div>

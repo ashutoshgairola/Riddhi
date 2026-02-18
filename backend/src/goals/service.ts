@@ -8,9 +8,7 @@ import {
   Goal,
   GoalDTO,
   GoalDetailDTO,
-  GoalStatus,
   GoalsResponse,
-  PaginationResponse,
   UpdateGoalRequest,
 } from './types/interface';
 

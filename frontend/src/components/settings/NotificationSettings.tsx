@@ -69,33 +69,33 @@ const NotificationSettings: FC = () => {
 
   return (
     <div>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Choose how and when you'd like to be notified about your finances.
       </p>
 
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-2">Notification</th>
-              <th className="text-center py-2">Email</th>
-              <th className="text-center py-2">Push</th>
-              <th className="text-center py-2">SMS</th>
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="text-left py-2 dark:text-gray-300">Notification</th>
+              <th className="text-center py-2 dark:text-gray-300">Email</th>
+              <th className="text-center py-2 dark:text-gray-300">Push</th>
+              <th className="text-center py-2 dark:text-gray-300">SMS</th>
             </tr>
           </thead>
           <tbody>
             {settings.map((setting) => (
-              <tr key={setting.id} className="border-b border-gray-100">
+              <tr key={setting.id} className="border-b border-gray-100 dark:border-gray-700">
                 <td className="py-4">
-                  <p className="font-medium">{setting.name}</p>
-                  <p className="text-sm text-gray-500">{setting.description}</p>
+                  <p className="font-medium dark:text-gray-200">{setting.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{setting.description}</p>
                 </td>
                 <td className="text-center">
                   <input
                     type="checkbox"
                     checked={setting.email}
                     onChange={() => handleToggle(setting.id, 'email')}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                   />
                 </td>
                 <td className="text-center">
@@ -103,7 +103,7 @@ const NotificationSettings: FC = () => {
                     type="checkbox"
                     checked={setting.push}
                     onChange={() => handleToggle(setting.id, 'push')}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                   />
                 </td>
                 <td className="text-center">
@@ -111,7 +111,7 @@ const NotificationSettings: FC = () => {
                     type="checkbox"
                     checked={setting.sms}
                     onChange={() => handleToggle(setting.id, 'sms')}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                   />
                 </td>
               </tr>

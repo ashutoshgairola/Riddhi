@@ -135,8 +135,12 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Create New Budget</h2>
-        <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <h2 className="text-xl font-bold dark:text-gray-100">Create New Budget</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        >
           <X size={20} />
         </button>
       </div>
@@ -148,7 +152,9 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Budget Name*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Budget Name*
+        </label>
         <input
           type="text"
           name="name"
@@ -156,8 +162,8 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
           onChange={handleChange}
           placeholder={suggestBudgetName()}
           className={`w-full px-3 py-2 border ${
-            formErrors.name ? 'border-red-500' : 'border-gray-300'
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
         />
         {formErrors.name && (
           <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -168,15 +174,17 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date*</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Start Date*
+          </label>
           <input
             type="date"
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
             className={`w-full px-3 py-2 border ${
-              formErrors.startDate ? 'border-red-500' : 'border-gray-300'
-            } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+              formErrors.startDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
           />
           {formErrors.startDate && (
             <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -186,15 +194,17 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">End Date*</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            End Date*
+          </label>
           <input
             type="date"
             name="endDate"
             value={formData.endDate}
             onChange={handleChange}
             className={`w-full px-3 py-2 border ${
-              formErrors.endDate ? 'border-red-500' : 'border-gray-300'
-            } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+              formErrors.endDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
           />
           {formErrors.endDate && (
             <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -205,9 +215,11 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Income*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Monthly Income*
+        </label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
             ₹
           </span>
           <input
@@ -219,8 +231,8 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
             step="0.01"
             min="0"
             className={`w-full px-8 py-2 border ${
-              formErrors.income ? 'border-red-500' : 'border-gray-300'
-            } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+              formErrors.income ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
           />
         </div>
         {formErrors.income && (
@@ -230,8 +242,8 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
         )}
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
-        <p className="text-sm text-gray-600 mb-4">
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           After creating your budget, you can add categories to track specific expenses.
         </p>
 
@@ -239,7 +251,7 @@ const CreateBudgetForm: FC<CreateBudgetFormProps> = ({ onClose, onSubmit }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             disabled={isSubmitting}
           >
             Cancel

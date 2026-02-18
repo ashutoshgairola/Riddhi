@@ -73,15 +73,15 @@ const GoalProgressChart: FC<GoalProgressChartProps> = ({ data, targetAmount }) =
   }));
 
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-xl font-bold">Progress Tracker</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="text-xl font-bold dark:text-gray-100">Progress Tracker</h2>
       </div>
 
       <div className="p-6">
         <div className="mb-4">
-          <p className="text-sm text-gray-500 mb-1">Combined Goal Target</p>
-          <p className="text-2xl font-bold">{formatCurrency(targetAmount)}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Combined Goal Target</p>
+          <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(targetAmount)}</p>
         </div>
 
         <div className="h-64">
@@ -106,12 +106,12 @@ const GoalProgressChart: FC<GoalProgressChartProps> = ({ data, targetAmount }) =
         <div className="mt-4 flex justify-center text-sm">
           <div className="flex items-center mr-4">
             <div className="w-3 h-3 bg-green-600 rounded-full mr-1"></div>
-            <span>Current Progress</span>
+            <span className="dark:text-gray-300">Current Progress</span>
           </div>
 
           <div className="flex items-center">
             <div className="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
-            <span>Target Goal</span>
+            <span className="dark:text-gray-300">Target Goal</span>
           </div>
         </div>
       </div>

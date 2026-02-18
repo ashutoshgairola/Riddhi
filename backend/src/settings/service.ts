@@ -5,6 +5,7 @@ import path from 'path';
 
 import { AccountModel } from '../accounts/db';
 import { BudgetModel } from '../budgets/db';
+import { createChildLogger } from '../config/logger';
 import { GoalModel } from '../goals/db';
 import { TransactionModel } from '../transactions/db';
 import { AccountConnectionModel } from './account-connection-db';
@@ -36,6 +37,7 @@ export class SettingsService {
   private goalModel: GoalModel;
   private accountModel: AccountModel;
   private exportsDir: string;
+  private logger = createChildLogger({ service: 'SettingsService' });
 
   constructor(db: Db) {
     this.userPreferencesModel = new UserPreferencesModel(db);
@@ -231,13 +233,13 @@ export class SettingsService {
     let data: any = {};
 
     if (type === 'all' || type === 'transactions') {
-      const { transactions } = await this.transactionModel.findAll(userId, {});
-      data.transactions = transactions;
+      const transactionsResult = await this.transactionModel.findAll(userId, {});
+      data.transactions = transactionsResult.items;
     }
 
     if (type === 'all' || type === 'budgets') {
-      const { budgets } = await this.budgetModel.findAll(userId, {});
-      data.budgets = budgets;
+      const budgetsResult = await this.budgetModel.findAll(userId, {});
+      data.budgets = budgetsResult.items;
     }
 
     if (type === 'all' || type === 'goals') {
@@ -562,7 +564,7 @@ export class SettingsService {
     return csv;
   }
 
-  private parseCSV(csvText: string, type: string): any[] {
+  private parseCSV(csvText: string, _type: string): any[] {
     // Simple CSV parsing - in a real app, use a proper CSV parser library
     const lines = csvText.split('\n').filter((line) => line.trim() !== '');
 
@@ -684,7 +686,7 @@ export class SettingsService {
         await this.transactionModel.create(transactionData);
         stats.imported++;
       } catch (error) {
-        console.error('Error importing transaction:', error);
+        this.logger.error({ error, transaction }, 'Error importing transaction');
         stats.errors++;
       }
     }
@@ -716,7 +718,7 @@ export class SettingsService {
         await this.budgetModel.create(budgetData);
         stats.imported++;
       } catch (error) {
-        console.error('Error importing budget:', error);
+        this.logger.error({ error, budget }, 'Error importing budget');
         stats.errors++;
       }
     }
@@ -749,7 +751,7 @@ export class SettingsService {
         await this.goalModel.create(goalData);
         stats.imported++;
       } catch (error) {
-        console.error('Error importing goal:', error);
+        this.logger.error({ error, goal }, 'Error importing goal');
         stats.errors++;
       }
     }

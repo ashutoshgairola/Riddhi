@@ -11,7 +11,7 @@ const budgetCategories: BudgetCategory[] = [
     name: 'Housing',
     allocated: 1500,
     spent: 1500,
-    categoryId: '1',
+    categoryIds: ['1'],
     color: '#4CAF50',
   },
   {
@@ -19,7 +19,7 @@ const budgetCategories: BudgetCategory[] = [
     name: 'Food',
     allocated: 600,
     spent: 450,
-    categoryId: '2',
+    categoryIds: ['2'],
     color: '#2196F3',
   },
   {
@@ -27,7 +27,7 @@ const budgetCategories: BudgetCategory[] = [
     name: 'Transport',
     allocated: 300,
     spent: 275,
-    categoryId: '3',
+    categoryIds: ['3'],
     color: '#FFC107',
   },
   {
@@ -35,7 +35,7 @@ const budgetCategories: BudgetCategory[] = [
     name: 'Entertainment',
     allocated: 400,
     spent: 385,
-    categoryId: '4',
+    categoryIds: ['4'],
     color: '#9C27B0',
   },
   {
@@ -43,7 +43,7 @@ const budgetCategories: BudgetCategory[] = [
     name: 'Utilities',
     allocated: 350,
     spent: 310,
-    categoryId: '5',
+    categoryIds: ['5'],
     color: '#FF5722',
   },
 ];
@@ -54,24 +54,26 @@ const BudgetProgressWidget: FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Budget Progress</h2>
-          <button className="text-blue-600 text-sm font-medium">Manage</button>
+          <h2 className="text-xl font-bold dark:text-gray-100">Budget Progress</h2>
+          <button className="text-blue-600 dark:text-blue-400 text-sm font-medium">Manage</button>
         </div>
       </div>
       <div className="p-6">
         {budgetCategories.map((category) => (
           <div key={category.id} className="mb-4 last:mb-0">
             <div className="flex justify-between items-center mb-1">
-              <p className="font-medium">{category.name}</p>
-              <p className="text-sm">
+              <p className="font-medium dark:text-gray-200">{category.name}</p>
+              <p className="text-sm dark:text-gray-300">
                 {formatCurrency(category.spent, 'INR')}{' '}
-                <span className="text-gray-500">/ {formatCurrency(category.allocated, 'INR')}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  / {formatCurrency(category.allocated, 'INR')}
+                </span>
               </p>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className="h-2 rounded-full"
                 style={{

@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 
+import { createChildLogger } from '../config/logger';
 import { ReportService } from './service';
 import {
   AccountSummaryQuery,
   BudgetPerformanceQuery,
   CategoryReportQuery,
   CustomReportRequest,
-  GroupByOption,
   IncomeExpenseQuery,
   NetWorthPeriod,
   NetWorthQuery,
@@ -15,6 +15,7 @@ import {
 
 export class ReportController {
   private reportService: ReportService;
+  private logger = createChildLogger({ controller: 'ReportController' });
 
   constructor(reportService: ReportService) {
     this.reportService = reportService;
@@ -24,6 +25,8 @@ export class ReportController {
    * Get account summary
    */
   async getAccountSummary(req: Request, res: Response): Promise<void> {
+    const requestLogger = this.logger.child({ method: 'getAccountSummary' });
+
     try {
       const { userId } = req.body.user;
       const query: AccountSummaryQuery = {
@@ -31,9 +34,21 @@ export class ReportController {
         endDate: req.query.endDate as string,
       };
 
+      requestLogger.info(
+        { userId, startDate: query.startDate, endDate: query.endDate },
+        'Getting account summary',
+      );
+
       const accountSummary = await this.reportService.getAccountSummary(userId, query);
+
+      requestLogger.info({ userId }, 'Account summary fetched successfully');
+
       res.status(200).json(accountSummary);
     } catch (error: any) {
+      requestLogger.error(
+        { error, userId: req.body.user?.userId },
+        'Error fetching account summary',
+      );
       res.status(500).json({ message: error.message });
     }
   }
@@ -42,6 +57,8 @@ export class ReportController {
    * Get income expense summary
    */
   async getIncomeExpenseSummary(req: Request, res: Response): Promise<void> {
+    const requestLogger = this.logger.child({ method: 'getIncomeExpenseSummary' });
+
     try {
       const { userId } = req.body.user;
       const query: IncomeExpenseQuery = {
@@ -50,9 +67,18 @@ export class ReportController {
         endDate: req.query.endDate as string,
       };
 
+      requestLogger.info({ userId, period: query.period }, 'Getting income expense summary');
+
       const incomeExpenseSummary = await this.reportService.getIncomeExpenseSummary(userId, query);
+
+      requestLogger.info({ userId }, 'Income expense summary fetched successfully');
+
       res.status(200).json(incomeExpenseSummary);
     } catch (error: any) {
+      requestLogger.error(
+        { error, userId: req.body.user?.userId },
+        'Error fetching income expense summary',
+      );
       res.status(500).json({ message: error.message });
     }
   }

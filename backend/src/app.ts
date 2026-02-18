@@ -2,7 +2,6 @@ import cors from 'cors';
 import express, { Express } from 'express';
 import helmet from 'helmet';
 import { Db } from 'mongodb';
-import morgan from 'morgan';
 
 import { AccountController } from './accounts/controller';
 import { AccountRoutes } from './accounts/routes';
@@ -13,6 +12,7 @@ import { AuthService } from './auth/service';
 import { BudgetController } from './budgets/controller';
 import { BudgetRoutes } from './budgets/routes';
 import { BudgetService } from './budgets/service';
+import { httpLogger, log, traceMiddleware } from './config/logger';
 import { GoalController } from './goals/controller';
 import { GoalRoutes } from './goals/routes';
 import { GoalService } from './goals/service';
@@ -33,11 +33,14 @@ export class App {
   private db: Db;
 
   constructor(db: Db) {
-    this.app = express();
     this.db = db;
+    this.app = express();
+    log.info('Initializing Express application');
+
     this.configureMiddleware();
     this.configureRoutes();
     this.configureErrorHandling();
+    log.info('Express application initialized successfully');
   }
 
   private configureMiddleware(): void {
@@ -49,8 +52,13 @@ export class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
-    // Logging middleware
-    this.app.use(morgan('dev'));
+    // Trace ID middleware - must be before HTTP logger
+    this.app.use(traceMiddleware);
+
+    // Logging middleware - Pino HTTP logger
+    this.app.use(httpLogger);
+
+    log.info('Express middleware configured');
   }
 
   private configureRoutes(): void {
@@ -92,27 +100,27 @@ export class App {
 
     // Initialize services
     authService.initialize().catch((error) => {
-      console.error('Failed to initialize auth service:', error);
+      log.error('Failed to initialize auth service', { error, service: 'auth' });
     });
 
     transactionService.initialize().catch((error) => {
-      console.error('Failed to initialize transaction service:', error);
+      log.error('Failed to initialize transaction service', { error, service: 'transaction' });
     });
 
     budgetService.initialize().catch((error) => {
-      console.error('Failed to initialize budget service:', error);
+      log.error('Failed to initialize budget service', { error, service: 'budget' });
     });
 
     goalService.initialize().catch((error) => {
-      console.error('Failed to initialize goal service:', error);
+      log.error('Failed to initialize goal service', { error, service: 'goal' });
     });
 
     accountService.initialize().catch((error) => {
-      console.error('Failed to initialize account service:', error);
+      log.error('Failed to initialize account service', { error, service: 'account' });
     });
 
     reportService.initialize().catch((error) => {
-      console.error('Failed to initialize report service:', error);
+      log.error('Failed to initialize report service', { error, service: 'report' });
     });
 
     // Set up API routes
@@ -125,9 +133,12 @@ export class App {
     this.app.use('/api/settings', settingsRoutes.getRouter());
 
     // Root route
-    this.app.get('/', (req, res) => {
+    this.app.get('/', (_req, res) => {
+      log.info('Root endpoint accessed');
       res.json({ message: 'Finance Tracker API' });
     });
+
+    log.info('API routes configured');
   }
 
   private configureErrorHandling(): void {

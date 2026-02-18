@@ -1,24 +1,33 @@
 import { Request, Response } from 'express';
 
+import { createChildLogger } from '../config/logger';
 import { AccountService } from './service';
 import { CreateAccountRequest, GetAccountsQuery, UpdateAccountRequest } from './types/interface';
 
 export class AccountController {
   private accountService: AccountService;
+  private logger = createChildLogger({ controller: 'AccountController' });
 
   constructor(accountService: AccountService) {
     this.accountService = accountService;
   }
 
   getAccounts = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getAccounts' });
+
     try {
       const userId = req.user!.userId;
       const query: GetAccountsQuery = req.query as any;
 
+      requestLogger.info({ userId }, 'Getting accounts');
+
       const accounts = await this.accountService.getAccounts(userId, query);
+
+      requestLogger.info({ userId }, 'Accounts fetched successfully');
+
       res.status(200).json(accounts);
     } catch (error: any) {
-      console.error('Error fetching accounts:', error);
+      requestLogger.error({ error, userId: req.user?.userId }, 'Error fetching accounts');
       res.status(500).json({ error: 'Failed to fetch accounts' });
     }
   };
@@ -39,7 +48,7 @@ export class AccountController {
         }
       }
     } catch (error: any) {
-      console.error('Error fetching account:', error);
+      this.logger.error({ error }, 'Error fetching account:');
       res.status(500).json({ error: 'Failed to fetch account' });
     }
   };
@@ -72,7 +81,7 @@ export class AccountController {
         }
       }
     } catch (error: any) {
-      console.error('Error creating account:', error);
+      this.logger.error({ error }, 'Error creating account:');
       res.status(500).json({ error: 'Failed to create account' });
     }
   };
@@ -96,7 +105,7 @@ export class AccountController {
         }
       }
     } catch (error: any) {
-      console.error('Error updating account:', error);
+      this.logger.error({ error }, 'Error updating account:');
       res.status(500).json({ error: 'Failed to update account' });
     }
   };
@@ -119,7 +128,7 @@ export class AccountController {
         }
       }
     } catch (error: any) {
-      console.error('Error deleting account:', error);
+      this.logger.error({ error }, 'Error deleting account:');
       res.status(500).json({ error: 'Failed to delete account' });
     }
   };

@@ -81,8 +81,20 @@ export class BudgetService {
     }
 
     // Validate categories
-    const categoryIds = budgetData.categories.map((c) => c.categoryId);
-    for (const categoryId of categoryIds) {
+    const allCategoryIds: string[] = [];
+
+    // Collect all categoryIds from all budget categories
+    for (const budgetCategory of budgetData.categories) {
+      if (!Array.isArray(budgetCategory.categoryIds) || budgetCategory.categoryIds.length === 0) {
+        throw new Error(
+          `Budget category "${budgetCategory.name}" must have at least one categoryId`,
+        );
+      }
+      allCategoryIds.push(...budgetCategory.categoryIds);
+    }
+
+    // Validate that all categoryIds exist
+    for (const categoryId of allCategoryIds) {
       const category = await this.categoryModel.findById(categoryId, userId);
       if (!category) {
         throw new Error(`Category with ID ${categoryId} not found`);
@@ -228,18 +240,32 @@ export class BudgetService {
       throw new Error('Budget not found');
     }
 
-    // Validate that the transaction category exists
-    const transactionCategory = await this.categoryModel.findById(categoryData.categoryId, userId);
-    if (!transactionCategory) {
-      throw new Error('Transaction category not found');
+    // Validate that all transaction categories exist
+    for (const categoryId of categoryData.categoryIds) {
+      const transactionCategory = await this.categoryModel.findById(categoryId, userId);
+      if (!transactionCategory) {
+        throw new Error(`Transaction category with ID ${categoryId} not found`);
+      }
     }
 
-    // Check if a budget category with this category ID already exists
-    const existingCategory = budget.categories.find(
-      (c) => c.categoryId === categoryData.categoryId,
-    );
-    if (existingCategory) {
-      throw new Error('A budget category for this transaction category already exists');
+    // Check if any of the categoryIds are already used in existing budget categories
+    for (const categoryId of categoryData.categoryIds) {
+      const existingCategory = budget.categories.find((c) => {
+        // Handle backward compatibility - some categories might still have the old categoryId field
+        if (c.categoryIds && Array.isArray(c.categoryIds)) {
+          return c.categoryIds.includes(categoryId);
+        }
+        // Fallback for old format (single categoryId)
+        if ((c as any).categoryId) {
+          return (c as any).categoryId === categoryId;
+        }
+        return false;
+      });
+      if (existingCategory) {
+        throw new Error(
+          `Transaction category ${categoryId} is already assigned to budget category "${existingCategory.name}"`,
+        );
+      }
     }
 
     // Create the budget category
@@ -247,7 +273,7 @@ export class BudgetService {
       name: categoryData.name,
       allocated: categoryData.allocated,
       spent: 0, // Initially zero
-      categoryId: categoryData.categoryId,
+      categoryIds: categoryData.categoryIds,
       color: categoryData.color,
       icon: categoryData.icon,
       rollover: categoryData.rollover,
@@ -260,8 +286,8 @@ export class BudgetService {
       throw new Error('Failed to create budget category');
     }
 
-    // Update the spent amount for the new category
-    await this.updateCategorySpentAmount(budgetId, userId, createdCategory.categoryId);
+    // Update the spent amount for the new category (for all its categoryIds)
+    await this.updateCategorySpentAmount(budgetId, userId, createdCategory.categoryIds);
 
     // Get the updated category with actual spent amount
     const updatedBudget = await this.budgetModel.findById(budgetId);
@@ -404,10 +430,28 @@ export class BudgetService {
     let totalSpent = 0;
 
     for (const [categoryId, amount] of categoryTotals.entries()) {
-      // Find the budget category for this transaction category
-      const budgetCategory = budget.categories.find((c) => c.categoryId === categoryId);
+      // Find the budget category that contains this transaction category
+      const budgetCategory = budget.categories.find((c) => {
+        // Handle backward compatibility - some categories might still have the old categoryId field
+        if (c.categoryIds && Array.isArray(c.categoryIds)) {
+          return c.categoryIds.includes(categoryId);
+        }
+        // Fallback for old format (single categoryId)
+        if ((c as any).categoryId) {
+          return (c as any).categoryId === categoryId;
+        }
+        return false;
+      });
       if (budgetCategory) {
-        await this.budgetModel.updateCategorySpent(budgetId, userId, categoryId, amount);
+        // Add to the budget category's spent amount (it may have multiple transaction categories)
+        const currentSpent = budgetCategory.spent || 0;
+        const newSpent = currentSpent + amount;
+        await this.budgetModel.updateCategorySpent(
+          budgetId,
+          userId,
+          budgetCategory._id!.toString(),
+          newSpent,
+        );
         totalSpent += amount;
       }
     }
@@ -419,15 +463,27 @@ export class BudgetService {
   private async updateCategorySpentAmount(
     budgetId: string,
     userId: string,
-    categoryId: string,
+    categoryIds: string[],
   ): Promise<void> {
     const budget = await this.budgetModel.findById(budgetId);
     if (!budget) {
       return;
     }
 
-    // Find the budget category
-    const budgetCategory = budget.categories.find((c) => c.categoryId === categoryId);
+    // Find the budget category that contains these categoryIds
+    const budgetCategory = budget.categories.find((c) =>
+      categoryIds.some((catId) => {
+        // Handle backward compatibility - some categories might still have the old categoryId field
+        if (c.categoryIds && Array.isArray(c.categoryIds)) {
+          return c.categoryIds.includes(catId);
+        }
+        // Fallback for old format (single categoryId)
+        if ((c as any).categoryId) {
+          return (c as any).categoryId === catId;
+        }
+        return false;
+      }),
+    );
     if (!budgetCategory) {
       return;
     }
@@ -444,24 +500,38 @@ export class BudgetService {
       return;
     }
 
-    // Fetch transactions within the budget period for this category
-    const transactions = await this.transactionModel.findByDateRangeAndCategory(
-      userId,
-      budget.startDate,
-      budget.endDate,
-      categoryId,
-    );
-
-    // Calculate total spent for this category
+    // Fetch transactions within the budget period for all categoryIds in this budget category
     let totalSpent = 0;
-    for (const transaction of transactions) {
-      if (transaction.type === 'expense') {
-        totalSpent += transaction.amount;
+
+    // Get the category IDs for this budget category (handle backward compatibility)
+    const categoryIdsToProcess =
+      budgetCategory.categoryIds && Array.isArray(budgetCategory.categoryIds)
+        ? budgetCategory.categoryIds
+        : [(budgetCategory as any).categoryId].filter(Boolean);
+
+    for (const categoryId of categoryIdsToProcess) {
+      const transactions = await this.transactionModel.findByDateRangeAndCategory(
+        userId,
+        budget.startDate,
+        budget.endDate,
+        categoryId,
+      );
+
+      // Calculate total spent for this category
+      for (const transaction of transactions) {
+        if (transaction.type === 'expense') {
+          totalSpent += transaction.amount;
+        }
       }
     }
 
-    // Update the category spent amount
-    await this.budgetModel.updateCategorySpent(budgetId, userId, categoryId, totalSpent);
+    // Update the category spent amount with the total from all its transaction categories
+    await this.budgetModel.updateCategorySpent(
+      budgetId,
+      userId,
+      budgetCategory._id!.toString(),
+      totalSpent,
+    );
 
     // Update the budget's total spent
     const oldTotalSpent = budget.totalSpent - budgetCategory.spent;
@@ -502,7 +572,7 @@ export class BudgetService {
       name: category.name,
       allocated: category.allocated,
       spent: category.spent,
-      categoryId: category.categoryId,
+      categoryIds: category.categoryIds,
       color: category.color,
       icon: category.icon,
       rollover: category.rollover,

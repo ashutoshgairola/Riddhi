@@ -40,9 +40,11 @@ const SpendingTrendsChart: FC<SpendingTrendsChartProps> = ({ data }) => {
   }) => {
     if (active && payload && payload.length && payload[0].value !== undefined) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow-sm">
-          <p className="font-medium">{label ? formatDate(label) : 'Invalid Date'}</p>
-          <p className="text-gray-600">{formatCurrency(payload[0].value)}</p>
+        <div className="bg-white dark:bg-gray-700 p-3 border border-gray-200 dark:border-gray-600 rounded shadow-sm">
+          <p className="font-medium dark:text-gray-100">
+            {label ? formatDate(label) : 'Invalid Date'}
+          </p>
+          <p className="text-gray-600 dark:text-gray-300">{formatCurrency(payload[0].value)}</p>
         </div>
       );
     }
@@ -50,9 +52,9 @@ const SpendingTrendsChart: FC<SpendingTrendsChartProps> = ({ data }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-xl font-bold">Spending Trends</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="text-xl font-bold dark:text-gray-100">Spending Trends</h2>
       </div>
 
       <div className="p-6">

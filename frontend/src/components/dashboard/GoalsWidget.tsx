@@ -67,13 +67,15 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
   const percentage = calculatePercentage(goal.currentAmount, goal.targetAmount);
 
   return (
-    <div className="p-4 border border-gray-100 rounded-lg">
-      <h3 className="font-medium mb-2">{goal.name}</h3>
+    <div className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
+      <h3 className="font-medium dark:text-gray-100 mb-2">{goal.name}</h3>
       <div className="flex justify-between text-sm mb-2">
-        <span>{formatCurrency(goal.currentAmount, 'INR')}</span>
-        <span className="text-gray-500">{formatCurrency(goal.targetAmount, 'INR')}</span>
+        <span className="dark:text-gray-200">{formatCurrency(goal.currentAmount, 'INR')}</span>
+        <span className="text-gray-500 dark:text-gray-400">
+          {formatCurrency(goal.targetAmount, 'INR')}
+        </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
         <div
           className="h-2 rounded-full"
           style={{
@@ -82,7 +84,7 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
           }}
         ></div>
       </div>
-      <div className="flex justify-between text-xs text-gray-500">
+      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
         <span>{percentage}% complete</span>
         <div className="flex items-center">
           <Calendar size={12} className="mr-1" />
@@ -95,11 +97,11 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
 
 const GoalsWidget: FC = () => {
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Financial Goals</h2>
-          <button className="text-blue-600 text-sm font-medium">Add Goal</button>
+          <h2 className="text-xl font-bold dark:text-gray-100">Financial Goals</h2>
+          <button className="text-blue-600 dark:text-blue-400 text-sm font-medium">Add Goal</button>
         </div>
       </div>
       <div className="p-6">

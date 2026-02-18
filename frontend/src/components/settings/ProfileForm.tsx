@@ -28,58 +28,66 @@ const ProfileForm: FC = () => {
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-6">
         <div className="flex items-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-800 text-2xl font-bold mr-4">
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center text-green-800 dark:text-green-300 text-2xl font-bold mr-4">
             {profile.firstName?.[0]}
             {profile.lastName?.[0]}
           </div>
           <div>
             <button
               type="button"
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 text-sm"
             >
               Change Profile Photo
             </button>
-            <p className="text-xs text-gray-500 mt-1">JPG, GIF or PNG. Max size 5MB.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              JPG, GIF or PNG. Max size 5MB.
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              First Name
+            </label>
             <input
               type="text"
               name="firstName"
               value={profile.firstName || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Last Name
+            </label>
             <input
               type="text"
               name="lastName"
               value={profile.lastName || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Email Address
+          </label>
           <input
             type="email"
             name="email"
             value={profile.email || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Phone Number (optional)
           </label>
           <input
@@ -87,7 +95,7 @@ const ProfileForm: FC = () => {
             name="phone"
             value={profile.phone || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="+1 (555) 123-4567"
           />
         </div>

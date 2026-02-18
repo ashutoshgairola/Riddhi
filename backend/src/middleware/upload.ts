@@ -40,7 +40,7 @@ export class UploadMiddleware {
   }
 
   private fileFilter(
-    req: Express.Request,
+    _req: Express.Request,
     file: Express.Multer.File,
     cb: multer.FileFilterCallback,
   ): void {
@@ -71,6 +71,7 @@ export class UploadMiddleware {
 
       // File upload successful, continue
       next();
+      return;
     });
   };
 }

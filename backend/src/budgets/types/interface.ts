@@ -20,7 +20,7 @@ export interface BudgetCategory {
   name: string;
   allocated: number;
   spent: number;
-  categoryId: string;
+  categoryIds: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;
@@ -43,7 +43,7 @@ export interface BudgetCategoryDTO {
   name: string;
   allocated: number;
   spent: number;
-  categoryId: string;
+  categoryIds: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;
@@ -75,7 +75,7 @@ export interface CreateBudgetRequest {
   categories: {
     name: string;
     allocated: number;
-    categoryId: string;
+    categoryIds: string[];
     color?: string;
     icon?: string;
     rollover?: boolean;
@@ -94,7 +94,7 @@ export interface UpdateBudgetRequest {
 export interface CreateBudgetCategoryRequest {
   name: string;
   allocated: number;
-  categoryId: string;
+  categoryIds: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;

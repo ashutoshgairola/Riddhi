@@ -1,6 +1,6 @@
 import { Collection, Db, Filter, ObjectId } from 'mongodb';
 
-import { Account, AccountType } from './types/interface';
+import { Account, AccountType } from '../accounts/types/interface';
 
 export class AccountModel {
   private collection: Collection<Account>;
@@ -84,7 +84,7 @@ export class AccountModel {
       .toArray();
   }
 
-  async countTransactions(id: string, userId: string): Promise<number> {
+  async countTransactions(_id: string, _userId: string): Promise<number> {
     // This would typically be implemented by querying the transactions collection
     // For now, we'll return a mock value, and the actual implementation would be
     // provided when we integrate with the transactions domain

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import { useTransactions } from '../../hooks/useTransactions';
 import { TransactionCreateDTO } from '../../types/transaction.types';
@@ -31,12 +32,12 @@ interface NavbarProps {
 
 const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const { user, loading, logout, isAuthenticated } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   // UI state
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -122,6 +123,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
     if (isNotificationsOpen && isAuthenticated) {
       fetchNotifications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNotificationsOpen, isAuthenticated]);
 
   // Handle click outside for dropdowns
@@ -142,10 +144,8 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
   }, []);
 
   // Toggle dark mode
-  const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // You would typically update a class on the html/body or use a context
-    // document.documentElement.classList.toggle('dark');
+  const handleToggleDarkMode = async () => {
+    await toggleTheme();
   };
 
   // Handle search
@@ -211,20 +211,24 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-200 py-2 px-4">
+      <header
+        className={`${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} shadow-sm border-b py-2 px-4`}
+      >
         <div className="flex items-center justify-between">
           {/* Left section: Menu toggle and logo for mobile */}
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
-              className="mr-2 p-2 rounded-full hover:bg-gray-100 lg:hidden"
+              className={`mr-2 p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} lg:hidden`}
               aria-label="Toggle sidebar"
             >
-              <Menu size={20} />
+              <Menu size={20} className={isDark ? 'text-gray-300' : 'text-gray-600'} />
             </button>
             <div className="lg:hidden flex items-center">
               <span className="text-2xl font-bold text-green-600">₹</span>
-              <span className="text-lg font-bold text-gray-900">iddhi</span>
+              <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                iddhi
+              </span>
             </div>
           </div>
 
@@ -235,11 +239,13 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                 <input
                   type="text"
                   placeholder="Search transactions, budgets, etc."
-                  className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className={`w-full pl-10 pr-4 py-2 rounded-full border ${isDark ? 'border-gray-600 bg-gray-800 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                 />
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <div
+                  className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}
+                >
                   <Search size={18} />
                 </div>
               </div>
@@ -263,10 +269,10 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
             {/* Dark/light mode toggle */}
             <button
               onClick={handleToggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-100"
-              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              className={`p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
             {/* Notifications dropdown */}
@@ -274,19 +280,19 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
               <div ref={notificationsRef} className="relative">
                 <button
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className="p-2 rounded-full hover:bg-gray-100 relative"
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 relative"
                   aria-label="Notifications"
                 >
-                  <Bell size={20} />
+                  <Bell size={20} className="text-gray-600 dark:text-gray-300" />
                   {notifications.filter((n) => !n.isRead).length > 0 && (
                     <span className="absolute top-0 right-0 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
 
                 {isNotificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-20 border border-gray-200">
-                    <div className="p-3 border-b border-gray-200">
-                      <h3 className="font-medium text-gray-800">Notifications</h3>
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-600">
+                    <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+                      <h3 className="font-medium text-gray-800 dark:text-white">Notifications</h3>
                     </div>
 
                     <div className="max-h-80 overflow-y-auto">
@@ -298,29 +304,31 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
-                            className={`p-3 border-b border-gray-100 hover:bg-gray-50 ${!notification.isRead ? 'bg-green-50' : ''}`}
+                            className={`p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${!notification.isRead ? 'bg-green-50 dark:bg-green-900/20' : ''}`}
                           >
                             <div className="flex justify-between">
-                              <p className="text-sm font-medium text-gray-800">
+                              <p className="text-sm font-medium text-gray-800 dark:text-white">
                                 {notification.message}
                               </p>
                               {!notification.isRead && (
                                 <span className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-1"></span>
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {new Date(notification.date).toLocaleString()}
                             </p>
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-gray-500">No notifications yet</div>
+                        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                          No notifications yet
+                        </div>
                       )}
                     </div>
 
-                    <div className="p-2 border-t border-gray-200">
+                    <div className="p-2 border-t border-gray-200 dark:border-gray-600">
                       <button
-                        className="w-full text-center text-sm text-green-600 hover:text-green-700 p-1"
+                        className="w-full text-center text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 p-1"
                         onClick={() => {
                           setIsNotificationsOpen(false);
                           // Navigate to notifications page if you have one
@@ -344,10 +352,10 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
               <div ref={profileRef} className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100"
+                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                   aria-label="User menu"
                 >
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-medium">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-700 dark:text-green-300 font-medium">
                     {user.profileImageUrl ? (
                       <img
                         src={user.profileImageUrl}
@@ -358,19 +366,25 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                       getUserInitials()
                     )}
                   </div>
-                  <ChevronDown size={16} className="text-gray-500" />
+                  <ChevronDown size={16} className="text-gray-500 dark:text-gray-400" />
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-1">
-                    <div className="p-3 border-b border-gray-200">
-                      <p className="font-medium text-gray-800">{getUserDisplayName()}</p>
-                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-600 py-1">
+                    <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+                      <p className="font-medium text-gray-800 dark:text-white">
+                        {getUserDisplayName()}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        {user.email}
+                      </p>
                     </div>
 
                     {/* Quick actions */}
-                    <div className="p-2 border-b border-gray-200">
-                      <p className="text-xs font-medium text-gray-500 px-2 mb-1">QUICK ACTIONS</p>
+                    <div className="p-2 border-b border-gray-200 dark:border-gray-600">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 px-2 mb-1">
+                        QUICK ACTIONS
+                      </p>
                       {quickActions.map((action, index) => (
                         <button
                           key={index}
@@ -378,9 +392,11 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                             setIsProfileOpen(false);
                             action.action();
                           }}
-                          className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                          className="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                         >
-                          <span className="text-gray-500 mr-2">{action.icon}</span>
+                          <span className="text-gray-500 dark:text-gray-400 mr-2">
+                            {action.icon}
+                          </span>
                           {action.label}
                         </button>
                       ))}
@@ -390,16 +406,16 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                     <div className="py-1">
                       <Link
                         to="/settings"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <Settings size={16} className="mr-2 text-gray-500" />
+                        <Settings size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                         Settings
                       </Link>
 
                       {/* Sign out button */}
                       <button
-                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => {
                           setIsProfileOpen(false);
                           setIsLogoutModalOpen(true);
@@ -425,17 +441,17 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
       </header>
 
       {/* Mobile search bar - shown on small screens */}
-      <div className="sm:hidden p-2 bg-white border-b border-gray-200">
+      <div className="sm:hidden p-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSearch}>
           <div className="relative">
             <input
               type="text"
               placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500">
               <Search size={18} />
             </div>
           </div>
@@ -445,12 +461,14 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
       {/* Logout confirmation modal */}
       <Modal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} size="sm">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Sign Out</h2>
-          <p className="text-gray-600 mb-6">Are you sure you want to sign out of your account?</p>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Sign Out</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Are you sure you want to sign out of your account?
+          </p>
           <div className="flex justify-center space-x-4">
             <button
               onClick={() => setIsLogoutModalOpen(false)}
-              className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 font-medium"
+              className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium"
             >
               Cancel
             </button>
@@ -467,11 +485,11 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
       {/* Quick Add Transaction Modal */}
       {showAddTransaction && (
         <Modal isOpen={showAddTransaction} onClose={toggleAddTransaction} size="md">
-          <div className="bg-white rounded-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-lg">
             {categoriesLoading ? (
               <div className="flex justify-center p-8">
                 <Spinner />
-                <span className="ml-2">Loading categories...</span>
+                <span className="ml-2 dark:text-gray-300">Loading categories...</span>
               </div>
             ) : (
               <AddTransactionForm

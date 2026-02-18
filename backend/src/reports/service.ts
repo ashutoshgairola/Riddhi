@@ -375,7 +375,7 @@ export class ReportService {
 
     if (query.budgetId) {
       // Get specific budget
-      budget = await this.budgetModel.findById(query.budgetId, userId);
+      budget = await this.budgetModel.findById(query.budgetId);
       if (!budget) {
         throw new Error('Budget not found');
       }
@@ -431,7 +431,7 @@ export class ReportService {
         }
 
         return {
-          categoryId: category.categoryId,
+          categoryIds: category.categoryIds,
           categoryName: category.name,
           budgeted,
           spent,

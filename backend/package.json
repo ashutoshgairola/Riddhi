@@ -9,7 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "lint": "eslint . --ext .ts",
     "test": "jest",
-        "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
@@ -24,6 +24,10 @@
     "mongodb": "^5.9.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "pino": "^9.11.0",
+    "pino-http": "^10.5.0",
+    "pino-pretty": "^13.1.1",
+    "uuid": "^13.0.0",
     "validator": "^13.9.0"
   },
   "devDependencies": {
@@ -36,6 +40,8 @@
     "@types/morgan": "^1.9.4",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.2.1",
+    "@types/pino-http": "^6.1.0",
+    "@types/uuid": "^11.0.0",
     "@types/validator": "^13.7.17",
     "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.59.6",

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 
+import { createChildLogger } from '../config/logger';
 import { SettingsService } from './service';
 import {
   ClearDataRequest,
@@ -13,6 +14,7 @@ import {
 
 export class SettingsController {
   private settingsService: SettingsService;
+  private logger = createChildLogger({ controller: 'SettingsController' });
 
   constructor(settingsService: SettingsService) {
     this.settingsService = settingsService;
@@ -20,26 +22,40 @@ export class SettingsController {
 
   // User Preferences
   getUserPreferences = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getUserPreferences' });
+
     try {
       const userId = req.user!.userId;
 
+      requestLogger.info({ userId }, 'Getting user preferences');
+
       const preferences = await this.settingsService.getUserPreferences(userId);
+
+      requestLogger.info({ userId }, 'User preferences fetched successfully');
+
       res.status(200).json(preferences);
     } catch (error: any) {
-      console.error('Error fetching user preferences:', error);
+      requestLogger.error({ error, userId: req.user?.userId }, 'Error fetching user preferences');
       res.status(500).json({ error: 'Failed to fetch user preferences' });
     }
   };
 
   updateUserPreferences = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'updateUserPreferences' });
+
     try {
       const userId = req.user!.userId;
       const updates: UpdateUserPreferencesRequest = req.body;
 
+      requestLogger.info({ userId }, 'Updating user preferences');
+
       const preferences = await this.settingsService.updateUserPreferences(userId, updates);
+
+      requestLogger.info({ userId }, 'User preferences updated successfully');
+
       res.status(200).json(preferences);
     } catch (error: any) {
-      console.error('Error updating user preferences:', error);
+      requestLogger.error({ error, userId: req.user?.userId }, 'Error updating user preferences');
       res.status(500).json({ error: 'Failed to update user preferences' });
     }
   };
@@ -52,7 +68,7 @@ export class SettingsController {
       const settings = await this.settingsService.getNotificationSettings(userId);
       res.status(200).json(settings);
     } catch (error: any) {
-      console.error('Error fetching notification settings:', error);
+      this.logger.error({ error }, 'Error fetching notification settings:');
       res.status(500).json({ error: 'Failed to fetch notification settings' });
     }
   };
@@ -80,7 +96,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error updating notification setting:', error);
+      this.logger.error({ error }, 'Error updating notification setting:');
       res.status(500).json({ error: 'Failed to update notification setting' });
     }
   };
@@ -93,7 +109,7 @@ export class SettingsController {
       const connections = await this.settingsService.getAccountConnections(userId);
       res.status(200).json(connections);
     } catch (error: any) {
-      console.error('Error fetching account connections:', error);
+      this.logger.error({ error }, 'Error fetching account connections:');
       res.status(500).json({ error: 'Failed to fetch account connections' });
     }
   };
@@ -120,7 +136,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error connecting account:', error);
+      this.logger.error({ error }, 'Error connecting account:');
       res.status(500).json({ error: 'Failed to connect account' });
     }
   };
@@ -143,7 +159,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error refreshing connection:', error);
+      this.logger.error({ error }, 'Error refreshing connection:');
       res.status(500).json({ error: 'Failed to refresh connection' });
     }
   };
@@ -164,7 +180,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error disconnecting account:', error);
+      this.logger.error({ error }, 'Error disconnecting account:');
       res.status(500).json({ error: 'Failed to disconnect account' });
     }
   };
@@ -205,7 +221,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error exporting data:', error);
+      this.logger.error({ error }, 'Error exporting data:');
       res.status(500).json({ error: 'Failed to export data' });
     }
   };
@@ -243,7 +259,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error importing data:', error);
+      this.logger.error({ error }, 'Error importing data:');
       res.status(500).json({ error: 'Failed to import data' });
     }
   };
@@ -288,7 +304,7 @@ export class SettingsController {
         }
       }
     } catch (error: any) {
-      console.error('Error clearing data:', error);
+      this.logger.error({ error }, 'Error clearing data:');
       res.status(500).json({ error: 'Failed to clear data' });
     }
   };

@@ -158,17 +158,17 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-grow">
           <Search
             size={18}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
           />
           <input
             type="text"
             placeholder="Search transactions..."
-            className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             value={localFilters.searchTerm || ''}
             onChange={handleSearchChange}
           />
@@ -177,7 +177,9 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
         <div className="flex gap-2">
           <button
             className={`px-4 py-2 rounded-lg border ${
-              showAdvancedFilters ? 'bg-gray-100 border-gray-300' : 'border-gray-200'
+              showAdvancedFilters
+                ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-500'
+                : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300'
             } transition-colors flex items-center gap-2`}
             onClick={toggleAdvancedFilters}
             type="button"
@@ -188,7 +190,7 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
 
           {hasActiveFilters && (
             <button
-              className="px-4 py-2 rounded-lg border border-gray-200 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
               onClick={handleClearFilters}
               type="button"
             >
@@ -200,10 +202,10 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
       </div>
 
       {showAdvancedFilters && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Transaction Type
               </label>
               <div className="flex gap-2">
@@ -211,8 +213,8 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
                   type="button"
                   className={`px-3 py-1 rounded-full text-sm ${
                     localFilters.types?.includes('income')
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                   }`}
                   onClick={() => handleTypeChange('income')}
                 >
@@ -222,8 +224,8 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
                   type="button"
                   className={`px-3 py-1 rounded-full text-sm ${
                     localFilters.types?.includes('expense')
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                   }`}
                   onClick={() => handleTypeChange('expense')}
                 >
@@ -233,8 +235,8 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
                   type="button"
                   className={`px-3 py-1 rounded-full text-sm ${
                     localFilters.types?.includes('transfer')
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                   }`}
                   onClick={() => handleTypeChange('transfer')}
                 >
@@ -244,17 +246,19 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date Range
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="date"
-                  className="px-3 py-2 rounded-lg border border-gray-200"
+                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   value={localFilters.startDate || ''}
                   onChange={(e) => handleDateChange('startDate', e.target.value)}
                 />
                 <input
                   type="date"
-                  className="px-3 py-2 rounded-lg border border-gray-200"
+                  className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   value={localFilters.endDate || ''}
                   onChange={(e) => handleDateChange('endDate', e.target.value)}
                 />
@@ -262,28 +266,30 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount Range</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Amount Range
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
                     ₹
                   </span>
                   <input
                     type="number"
                     placeholder="Min"
-                    className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-200"
+                    className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     value={localFilters.minAmount || ''}
                     onChange={(e) => handleAmountChange('minAmount', e.target.value)}
                   />
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
                     ₹
                   </span>
                   <input
                     type="number"
                     placeholder="Max"
-                    className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-200"
+                    className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     value={localFilters.maxAmount || ''}
                     onChange={(e) => handleAmountChange('maxAmount', e.target.value)}
                   />
@@ -292,9 +298,11 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Categories
+              </label>
               <select
-                className="px-3 py-2 w-full rounded-lg border border-gray-200"
+                className="px-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 multiple
                 size={3}
                 value={localFilters.categoryIds || []}
@@ -309,9 +317,11 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Status
+              </label>
               <select
-                className="px-3 py-2 w-full rounded-lg border border-gray-200"
+                className="px-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={localFilters.status?.[0] || ''}
                 onChange={handleStatusChange}
               >
@@ -324,15 +334,19 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Tags
+              </label>
               <input
                 type="text"
                 placeholder="food, bills, etc."
-                className="px-3 py-2 w-full rounded-lg border border-gray-200"
+                className="px-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 value={localFilters.tags?.join(', ') || ''}
                 onChange={handleTagsChange}
               />
-              <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Separate tags with commas
+              </p>
             </div>
           </div>
         </div>

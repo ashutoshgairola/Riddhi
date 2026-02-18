@@ -6,7 +6,6 @@ import {
   Account,
   AccountDTO,
   AccountDetailDTO,
-  AccountType,
   AccountsResponse,
   CreateAccountRequest,
   GetAccountsQuery,

@@ -152,7 +152,7 @@ export const useAuth = (): UseAuthReturn => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   // Request password reset
   const requestPasswordReset = async (email: string): Promise<boolean> => {

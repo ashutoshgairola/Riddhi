@@ -357,6 +357,7 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 };
 
 // Custom hook for using budget context
+// eslint-disable-next-line react-refresh/only-export-components
 export const useBudgets = () => {
   const context = useContext(BudgetContext);
 

@@ -5,15 +5,15 @@ import { Download, File, FileSpreadsheet, FileText } from 'lucide-react';
 
 const ReportExportControls: FC = () => {
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-xl font-bold">Export Report</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="text-xl font-bold dark:text-gray-100">Export Report</h2>
       </div>
 
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               Export your report in various formats for further analysis or record keeping.
             </p>
 
@@ -23,11 +23,11 @@ const ReportExportControls: FC = () => {
                   type="radio"
                   id="export-csv"
                   name="export-format"
-                  className="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 focus:ring-green-500"
                   defaultChecked
                 />
-                <label htmlFor="export-csv" className="ml-2 flex items-center">
-                  <FileText size={16} className="mr-2 text-gray-500" />
+                <label htmlFor="export-csv" className="ml-2 flex items-center dark:text-gray-300">
+                  <FileText size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                   <span>CSV (Comma Separated Values)</span>
                 </label>
               </div>
@@ -37,10 +37,10 @@ const ReportExportControls: FC = () => {
                   type="radio"
                   id="export-excel"
                   name="export-format"
-                  className="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 focus:ring-green-500"
                 />
-                <label htmlFor="export-excel" className="ml-2 flex items-center">
-                  <FileSpreadsheet size={16} className="mr-2 text-gray-500" />
+                <label htmlFor="export-excel" className="ml-2 flex items-center dark:text-gray-300">
+                  <FileSpreadsheet size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                   <span>Excel Spreadsheet</span>
                 </label>
               </div>
@@ -50,10 +50,10 @@ const ReportExportControls: FC = () => {
                   type="radio"
                   id="export-pdf"
                   name="export-format"
-                  className="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 focus:ring-green-500"
                 />
-                <label htmlFor="export-pdf" className="ml-2 flex items-center">
-                  <File size={16} className="mr-2 text-gray-500" />
+                <label htmlFor="export-pdf" className="ml-2 flex items-center dark:text-gray-300">
+                  <File size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                   <span>PDF Document</span>
                 </label>
               </div>
@@ -61,17 +61,19 @@ const ReportExportControls: FC = () => {
           </div>
 
           <div>
-            <p className="text-sm text-gray-500 mb-4">Choose what to include in your export:</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Choose what to include in your export:
+            </p>
 
             <div className="space-y-3">
               <div className="flex items-center">
                 <input
                   type="checkbox"
                   id="include-summary"
-                  className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                   defaultChecked
                 />
-                <label htmlFor="include-summary" className="ml-2">
+                <label htmlFor="include-summary" className="ml-2 dark:text-gray-300">
                   Summary Data
                 </label>
               </div>
@@ -80,10 +82,10 @@ const ReportExportControls: FC = () => {
                 <input
                   type="checkbox"
                   id="include-charts"
-                  className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                   defaultChecked
                 />
-                <label htmlFor="include-charts" className="ml-2">
+                <label htmlFor="include-charts" className="ml-2 dark:text-gray-300">
                   Charts and Visualizations
                 </label>
               </div>
@@ -92,10 +94,10 @@ const ReportExportControls: FC = () => {
                 <input
                   type="checkbox"
                   id="include-transactions"
-                  className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                   defaultChecked
                 />
-                <label htmlFor="include-transactions" className="ml-2">
+                <label htmlFor="include-transactions" className="ml-2 dark:text-gray-300">
                   Detailed Transactions
                 </label>
               </div>
@@ -104,9 +106,9 @@ const ReportExportControls: FC = () => {
                 <input
                   type="checkbox"
                   id="include-notes"
-                  className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="h-4 w-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500"
                 />
-                <label htmlFor="include-notes" className="ml-2">
+                <label htmlFor="include-notes" className="ml-2 dark:text-gray-300">
                   Notes and Comments
                 </label>
               </div>

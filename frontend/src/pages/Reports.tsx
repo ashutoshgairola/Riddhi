@@ -49,7 +49,7 @@ const Reports: FC = () => {
         actions={
           <div className="flex space-x-2">
             <select
-              className="px-3 py-2 border border-gray-200 rounded-lg"
+              className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg"
               value={selectedTimeframe}
               onChange={(e) => setSelectedTimeframe(e.target.value as ReportTimeframe)}
             >
@@ -70,7 +70,9 @@ const Reports: FC = () => {
       <div className="mt-6 flex space-x-2 overflow-x-auto pb-2">
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === 'spending' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            selectedReportType === 'spending'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setSelectedReportType('spending')}
         >
@@ -78,7 +80,9 @@ const Reports: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === 'income' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            selectedReportType === 'income'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setSelectedReportType('income')}
         >
@@ -88,7 +92,7 @@ const Reports: FC = () => {
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
             selectedReportType === 'net_worth'
               ? 'bg-green-600 text-white'
-              : 'bg-white text-gray-700'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setSelectedReportType('net_worth')}
         >
@@ -96,7 +100,9 @@ const Reports: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === 'category' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            selectedReportType === 'category'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setSelectedReportType('category')}
         >
@@ -104,7 +110,9 @@ const Reports: FC = () => {
         </button>
         <button
           className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            selectedReportType === 'custom' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+            selectedReportType === 'custom'
+              ? 'bg-green-600 text-white'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
           }`}
           onClick={() => setSelectedReportType('custom')}
         >
@@ -114,28 +122,28 @@ const Reports: FC = () => {
 
       {/* Report Summary */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">Total Spending</p>
-          <p className="text-2xl font-bold">₹3,310.00</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Spending</p>
+          <p className="text-2xl font-bold dark:text-gray-100">₹3,310.00</p>
           <p className="text-sm text-green-600">↓ 15.1% vs previous period</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">Total Income</p>
-          <p className="text-2xl font-bold">₹5,000.00</p>
-          <p className="text-sm text-gray-500">No change vs previous period</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Income</p>
+          <p className="text-2xl font-bold dark:text-gray-100">₹5,000.00</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No change vs previous period</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">Savings</p>
-          <p className="text-2xl font-bold">₹1,690.00</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Savings</p>
+          <p className="text-2xl font-bold dark:text-gray-100">₹1,690.00</p>
           <p className="text-sm text-green-600">↑ 43.2% vs previous period</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">Largest Category</p>
-          <p className="text-2xl font-bold">Housing</p>
-          <p className="text-sm text-gray-500">₹1,500.00 (45.3% of total)</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Largest Category</p>
+          <p className="text-2xl font-bold dark:text-gray-100">Housing</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">₹1,500.00 (45.3% of total)</p>
         </div>
       </div>
 

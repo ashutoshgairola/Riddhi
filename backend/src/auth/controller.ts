@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { sendResponse } from '../common/utils';
+import { log } from '../config/logger';
 import { AuthService } from './service';
 import {
   ChangePasswordRequest,
@@ -12,6 +13,7 @@ import {
 } from './types/interface';
 
 export class AuthController {
+  private readonly context = AuthController.name;
   private authService: AuthService;
 
   constructor(authService: AuthService) {
@@ -21,14 +23,31 @@ export class AuthController {
   register = async (req: Request, res: Response): Promise<void> => {
     try {
       const userData: RegisterUserRequest = req.body;
+      log.info('👤 User registration attempt', {
+        context: this.context,
+        method: 'register',
+        email: userData.email,
+      });
 
       // Basic validation
       if (!userData.email || !userData.password || !userData.firstName || !userData.lastName) {
+        log.warn('❌ Registration failed: Missing required fields', {
+          context: this.context,
+          method: 'register',
+        });
         res.status(400).json({ error: 'Missing required fields' });
         return;
       }
 
       const user = await this.authService.register(userData);
+
+      log.info('✅ User registered successfully', {
+        context: this.context,
+        method: 'register',
+        userId: user.id,
+        email: userData.email,
+      });
+
       sendResponse({
         res,
         status: 201,
@@ -37,9 +56,20 @@ export class AuthController {
       });
     } catch (error: any) {
       if (error.message === 'Email already registered') {
+        log.warn('⚠️ Registration failed: Email already exists', {
+          context: this.context,
+          method: 'register',
+          email: req.body.email,
+          error: error.message,
+        });
         res.status(400).json({ error: error.message });
       } else {
-        console.error('Registration error:', error);
+        log.error('💥 Registration failed: Internal server error', {
+          context: this.context,
+          method: 'register',
+          error,
+          email: req.body.email,
+        });
         res.status(500).json({ error: 'Internal server error' });
       }
     }
@@ -48,14 +78,31 @@ export class AuthController {
   login = async (req: Request, res: Response): Promise<void> => {
     try {
       const credentials: LoginRequest = req.body;
+      log.info('🔐 User login attempt', {
+        context: this.context,
+        method: 'login',
+        email: credentials.email,
+      });
 
       // Basic validation
       if (!credentials.email || !credentials.password) {
+        log.warn('❌ Login failed: Missing email or password', {
+          context: this.context,
+          method: 'login',
+        });
         res.status(400).json({ error: 'Email and password are required' });
         return;
       }
 
       const user = await this.authService.login(credentials);
+
+      log.info('✅ User logged in successfully', {
+        context: this.context,
+        method: 'login',
+        userId: user.user.id,
+        email: credentials.email,
+      });
+
       sendResponse({
         res,
         data: user,
@@ -63,9 +110,19 @@ export class AuthController {
       });
     } catch (error: any) {
       if (error.message === 'Invalid credentials') {
+        log.warn('⚠️ Login failed: Invalid credentials', {
+          context: this.context,
+          method: 'login',
+          email: req.body.email,
+        });
         res.status(401).json({ error: error.message });
       } else {
-        console.error('Login error:', error);
+        log.error('💥 Login failed: Internal server error', {
+          context: this.context,
+          method: 'login',
+          error,
+          email: req.body.email,
+        });
         res.status(500).json({ error: 'Internal server error' });
       }
     }
@@ -74,13 +131,29 @@ export class AuthController {
   resetPasswordRequest = async (req: Request, res: Response): Promise<void> => {
     try {
       const { email }: ResetPasswordRequest = req.body;
+      log.info('🔑 Password reset request', {
+        context: this.context,
+        method: 'resetPasswordRequest',
+        email,
+      });
 
       if (!email) {
+        log.warn('❌ Password reset failed: Email is required', {
+          context: this.context,
+          method: 'resetPasswordRequest',
+        });
         res.status(400).json({ error: 'Email is required' });
         return;
       }
 
       await this.authService.requestPasswordReset(email);
+
+      log.info('✅ Password reset email sent successfully', {
+        context: this.context,
+        method: 'resetPasswordRequest',
+        email,
+      });
+
       sendResponse({
         res,
         data: null,
@@ -88,9 +161,20 @@ export class AuthController {
       });
     } catch (error: any) {
       if (error.message === 'Email not found') {
+        log.warn('⚠️ Password reset failed: Email not found', {
+          context: this.context,
+          method: 'resetPasswordRequest',
+          email: req.body.email,
+          error: error.message,
+        });
         res.status(404).json({ error: error.message });
       } else {
-        console.error('Password reset request error:', error);
+        log.error('💥 Password reset request failed: Internal server error', {
+          context: this.context,
+          method: 'resetPasswordRequest',
+          error,
+          email: req.body.email,
+        });
         res.status(500).json({ error: 'Internal server error' });
       }
     }
@@ -99,13 +183,27 @@ export class AuthController {
   resetPasswordConfirm = async (req: Request, res: Response): Promise<void> => {
     try {
       const { token, newPassword }: ResetPasswordConfirmRequest = req.body;
+      log.info('🔓 Password reset confirmation attempt', {
+        context: this.context,
+        method: 'resetPasswordConfirm',
+      });
 
       if (!token || !newPassword) {
+        log.warn('❌ Password reset confirmation failed: Token and password required', {
+          context: this.context,
+          method: 'resetPasswordConfirm',
+        });
         res.status(400).json({ error: 'Token and new password are required' });
         return;
       }
 
       await this.authService.confirmPasswordReset(token, newPassword);
+
+      log.info('✅ Password reset confirmed successfully', {
+        context: this.context,
+        method: 'resetPasswordConfirm',
+      });
+
       sendResponse({
         res,
         data: null,
@@ -113,9 +211,18 @@ export class AuthController {
       });
     } catch (error: any) {
       if (error.message === 'Invalid or expired token') {
+        log.warn('⚠️ Password reset confirmation failed: Invalid token', {
+          context: this.context,
+          method: 'resetPasswordConfirm',
+          error: error.message,
+        });
         res.status(400).json({ error: error.message });
       } else {
-        console.error('Password reset confirmation error:', error);
+        log.error('💥 Password reset confirmation failed: Internal server error', {
+          context: this.context,
+          method: 'resetPasswordConfirm',
+          error,
+        });
         res.status(500).json({ error: 'Internal server error' });
       }
     }
@@ -124,20 +231,41 @@ export class AuthController {
   getProfile = async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.body.user;
+      log.info('👤 Get profile request', {
+        context: this.context,
+        method: 'getProfile',
+        userId,
+      });
 
       if (!userId) {
+        log.warn('❌ Get profile failed: Unauthorized', {
+          context: this.context,
+          method: 'getProfile',
+        });
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
       const profile = await this.authService.getProfile(userId);
+
+      log.info('✅ Profile retrieved successfully', {
+        context: this.context,
+        method: 'getProfile',
+        userId,
+      });
+
       sendResponse({
         res,
         data: profile,
         message: 'User profile retrieved successfully',
       });
     } catch (error) {
-      console.error('Get profile error:', error);
+      log.error('💥 Get profile failed: Internal server error', {
+        context: this.context,
+        method: 'getProfile',
+        error,
+        userId: req.body.user?.userId,
+      });
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -148,19 +276,41 @@ export class AuthController {
       delete req.body.user;
       const updates: UpdateProfileRequest = req.body;
 
+      log.info('📝 Update profile request', {
+        context: this.context,
+        method: 'updateProfile',
+        userId,
+      });
+
       if (!userId) {
+        log.warn('❌ Update profile failed: Unauthorized', {
+          context: this.context,
+          method: 'updateProfile',
+        });
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
       const updatedProfile = await this.authService.updateProfile(userId, updates);
+
+      log.info('✅ Profile updated successfully', {
+        context: this.context,
+        method: 'updateProfile',
+        userId,
+      });
+
       sendResponse({
         res,
         data: updatedProfile,
         message: 'User profile updated successfully',
       });
     } catch (error) {
-      console.error('Update profile error:', error);
+      log.error('💥 Update profile failed: Internal server error', {
+        context: this.context,
+        method: 'updateProfile',
+        error,
+        userId: req.body.user?.userId,
+      });
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -170,17 +320,39 @@ export class AuthController {
       const { userId } = req.body.user;
       const { currentPassword, newPassword }: ChangePasswordRequest = req.body;
 
+      log.info('🔒 Change password request', {
+        context: this.context,
+        method: 'changePassword',
+        userId,
+      });
+
       if (!userId) {
+        log.warn('❌ Change password failed: Unauthorized', {
+          context: this.context,
+          method: 'changePassword',
+        });
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
       if (!currentPassword || !newPassword) {
+        log.warn('❌ Change password failed: Missing current or new password', {
+          context: this.context,
+          method: 'changePassword',
+          userId,
+        });
         res.status(400).json({ error: 'Current password and new password are required' });
         return;
       }
 
       await this.authService.changePassword(userId, currentPassword, newPassword);
+
+      log.info('✅ Password changed successfully', {
+        context: this.context,
+        method: 'changePassword',
+        userId,
+      });
+
       sendResponse({
         res,
         data: null,
@@ -188,9 +360,20 @@ export class AuthController {
       });
     } catch (error: any) {
       if (error.message === 'Current password is incorrect') {
+        log.warn('⚠️ Change password failed: Incorrect current password', {
+          context: this.context,
+          method: 'changePassword',
+          userId: req.body.user?.userId,
+          error: error.message,
+        });
         res.status(401).json({ error: error.message });
       } else {
-        console.error('Change password error:', error);
+        log.error('💥 Change password failed: Internal server error', {
+          context: this.context,
+          method: 'changePassword',
+          error,
+          userId: req.body.user?.userId,
+        });
         res.status(500).json({ error: 'Internal server error' });
       }
     }

@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
 import Sidebar from '../components/common/Sidebar';
 import AddTransactionForm from '../components/transactions/AddTransactionForm';
+import { useTheme } from '../hooks/useTheme';
 import { useTransactionCategories } from '../hooks/useTransactionCategories';
 import { useTransactions } from '../hooks/useTransactions';
 import { TransactionCreateDTO } from '../types/transaction.types';
@@ -17,6 +18,7 @@ const DashboardLayout: FC = () => {
 
   const { createTransaction } = useTransactions();
   const { categories, loading: categoriesLoading } = useTransactionCategories();
+  const { isDark } = useTheme();
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -35,13 +37,15 @@ const DashboardLayout: FC = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar toggleSidebar={toggleSidebar} />
 
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
+        <main
+          className={`flex-1 overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-gray-50'} p-4 md:p-6`}
+        >
           <Outlet />
         </main>
       </div>
@@ -56,8 +60,12 @@ const DashboardLayout: FC = () => {
 
       {/* Quick Add Transaction Modal */}
       {showAddTransaction && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <div
+          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50`}
+        >
+          <div
+            className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-md w-full p-6`}
+          >
             {/* <h2 className="text-xl font-bold mb-4">Add Transaction</h2> */}
             <AddTransactionForm
               onClose={toggleAddTransaction}

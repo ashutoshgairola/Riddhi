@@ -133,19 +133,34 @@ const dummyNotificationSettings: NotificationSetting[] = [
   },
 ];
 
-// Dummy user preferences
-const dummyUserPreferences: UserPreferences = {
-  currency: 'USD',
-  dateFormat: 'MM/DD/YYYY',
-  theme: 'light',
-  startOfWeek: 'sunday',
-  language: 'en',
+// Dummy user preferences - in real app, load from localStorage/API
+const getInitialUserPreferences = (): UserPreferences => {
+  const defaultPreferences = {
+    currency: 'USD',
+    dateFormat: 'MM/DD/YYYY',
+    theme: 'light' as const,
+    startOfWeek: 'sunday' as const,
+    language: 'en',
+  };
+
+  try {
+    const stored = localStorage.getItem('userPreferences');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { ...defaultPreferences, ...parsed };
+    }
+  } catch (error) {
+    console.warn('Failed to load preferences from localStorage:', error);
+  }
+
+  return defaultPreferences;
 };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [accountConnections, setAccountConnections] = useState<AccountConnection[]>([]);
   const [notificationSettings, setNotificationSettings] = useState<NotificationSetting[]>([]);
-  const [userPreferences, setUserPreferences] = useState<UserPreferences>(dummyUserPreferences);
+  const [userPreferences, setUserPreferences] =
+    useState<UserPreferences>(getInitialUserPreferences);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -159,7 +174,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         setAccountConnections(dummyAccountConnections);
         setNotificationSettings(dummyNotificationSettings);
-        setUserPreferences(dummyUserPreferences);
+        setUserPreferences(getInitialUserPreferences());
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load settings data');
@@ -360,6 +375,13 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       // Update preferences
       const updatedPreferences = { ...userPreferences, ...preferences };
 
+      // Persist to localStorage
+      try {
+        localStorage.setItem('userPreferences', JSON.stringify(updatedPreferences));
+      } catch (error) {
+        console.warn('Failed to save preferences to localStorage:', error);
+      }
+
       // Update state
       setUserPreferences(updatedPreferences);
       setError(null);
@@ -452,6 +474,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 };
 
 // Custom hook for using settings context
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSettings = () => {
   const context = useContext(SettingsContext);
 

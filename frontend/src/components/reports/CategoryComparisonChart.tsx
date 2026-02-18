@@ -40,11 +40,11 @@ const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({ data }) => 
       payload[1].value !== undefined
     ) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow-sm">
-          <p className="font-medium">{label}</p>
+        <div className="bg-white dark:bg-gray-700 p-3 border border-gray-200 dark:border-gray-600 rounded shadow-sm">
+          <p className="font-medium dark:text-gray-100">{label}</p>
           <p className="text-green-600">Current: {formatCurrency(payload[0].value)}</p>
           <p className="text-blue-600">Previous: {formatCurrency(payload[1].value)}</p>
-          <p className="text-gray-600 text-sm mt-1">
+          <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
             {payload[0].value > payload[1].value
               ? `Increased by ${formatCurrency(payload[0].value - payload[1].value)}`
               : `Decreased by ${formatCurrency(payload[1].value - payload[0].value)}`}
@@ -56,9 +56,9 @@ const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({ data }) => 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-xl font-bold">Category Comparison</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="text-xl font-bold dark:text-gray-100">Category Comparison</h2>
       </div>
 
       <div className="p-6">

@@ -202,10 +202,14 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto px-1">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">
+        <h2 className="text-xl font-bold dark:text-gray-100">
           {initialData ? 'Edit Transaction' : 'Add Transaction'}
         </h2>
-        <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        >
           <X size={20} />
         </button>
       </div>
@@ -217,7 +221,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             className={`px-4 py-2 rounded-lg flex-1 ${
               formData.type === 'expense'
                 ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleTypeChange('expense')}
           >
@@ -228,7 +232,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             className={`px-4 py-2 rounded-lg flex-1 ${
               formData.type === 'income'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleTypeChange('income')}
           >
@@ -239,7 +243,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             className={`px-4 py-2 rounded-lg flex-1 ${
               formData.type === 'transfer'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleTypeChange('transfer')}
           >
@@ -249,7 +253,9 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Description*
+        </label>
         <input
           type="text"
           name="description"
@@ -257,8 +263,8 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
           onChange={handleChange}
           required
           className={`w-full px-3 py-2 border ${
-            formErrors.description ? 'border-red-500' : 'border-gray-300'
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            formErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
           placeholder="e.g. Grocery shopping, Rent payment"
         />
         {formErrors.description && (
@@ -269,9 +275,11 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Amount*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Amount*
+        </label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
             ₹
           </span>
           <input
@@ -283,8 +291,8 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             step="0.01"
             min="0"
             className={`w-full px-8 py-2 border ${
-              formErrors.amount ? 'border-red-500' : 'border-gray-300'
-            } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+              formErrors.amount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
             placeholder="0.00"
           />
         </div>
@@ -297,7 +305,9 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date*</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Date*
+          </label>
           <input
             type="date"
             name="date"
@@ -305,8 +315,8 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             onChange={handleChange}
             required
             className={`w-full px-3 py-2 border ${
-              formErrors.date ? 'border-red-500' : 'border-gray-300'
-            } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+              formErrors.date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
           />
           {formErrors.date && (
             <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -316,11 +326,13 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category*</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Category*
+          </label>
           {categoriesLoading ? (
             <div className="flex items-center space-x-2 h-10">
               <Spinner size="sm" />
-              <span className="text-gray-500">Loading categories...</span>
+              <span className="text-gray-500 dark:text-gray-400">Loading categories...</span>
             </div>
           ) : (
             <>
@@ -330,8 +342,8 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
                 onChange={handleChange}
                 required
                 className={`w-full px-3 py-2 border ${
-                  formErrors.categoryId ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+                  formErrors.categoryId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
               >
                 <option value="">Select a category</option>
                 {categories.map((category) => (
@@ -351,15 +363,17 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Account*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Account*
+        </label>
         <select
           name="accountId"
           value={formData.accountId}
           onChange={handleChange}
           required
           className={`w-full px-3 py-2 border ${
-            formErrors.accountId ? 'border-red-500' : 'border-gray-300'
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            formErrors.accountId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
         >
           <option value="">Select an account</option>
           <option value="1">Main Checking Account</option>
@@ -374,14 +388,16 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Status
+        </label>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             className={`px-3 py-1 rounded-lg text-sm ${
               formData.status === 'cleared'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleStatusChange('cleared')}
           >
@@ -392,7 +408,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             className={`px-3 py-1 rounded-lg text-sm ${
               formData.status === 'pending'
                 ? 'bg-yellow-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleStatusChange('pending')}
           >
@@ -403,7 +419,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             className={`px-3 py-1 rounded-lg text-sm ${
               formData.status === 'reconciled'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleStatusChange('reconciled')}
           >
@@ -414,7 +430,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
             className={`px-3 py-1 rounded-lg text-sm ${
               isEmpty(formData.status) || formData.status === 'void'
                 ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => handleStatusChange('void')}
           >
@@ -424,28 +440,34 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Notes
+        </label>
         <textarea
           name="notes"
           value={formData.notes}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           rows={3}
           placeholder="Add any additional details here..."
         ></textarea>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Tags
+        </label>
         <input
           type="text"
           name="tags"
           value={formData.tags?.join(', ')}
           onChange={handleTagsChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="Enter tags separated by commas"
         />
-        <p className="text-xs text-gray-500 mt-1">E.g. food, bills, subscriptions</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          E.g. food, bills, subscriptions
+        </p>
       </div>
 
       <div className="mb-6">
@@ -459,17 +481,19 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         </button>
 
         {showRecurringOptions && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Frequency*</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Frequency*
+                </label>
                 <select
                   name="frequency"
                   value={formData.recurringDetails?.frequency}
                   onChange={handleRecurringChange}
                   className={`w-full px-3 py-2 border ${
-                    formErrors.frequency ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+                    formErrors.frequency ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -484,7 +508,9 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Interval*</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Interval*
+                </label>
                 <input
                   type="number"
                   name="interval"
@@ -492,11 +518,13 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
                   onChange={handleRecurringChange}
                   min="1"
                   className={`w-full px-3 py-2 border ${
-                    formErrors.interval ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+                    formErrors.interval ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
                   placeholder="1"
                 />
-                <p className="text-xs text-gray-500 mt-1">E.g. every 2 weeks, every 3 months</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  E.g. every 2 weeks, every 3 months
+                </p>
                 {formErrors.interval && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <AlertCircle size={14} className="mr-1" /> {formErrors.interval}
@@ -505,7 +533,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   End Date (Optional)
                 </label>
                 <input
@@ -513,9 +541,11 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
                   name="endDate"
                   value={formData.recurringDetails?.endDate || ''}
                   onChange={handleRecurringChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Leave blank for indefinite recurring</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Leave blank for indefinite recurring
+                </p>
               </div>
             </div>
           </div>
@@ -526,7 +556,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           Cancel
         </button>

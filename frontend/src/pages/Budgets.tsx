@@ -195,7 +195,7 @@ const Budgets: FC = () => {
   // Render error state
   if (error && !currentBudget) {
     return (
-      <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-lg">
+      <div className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 p-4 rounded-lg">
         <p>Error loading budget: {error.message}</p>
         <button
           onClick={() => fetchCurrentBudget()}
@@ -218,8 +218,10 @@ const Budgets: FC = () => {
   if (!currentBudget) {
     return (
       <div className="text-center p-8">
-        <h2 className="text-xl font-bold mb-4">No active budget found</h2>
-        <p className="mb-6 text-gray-600">Create a new budget to start tracking your expenses</p>
+        <h2 className="text-xl font-bold dark:text-gray-100 mb-4">No active budget found</h2>
+        <p className="mb-6 text-gray-600 dark:text-gray-400">
+          Create a new budget to start tracking your expenses
+        </p>
         <button
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
           onClick={() => setShowCreateBudget(true)}
@@ -248,7 +250,7 @@ const Budgets: FC = () => {
         actions={
           <div className="flex space-x-2">
             <select
-              className="px-3 py-2 border border-gray-200 rounded-lg"
+              className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg"
               value={selectedMonth}
               onChange={(e) => handleMonthChange(e.target.value)}
             >

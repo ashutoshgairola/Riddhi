@@ -106,7 +106,7 @@ export interface BudgetPerformanceResponse {
   remainingBudget: number;
   overBudgetAmount: number;
   categories: {
-    categoryId: string;
+    categoryIds: string[];
     categoryName: string;
     budgeted: number;
     spent: number;

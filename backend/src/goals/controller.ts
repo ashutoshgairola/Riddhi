@@ -1,19 +1,25 @@
 import { Request, Response } from 'express';
 
+import { createChildLogger } from '../config/logger';
 import { GoalService } from './service';
 import { CreateGoalRequest, GetGoalsQuery, UpdateGoalRequest } from './types/interface';
 
 export class GoalController {
   private goalService: GoalService;
+  private logger = createChildLogger({ controller: 'GoalController' });
 
   constructor(goalService: GoalService) {
     this.goalService = goalService;
   }
 
   getGoals = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getGoals' });
+
     try {
       const userId = req.user!.userId;
       const query: GetGoalsQuery = req.query as any;
+
+      requestLogger.info({ userId }, 'Getting goals');
 
       // Convert numeric query params
       if (query.page) {
@@ -25,9 +31,12 @@ export class GoalController {
       }
 
       const goals = await this.goalService.getGoals(userId, query);
+
+      requestLogger.info({ userId }, 'Goals fetched successfully');
+
       res.status(200).json(goals);
     } catch (error: any) {
-      console.error('Error fetching goals:', error);
+      requestLogger.error({ error, userId: req.user?.userId }, 'Error fetching goals');
       res.status(500).json({ error: 'Failed to fetch goals' });
     }
   };
@@ -48,15 +57,19 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error('Error fetching goal:', error);
+      this.logger.error({ error }, 'Error fetching goal:');
       res.status(500).json({ error: 'Failed to fetch goal' });
     }
   };
 
   createGoal = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'createGoal' });
+
     try {
       const userId = req.user!.userId;
       const goalData: CreateGoalRequest = req.body;
+
+      requestLogger.info({ userId, goalName: goalData.name, type: goalData.type }, 'Creating goal');
 
       // Basic validation
       if (
@@ -68,12 +81,25 @@ export class GoalController {
         !goalData.targetDate ||
         goalData.priority === undefined
       ) {
+        requestLogger.warn({ userId }, 'Goal creation failed: Missing required fields');
         res.status(400).json({ error: 'Missing required fields' });
         return;
       }
 
       try {
         const goal = await this.goalService.createGoal(userId, goalData);
+
+        requestLogger.info(
+          {
+            userId,
+            goalId: goal.id,
+            goalName: goalData.name,
+            type: goalData.type,
+            targetAmount: goalData.targetAmount,
+          },
+          'Goal created successfully',
+        );
+
         res.status(201).json(goal);
       } catch (error: any) {
         if (
@@ -81,13 +107,17 @@ export class GoalController {
           error.message.includes('amount') ||
           error.message.includes('priority')
         ) {
+          requestLogger.warn(
+            { userId, error: error.message },
+            'Goal creation failed: Validation error',
+          );
           res.status(400).json({ error: error.message });
         } else {
           throw error;
         }
       }
     } catch (error: any) {
-      console.error('Error creating goal:', error);
+      requestLogger.error({ error, userId: req.user?.userId }, 'Error creating goal');
       res.status(500).json({ error: 'Failed to create goal' });
     }
   };
@@ -115,7 +145,7 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error('Error updating goal:', error);
+      this.logger.error({ error }, 'Error updating goal:');
       res.status(500).json({ error: 'Failed to update goal' });
     }
   };
@@ -136,7 +166,7 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error('Error deleting goal:', error);
+      this.logger.error({ error }, 'Error deleting goal:');
       res.status(500).json({ error: 'Failed to delete goal' });
     }
   };
@@ -159,7 +189,7 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error('Error completing goal:', error);
+      this.logger.error({ error }, 'Error completing goal:');
       res.status(500).json({ error: 'Failed to complete goal' });
     }
   };
@@ -185,7 +215,7 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error('Error pausing goal:', error);
+      this.logger.error({ error }, 'Error pausing goal:');
       res.status(500).json({ error: 'Failed to pause goal' });
     }
   };
@@ -208,7 +238,7 @@ export class GoalController {
         }
       }
     } catch (error: any) {
-      console.error('Error resuming goal:', error);
+      this.logger.error({ error }, 'Error resuming goal:');
       res.status(500).json({ error: 'Failed to resume goal' });
     }
   };

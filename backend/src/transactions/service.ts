@@ -5,6 +5,7 @@ import path from 'path';
 import { promisify } from 'util';
 
 import { BudgetModel } from '../budgets/db';
+import { createChildLogger } from '../config/logger';
 import { AttachmentModel } from './attachment-db';
 import { CategoryModel } from './category-db';
 import { TransactionModel } from './db';
@@ -18,7 +19,6 @@ import {
   Transaction,
   TransactionCategory,
   TransactionDTO,
-  TransactionsResponse,
   UpdateTransactionRequest,
 } from './types/interface';
 
@@ -28,6 +28,7 @@ export class TransactionService {
   private attachmentModel: AttachmentModel;
   private budgetModel: BudgetModel;
   private uploadsDir: string;
+  private logger = createChildLogger({ service: 'TransactionService' });
 
   constructor(db: Db) {
     this.transactionModel = new TransactionModel(db);
@@ -554,7 +555,10 @@ export class TransactionService {
         dto.category = this.mapCategoryToDTO(category);
       }
     } catch (error) {
-      console.error(`Error fetching category for transaction ${transaction._id}:`, error);
+      this.logger.error(
+        { error, transactionId: transaction._id },
+        'Error fetching category for transaction',
+      );
     }
 
     return dto;

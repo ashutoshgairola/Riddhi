@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply transition-colors duration-300;
+  }
+
+  .light {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  /* Force light mode styles */
+  html.light,
+  .light body,
+  .light #root {
+    @apply bg-gray-50 text-gray-900;
+  }
+
+  /* Force dark mode styles */
+  html.dark,
+  .dark body,
+  .dark #root {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  /* Ensure all child elements inherit properly */
+  .light * {
+    color-scheme: light;
+  }
+
+  .dark * {
+    color-scheme: dark;
+  }
+}

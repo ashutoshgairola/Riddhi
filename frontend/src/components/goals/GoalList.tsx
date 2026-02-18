@@ -109,11 +109,11 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Your Goals</h2>
-          <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <h2 className="text-xl font-bold dark:text-gray-100">Your Goals</h2>
+          <select className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm">
             <option>Sort by Priority</option>
             <option>Sort by Progress</option>
             <option>Sort by Due Date</option>
@@ -128,7 +128,10 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
               const progressPercentage = calculatePercentage(goal.currentAmount, goal.targetAmount);
 
               return (
-                <div key={goal.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                <div
+                  key={goal.id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                >
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -137,18 +140,18 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                             className="w-3 h-3 rounded-full mr-2"
                             style={{ backgroundColor: goal.color }}
                           ></div>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             {getGoalTypeLabel(goal.type)}
                           </span>
                         </div>
-                        <h3 className="font-medium">{goal.name}</h3>
+                        <h3 className="font-medium dark:text-gray-100">{goal.name}</h3>
                       </div>
 
                       <div className="flex items-center">
                         {getGoalStatusElement(goal)}
 
                         <button
-                          className="text-gray-400 hover:text-gray-600 ml-3"
+                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 ml-3"
                           onClick={() => onEditGoal(goal)}
                         >
                           <Edit2 size={18} />
@@ -157,14 +160,16 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                     </div>
 
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-sm">
+                      <p className="text-sm dark:text-gray-300">
                         {formatCurrency(goal.currentAmount, 'INR')} of{' '}
                         {formatCurrency(goal.targetAmount, 'INR')}
                       </p>
-                      <p className="text-sm font-medium">{progressPercentage}%</p>
+                      <p className="text-sm font-medium dark:text-gray-300">
+                        {progressPercentage}%
+                      </p>
                     </div>
 
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
                       <div
                         className="h-2 rounded-full"
                         style={{
@@ -174,7 +179,7 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                       ></div>
                     </div>
 
-                    <div className="flex justify-between items-center text-sm text-gray-500">
+                    <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center">
                         <Calendar size={14} className="mr-1" />
                         <span>Due {formatDate(goal.targetDate)}</span>
@@ -184,7 +189,7 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                     </div>
 
                     {goal.contributionAmount && goal.contributionFrequency && (
-                      <div className="mt-2 text-sm text-gray-500 flex items-center">
+                      <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
                         <DollarSign size={14} className="mr-1" />
                         <span>
                           Contributing {formatCurrency(goal.contributionAmount, 'INR')}{' '}
@@ -199,8 +204,10 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-500">No goals found</p>
-            <p className="text-sm text-gray-400 mt-1">Create your first financial goal</p>
+            <p className="text-gray-500 dark:text-gray-400">No goals found</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+              Create your first financial goal
+            </p>
           </div>
         )}
       </div>

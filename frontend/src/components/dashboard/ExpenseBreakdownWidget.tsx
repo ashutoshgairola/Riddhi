@@ -22,11 +22,11 @@ const ExpenseBreakdownWidget: FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Expense Breakdown</h2>
-          <select className="p-2 border border-gray-200 rounded-md text-sm">
+          <h2 className="text-xl font-bold dark:text-gray-100">Expense Breakdown</h2>
+          <select className="p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm">
             <option>This month</option>
             <option>Last month</option>
             <option>This year</option>

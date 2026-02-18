@@ -4,7 +4,7 @@ export interface BudgetCategory {
   name: string;
   allocated: number;
   spent: number;
-  categoryId: string;
+  categoryIds: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;
@@ -30,7 +30,7 @@ export interface BudgetCategory {
   name: string;
   allocated: number;
   spent: number;
-  categoryId: string; // Reference to transaction category
+  categoryIds: string[]; // References to transaction categories
   color?: string;
   icon?: string;
   rollover?: boolean;
@@ -65,7 +65,7 @@ export interface BudgetCreateDTO {
   categories: Array<{
     name: string;
     allocated: number;
-    categoryId: string;
+    categoryIds: string[];
     color?: string;
     icon?: string;
     rollover?: boolean;
@@ -82,7 +82,7 @@ export interface BudgetUpdateDTO {
     id?: string;
     name: string;
     allocated: number;
-    categoryId: string;
+    categoryIds: string[];
     color?: string;
     icon?: string;
     rollover?: boolean;
@@ -95,7 +95,7 @@ export interface BudgetUpdateDTO {
 export interface BudgetCategoryCreateDTO {
   name: string;
   allocated: number;
-  categoryId: string;
+  categoryIds: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;
@@ -105,7 +105,7 @@ export interface BudgetCategoryCreateDTO {
 export interface BudgetCategoryUpdateDTO {
   name?: string;
   allocated?: number;
-  categoryId?: string;
+  categoryIds?: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;

@@ -6,6 +6,7 @@ import { AlertCircle, X } from 'lucide-react';
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import { CategoryCreateDTO, CategoryUpdateDTO } from '../../services/api/categoryService';
 import { TransactionCategory } from '../../types/transaction.types';
+import IconSelector from '../common/IconSelector';
 
 interface AddTransactionCategoryFormProps {
   onClose: () => void;
@@ -27,26 +28,6 @@ const colorPalette = [
   '#3F51B5', // Indigo
   '#F44336', // Red
   '#00BCD4', // Cyan
-];
-
-// Icon options for categories
-const iconOptions = [
-  { value: 'home', label: 'Home' },
-  { value: 'shopping-cart', label: 'Shopping Cart' },
-  { value: 'utensils', label: 'Food & Dining' },
-  { value: 'car', label: 'Transportation' },
-  { value: 'film', label: 'Entertainment' },
-  { value: 'dumbbell', label: 'Fitness' },
-  { value: 'book', label: 'Education' },
-  { value: 'briefcase', label: 'Work' },
-  { value: 'heart', label: 'Health' },
-  { value: 'wallet', label: 'Finance' },
-  { value: 'gift', label: 'Gifts' },
-  { value: 'plane', label: 'Travel' },
-  { value: 'dollar-sign', label: 'Income' },
-  { value: 'zap', label: 'Utilities' },
-  { value: 'package', label: 'Subscriptions' },
-  { value: 'more-horizontal', label: 'Other' },
 ];
 
 const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
@@ -94,6 +75,21 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
       ...formData,
       color,
     });
+  };
+
+  const handleIconSelect = (iconValue: string) => {
+    setFormData({
+      ...formData,
+      icon: iconValue,
+    });
+
+    // Clear error for this field
+    if (formErrors.icon) {
+      setFormErrors({
+        ...formErrors,
+        icon: '',
+      });
+    }
   };
 
   const validateForm = (): boolean => {
@@ -151,10 +147,14 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">
+        <h2 className="text-xl font-bold dark:text-gray-100">
           {initialData ? 'Edit Transaction Category' : 'Add Transaction Category'}
         </h2>
-        <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        >
           <X size={20} />
         </button>
       </div>
@@ -166,7 +166,9 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Category Name*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Category Name*
+        </label>
         <input
           type="text"
           name="name"
@@ -174,8 +176,8 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
           onChange={handleChange}
           placeholder="e.g., Groceries, Entertainment, Transportation"
           className={`w-full px-3 py-2 border ${
-            formErrors.name ? 'border-red-500' : 'border-gray-300'
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
         />
         {formErrors.name && (
           <p className="mt-1 text-sm text-red-600 flex items-center">
@@ -185,7 +187,9 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Color*</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Color*
+        </label>
         <div className="flex flex-wrap gap-2">
           {colorPalette.map((color) => (
             <button
@@ -193,8 +197,8 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
               type="button"
               className={`w-10 h-10 rounded-full border-2 ${
                 formData.color === color
-                  ? 'border-gray-800 ring-2 ring-offset-2 ring-gray-500'
-                  : 'border-gray-300'
+                  ? 'border-gray-800 dark:border-gray-200 ring-2 ring-offset-2 ring-gray-500 dark:ring-offset-gray-800'
+                  : 'border-gray-300 dark:border-gray-600'
               }`}
               style={{ backgroundColor: color }}
               onClick={() => handleColorSelect(color)}
@@ -210,48 +214,29 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Icon*</label>
-        <select
-          name="icon"
-          value={formData.icon}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border ${
-            formErrors.icon ? 'border-red-500' : 'border-gray-300'
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-        >
-          <option value="">Select an icon</option>
-          {iconOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          Icon*
+        </label>
+        <IconSelector
+          selectedIcon={formData.icon || 'more-horizontal'}
+          onIconSelect={handleIconSelect}
+        />
         {formErrors.icon && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
+          <p className="mt-2 text-sm text-red-600 flex items-center">
             <AlertCircle size={14} className="mr-1" /> {formErrors.icon}
           </p>
         )}
       </div>
-      {/* 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows={3}
-          placeholder="Add a description for this category..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
-      </div> */}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Parent Category
+        </label>
         <select
           name="parentId"
           value={formData.parentId || ''}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
         >
           <option value="">None (Make this a main category)</option>
           {parentCategories.map((category) => (
@@ -260,17 +245,17 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
             </option>
           ))}
         </select>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {formData.parentId ? 'This will be a subcategory' : 'This will be a main category'}
         </p>
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex justify-end space-x-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             disabled={isSubmitting}
           >
             Cancel

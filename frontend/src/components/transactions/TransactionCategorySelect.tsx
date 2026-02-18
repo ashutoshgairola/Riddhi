@@ -62,8 +62,8 @@ const TransactionCategorySelect: FC<TransactionCategorySelectProps> = ({
     return (
       <div
         key={category.id}
-        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 flex items-center ${
-          isSelected ? 'bg-green-50' : ''
+        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center ${
+          isSelected ? 'bg-green-50 dark:bg-green-900/20' : ''
         } ${isSubcategory ? 'pl-8' : ''}`}
         onClick={() => onChange(category.id)}
       >
@@ -72,8 +72,12 @@ const TransactionCategorySelect: FC<TransactionCategorySelectProps> = ({
           style={{ backgroundColor: category.color || '#9e9e9e' }}
         ></div>
         <div>
-          <span className={isSubcategory ? 'text-sm' : ''}>{category.name}</span>
-          {category.description && <p className="text-xs text-gray-500">{category.description}</p>}
+          <span className={`dark:text-gray-200 ${isSubcategory ? 'text-sm' : ''}`}>
+            {category.name}
+          </span>
+          {category.description && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">{category.description}</p>
+          )}
         </div>
       </div>
     );
@@ -88,14 +92,16 @@ const TransactionCategorySelect: FC<TransactionCategorySelectProps> = ({
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search categories..."
           className={`w-full px-3 py-2 border ${
-            error ? 'border-red-500' : 'border-gray-300'
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+          } rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500`}
         />
       </div>
 
-      <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
+      <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
         {filteredMainCategories.length === 0 && Object.keys(filteredSubcategories).length === 0 ? (
-          <div className="px-3 py-2 text-center text-gray-500">No categories found</div>
+          <div className="px-3 py-2 text-center text-gray-500 dark:text-gray-400">
+            No categories found
+          </div>
         ) : (
           <>
             {filteredMainCategories.map((category) => (

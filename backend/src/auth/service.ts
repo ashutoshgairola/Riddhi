@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import jwt from 'jsonwebtoken';
 import { Collection, Db } from 'mongodb';
 
+import { createChildLogger } from '../config/logger';
 import { UserModel } from './db';
 import {
   AuthToken,
@@ -20,6 +21,7 @@ export class AuthService {
   private resetTokenCollection: Collection<PasswordResetToken>;
   private jwtSecret: string;
   private tokenExpiration: string;
+  private logger = createChildLogger({ service: 'AuthService' });
 
   constructor(db: Db) {
     this.userModel = new UserModel(db);
@@ -90,7 +92,7 @@ export class AuthService {
     });
 
     // In a real implementation, send email with reset link
-    console.log(`Password reset token for ${email}: ${token}`);
+    this.logger.info({ email, tokenLength: token.length }, 'Password reset token generated');
 
     // Email would be sent here
   }

@@ -19,7 +19,7 @@ const Dashboard: FC = () => {
         subtitle="Your financial overview"
         actions={
           <select
-            className="p-2 border border-gray-200 rounded-md text-sm"
+            className="p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm"
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
           >

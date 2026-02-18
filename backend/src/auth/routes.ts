@@ -23,13 +23,11 @@ export class AuthRoutes {
     this.router.post('/reset-password/confirm', this.controller.resetPasswordConfirm);
 
     // Protected routes
-    this.router.get('/profile', this.middleware.authenticate, this.controller.getProfile);
-    this.router.put('/profile', this.middleware.authenticate, this.controller.updateProfile);
-    this.router.put(
-      '/change-password',
-      this.middleware.authenticate,
-      this.controller.changePassword,
-    );
+    this.router.use(this.middleware.authenticate);
+
+    this.router.get('/profile', this.controller.getProfile);
+    this.router.put('/profile', this.controller.updateProfile);
+    this.router.put('/change-password', this.controller.changePassword);
   }
 
   getRouter(): Router {

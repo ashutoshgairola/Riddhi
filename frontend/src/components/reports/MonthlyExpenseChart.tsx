@@ -26,10 +26,10 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow-sm">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-gray-600">{formatCurrency(data.amount)}</p>
-          <p className="text-gray-600 text-sm">
+        <div className="bg-white dark:bg-gray-700 p-3 border border-gray-200 dark:border-gray-600 rounded shadow-sm">
+          <p className="font-medium dark:text-gray-100">{data.name}</p>
+          <p className="text-gray-600 dark:text-gray-300">{formatCurrency(data.amount)}</p>
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
             {`${((data.amount / data.totalAmount) * 100).toFixed(1)}% of total`}
           </p>
         </div>
@@ -48,9 +48,9 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
   }));
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100">
-        <h2 className="text-xl font-bold">Monthly Expense Breakdown</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="text-xl font-bold dark:text-gray-100">Monthly Expense Breakdown</h2>
       </div>
 
       <div className="p-6">
@@ -83,15 +83,15 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
             <div className="h-full flex flex-col justify-center">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2">Period</th>
-                    <th className="text-right py-2">Amount</th>
-                    <th className="text-right py-2">Percentage</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-2 dark:text-gray-300">Period</th>
+                    <th className="text-right py-2 dark:text-gray-300">Amount</th>
+                    <th className="text-right py-2 dark:text-gray-300">Percentage</th>
                   </tr>
                 </thead>
                 <tbody>
                   {enhancedData.map((item, index) => (
-                    <tr key={index} className="border-b border-gray-100">
+                    <tr key={index} className="border-b border-gray-100 dark:border-gray-700">
                       <td className="py-3">
                         <div className="flex items-center">
                           <div
@@ -100,17 +100,21 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
                               backgroundColor: COLORS[index % COLORS.length],
                             }}
                           ></div>
-                          <span>{item.name}</span>
+                          <span className="dark:text-gray-300">{item.name}</span>
                         </div>
                       </td>
-                      <td className="text-right">{formatCurrency(item.amount)}</td>
-                      <td className="text-right">{((item.amount / total) * 100).toFixed(1)}%</td>
+                      <td className="text-right dark:text-gray-300">
+                        {formatCurrency(item.amount)}
+                      </td>
+                      <td className="text-right dark:text-gray-300">
+                        {((item.amount / total) * 100).toFixed(1)}%
+                      </td>
                     </tr>
                   ))}
                   <tr className="font-medium">
-                    <td className="py-3">Total</td>
-                    <td className="text-right">{formatCurrency(total)}</td>
-                    <td className="text-right">100%</td>
+                    <td className="py-3 dark:text-gray-100">Total</td>
+                    <td className="text-right dark:text-gray-100">{formatCurrency(total)}</td>
+                    <td className="text-right dark:text-gray-100">100%</td>
                   </tr>
                 </tbody>
               </table>

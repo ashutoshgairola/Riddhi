@@ -70,30 +70,34 @@ const RecentTransactionsWidget: FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Recent Transactions</h2>
-          <button className="text-blue-600 text-sm font-medium">View All</button>
+          <h2 className="text-xl font-bold dark:text-gray-100">Recent Transactions</h2>
+          <button className="text-blue-600 dark:text-blue-400 text-sm font-medium">View All</button>
         </div>
       </div>
       <div className="p-6">
         {recentTransactions.map((transaction) => (
           <div
             key={transaction.id}
-            className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 last:border-b-0 last:mb-0 last:pb-0"
+            className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0"
           >
             <div className="flex items-center">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+                  transaction.type === 'income'
+                    ? 'bg-green-100 dark:bg-green-900/30'
+                    : 'bg-red-100 dark:bg-red-900/30'
                 }`}
               >
                 {getTransactionIcon(transaction.type)}
               </div>
               <div className="ml-4">
-                <p className="font-medium">{transaction.description}</p>
-                <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
+                <p className="font-medium dark:text-gray-100">{transaction.description}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {formatDate(transaction.date)}
+                </p>
               </div>
             </div>
             <div className="text-right">

@@ -1,4 +1,4 @@
-import { Collection, Db, ObjectId } from 'mongodb';
+import { Collection, Db } from 'mongodb';
 
 import { UserPreferences } from './types/interface';
 

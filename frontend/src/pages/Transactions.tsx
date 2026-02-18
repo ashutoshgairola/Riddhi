@@ -37,6 +37,7 @@ const Transactions: FC = () => {
   // Memoize filters to prevent unnecessary re-renders
   const memoizedFilters = useMemo(
     () => filters,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       filters.startDate,
       filters.endDate,
@@ -178,7 +179,7 @@ const Transactions: FC = () => {
       </div>
 
       {error && (
-        <div className="mt-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-md">
+        <div className="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-400 rounded-md">
           Error loading transactions: {error.message}
         </div>
       )}
