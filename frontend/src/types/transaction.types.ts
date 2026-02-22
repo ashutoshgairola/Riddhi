@@ -81,6 +81,7 @@ export interface TransactionCreateDTO {
   type: TransactionType;
   categoryId: string;
   accountId: string;
+  toAccountId?: string;
   status?: TransactionStatus;
   notes?: string;
   tags?: string[];

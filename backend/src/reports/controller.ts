@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 
+import { getErrorMessage, sendResponse } from '../common/utils';
 import { createChildLogger } from '../config/logger';
 import { ReportService } from './service';
 import {
@@ -21,148 +22,133 @@ export class ReportController {
     this.reportService = reportService;
   }
 
-  /**
-   * Get account summary
-   */
-  async getAccountSummary(req: Request, res: Response): Promise<void> {
+  getAccountSummary = async (req: Request, res: Response): Promise<void> => {
     const requestLogger = this.logger.child({ method: 'getAccountSummary' });
-
     try {
       const { userId } = req.body.user;
+      delete req.body.user;
+
       const query: AccountSummaryQuery = {
-        startDate: req.query.startDate as string,
-        endDate: req.query.endDate as string,
+        startDate: req.query.startDate as string | undefined,
+        endDate: req.query.endDate as string | undefined,
       };
 
-      requestLogger.info(
-        { userId, startDate: query.startDate, endDate: query.endDate },
-        'Getting account summary',
-      );
-
-      const accountSummary = await this.reportService.getAccountSummary(userId, query);
-
-      requestLogger.info({ userId }, 'Account summary fetched successfully');
-
-      res.status(200).json(accountSummary);
-    } catch (error: any) {
-      requestLogger.error(
-        { error, userId: req.body.user?.userId },
-        'Error fetching account summary',
-      );
-      res.status(500).json({ message: error.message });
+      requestLogger.info({ userId, ...query }, 'Getting account summary');
+      const data = await this.reportService.getAccountSummary(userId, query);
+      sendResponse({ res, data, message: 'Account summary fetched successfully' });
+    } catch (error: unknown) {
+      this.logger.error({ error }, 'Error fetching account summary');
+      res.status(500).json({ error: getErrorMessage(error) });
     }
-  }
+  };
 
-  /**
-   * Get income expense summary
-   */
-  async getIncomeExpenseSummary(req: Request, res: Response): Promise<void> {
+  getIncomeExpenseSummary = async (req: Request, res: Response): Promise<void> => {
     const requestLogger = this.logger.child({ method: 'getIncomeExpenseSummary' });
-
     try {
       const { userId } = req.body.user;
+      delete req.body.user;
+
       const query: IncomeExpenseQuery = {
         period: (req.query.period as Timeframe) || 'month',
-        startDate: req.query.startDate as string,
-        endDate: req.query.endDate as string,
+        startDate: req.query.startDate as string | undefined,
+        endDate: req.query.endDate as string | undefined,
       };
 
-      requestLogger.info({ userId, period: query.period }, 'Getting income expense summary');
-
-      const incomeExpenseSummary = await this.reportService.getIncomeExpenseSummary(userId, query);
-
-      requestLogger.info({ userId }, 'Income expense summary fetched successfully');
-
-      res.status(200).json(incomeExpenseSummary);
-    } catch (error: any) {
-      requestLogger.error(
-        { error, userId: req.body.user?.userId },
-        'Error fetching income expense summary',
-      );
-      res.status(500).json({ message: error.message });
+      requestLogger.info({ userId, period: query.period }, 'Getting income/expense summary');
+      const data = await this.reportService.getIncomeExpenseSummary(userId, query);
+      sendResponse({ res, data, message: 'Income/expense summary fetched successfully' });
+    } catch (error: unknown) {
+      this.logger.error({ error }, 'Error fetching income/expense summary');
+      res.status(500).json({ error: getErrorMessage(error) });
     }
-  }
+  };
 
-  /**
-   * Get category report
-   */
-  async getCategoryReport(req: Request, res: Response): Promise<void> {
+  getCategoryReport = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getCategoryReport' });
     try {
       const { userId } = req.body.user;
-      const categoryId = req.query.categoryId as string;
+      delete req.body.user;
 
+      const categoryId = req.query.categoryId as string;
       if (!categoryId) {
-        res.status(400).json({ message: 'Category ID is required' });
+        res.status(400).json({ error: 'categoryId is required' });
         return;
       }
 
       const query: CategoryReportQuery = {
         categoryId,
         period: (req.query.period as Timeframe) || 'month',
-        startDate: req.query.startDate as string,
-        endDate: req.query.endDate as string,
+        startDate: req.query.startDate as string | undefined,
+        endDate: req.query.endDate as string | undefined,
       };
 
-      const categoryReport = await this.reportService.getCategoryReport(userId, query);
-      res.status(200).json(categoryReport);
-    } catch (error: any) {
-      if (error.message === 'Category not found') {
-        res.status(404).json({ message: error.message });
+      requestLogger.info({ userId, categoryId }, 'Getting category report');
+      const data = await this.reportService.getCategoryReport(userId, query);
+      sendResponse({ res, data, message: 'Category report fetched successfully' });
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Category not found') {
+        res.status(404).json({ error: msg });
       } else {
-        res.status(500).json({ message: error.message });
+        this.logger.error({ error }, 'Error fetching category report');
+        res.status(500).json({ error: msg });
       }
     }
-  }
+  };
 
-  /**
-   * Get budget performance report
-   */
-  async getBudgetPerformance(req: Request, res: Response): Promise<void> {
+  getBudgetPerformance = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getBudgetPerformance' });
     try {
       const { userId } = req.body.user;
+      delete req.body.user;
+
       const query: BudgetPerformanceQuery = {
-        budgetId: req.query.budgetId as string,
+        budgetId: req.query.budgetId as string | undefined,
       };
 
-      const budgetPerformance = await this.reportService.getBudgetPerformance(userId, query);
-      res.status(200).json(budgetPerformance);
-    } catch (error: any) {
-      if (error.message === 'Budget not found' || error.message === 'No current budget found') {
-        res.status(404).json({ message: error.message });
+      requestLogger.info({ userId, budgetId: query.budgetId }, 'Getting budget performance');
+      const data = await this.reportService.getBudgetPerformance(userId, query);
+      sendResponse({ res, data, message: 'Budget performance fetched successfully' });
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Budget not found' || msg === 'No current budget found') {
+        res.status(404).json({ error: msg });
       } else {
-        res.status(500).json({ message: error.message });
+        this.logger.error({ error }, 'Error fetching budget performance');
+        res.status(500).json({ error: msg });
       }
     }
-  }
+  };
 
-  /**
-   * Get net worth over time
-   */
-  async getNetWorthOverTime(req: Request, res: Response): Promise<void> {
+  getNetWorthOverTime = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getNetWorthOverTime' });
     try {
       const { userId } = req.body.user;
+      delete req.body.user;
+
       const query: NetWorthQuery = {
         period: (req.query.period as NetWorthPeriod) || 'month',
       };
 
-      const netWorthData = await this.reportService.getNetWorthOverTime(userId, query);
-      res.status(200).json(netWorthData);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      requestLogger.info({ userId, period: query.period }, 'Getting net worth over time');
+      const data = await this.reportService.getNetWorthOverTime(userId, query);
+      sendResponse({ res, data, message: 'Net worth data fetched successfully' });
+    } catch (error: unknown) {
+      this.logger.error({ error }, 'Error fetching net worth');
+      res.status(500).json({ error: getErrorMessage(error) });
     }
-  }
+  };
 
-  /**
-   * Get custom report
-   */
-  async getCustomReport(req: Request, res: Response): Promise<void> {
+  getCustomReport = async (req: Request, res: Response): Promise<void> => {
+    const requestLogger = this.logger.child({ method: 'getCustomReport' });
     try {
       const { userId } = req.body.user;
+      delete req.body.user;
+
       const reportRequest: CustomReportRequest = req.body;
 
-      // Validation
       if (!reportRequest.type || !reportRequest.timeframe) {
-        res.status(400).json({ message: 'Report type and timeframe are required' });
+        res.status(400).json({ error: 'Report type and timeframe are required' });
         return;
       }
 
@@ -170,22 +156,25 @@ export class ReportController {
         reportRequest.timeframe === 'custom' &&
         (!reportRequest.startDate || !reportRequest.endDate)
       ) {
-        res.status(400).json({
-          message: 'Start date and end date are required for custom timeframe',
-        });
+        res
+          .status(400)
+          .json({ error: 'Start date and end date are required for custom timeframe' });
         return;
       }
 
-      const customReport = await this.reportService.getCustomReport(userId, reportRequest);
-      res.status(200).json(customReport);
-    } catch (error: any) {
-      if (error.message.includes('not found')) {
-        res.status(404).json({ message: error.message });
-      } else if (error.message.includes('required')) {
-        res.status(400).json({ message: error.message });
+      requestLogger.info({ userId, type: reportRequest.type }, 'Generating custom report');
+      const data = await this.reportService.getCustomReport(userId, reportRequest);
+      sendResponse({ res, data, message: 'Custom report generated successfully' });
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg.includes('not found')) {
+        res.status(404).json({ error: msg });
+      } else if (msg.includes('required')) {
+        res.status(400).json({ error: msg });
       } else {
-        res.status(500).json({ message: error.message });
+        this.logger.error({ error }, 'Error generating custom report');
+        res.status(500).json({ error: msg });
       }
     }
-  }
+  };
 }

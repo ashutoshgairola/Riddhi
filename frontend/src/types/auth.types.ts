@@ -4,10 +4,10 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   profileImageUrl?: string;
   createdAt: string;
   lastLogin: string;
-  phone?: string;
 }
 
 export interface AuthState {
@@ -22,6 +22,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   profileImageUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -57,6 +58,7 @@ export interface ResetPasswordConfirmDTO {
 export interface UpdateProfileDTO {
   firstName?: string;
   lastName?: string;
+  phone?: string;
   profileImageUrl?: string;
 }
 

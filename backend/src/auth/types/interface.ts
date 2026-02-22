@@ -8,6 +8,7 @@ export interface User {
   password: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   profileImageUrl?: string;
   createdAt: Date;
   lastLogin?: Date;
@@ -18,6 +19,7 @@ export interface UserDTO {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   profileImageUrl?: string;
   createdAt: string;
   lastLogin?: string;
@@ -48,6 +50,7 @@ export interface ResetPasswordConfirmRequest {
 export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
+  phone?: string;
   profileImageUrl?: string;
 }
 

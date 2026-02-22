@@ -1,15 +1,17 @@
 // src/pages/Transactions.tsx
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useState } from 'react';
 
 import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import AddTransactionCategoryForm from '../components/transactions/AddTransactionCategoryForm';
 import AddTransactionForm from '../components/transactions/AddTransactionForm';
-import TransactionFilters from '../components/transactions/TransactionFilters';
 import TransactionList from '../components/transactions/TransactionList';
+import { useHighlight } from '../hooks/useHighlight';
+import { useToast } from '../hooks/useToast';
 import { useTransactionCategories } from '../hooks/useTransactionCategories';
 import { useTransactions } from '../hooks/useTransactions';
 import { CategoryCreateDTO, CategoryUpdateDTO } from '../services/api/categoryService';
+import transactionService from '../services/api/transactionService';
 import {
   TransactionFilters as FilterType,
   RecurringFrequency,
@@ -21,6 +23,7 @@ const Transactions: FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   // Filters state
   const [filters, setFilters] = useState<FilterType>({
@@ -34,39 +37,17 @@ const Transactions: FC = () => {
     order: 'desc',
   });
 
-  // Memoize filters to prevent unnecessary re-renders
-  const memoizedFilters = useMemo(
-    () => filters,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      filters.startDate,
-      filters.endDate,
-      filters.types,
-      filters.searchTerm,
-      filters.page,
-      filters.limit,
-      filters.sort,
-      filters.order,
-      filters.categoryIds,
-      filters.status,
-      filters.tags,
-      filters.minAmount,
-      filters.maxAmount,
-    ],
-  );
-
   // Get transactions and categories using custom hooks
   const {
     transactions,
     loading,
-    error,
     totalItems,
     totalPages,
     currentPage,
     createTransaction,
     updateTransaction,
     deleteTransaction,
-  } = useTransactions(memoizedFilters);
+  } = useTransactions(filters);
 
   const {
     categories,
@@ -75,14 +56,55 @@ const Transactions: FC = () => {
     updateCategory,
   } = useTransactionCategories();
 
+  const { warning, success, error: toastError } = useToast();
+
+  // Highlight item from search navigation
+  useHighlight(loading);
+
   // Handle filter changes - debounce implemented in TransactionFilters component
   const handleFilterChange = useCallback((newFilters: FilterType) => {
     setFilters((prev) => ({
       ...prev,
       ...newFilters,
-      page: newFilters.page !== undefined ? newFilters.page : 1, // Reset to page 1 when filters change
+      page: newFilters.page !== undefined ? newFilters.page : 1,
     }));
   }, []);
+
+  // Handle sort change from TransactionList header
+  const handleSortChange = useCallback((sort: string, order: 'asc' | 'desc') => {
+    setFilters((prev) => ({ ...prev, sort, order, page: 1 }));
+  }, []);
+
+  // Handle export
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const blob = await transactionService.exportTransactions('csv', {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        types: filters.types,
+        categoryIds: filters.categoryIds,
+        minAmount: filters.minAmount,
+        maxAmount: filters.maxAmount,
+        searchTerm: filters.searchTerm,
+        tags: filters.tags,
+        status: filters.status,
+        sort: filters.sort,
+        order: filters.order,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      success('Transactions exported successfully.');
+    } catch {
+      toastError('Failed to export transactions.');
+    } finally {
+      setExporting(false);
+    }
+  }, [filters, success, toastError]);
 
   // Handle pagination
   const handlePageChange = useCallback((page: number) => {
@@ -94,9 +116,13 @@ const Transactions: FC = () => {
 
   // Open add transaction modal
   const handleAddTransaction = useCallback(() => {
+    if (!categoriesLoading && categories.length === 0) {
+      warning('Please create a category first before adding a transaction.', 'No categories');
+      return;
+    }
     setEditingTransactionId(null);
     setIsAddModalOpen(true);
-  }, []);
+  }, [categories.length, categoriesLoading, warning]);
 
   // Open edit transaction modal
   const handleEditTransaction = useCallback((id: string) => {
@@ -175,16 +201,6 @@ const Transactions: FC = () => {
       />
 
       <div className="mt-6">
-        <TransactionFilters filters={filters} onFilterChange={handleFilterChange} />
-      </div>
-
-      {error && (
-        <div className="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-400 rounded-md">
-          Error loading transactions: {error.message}
-        </div>
-      )}
-
-      <div className="mt-6">
         <TransactionList
           transactions={transactions}
           loading={loading}
@@ -194,6 +210,11 @@ const Transactions: FC = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           totalItems={totalItems}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onSortChange={handleSortChange}
+          onExport={handleExport}
+          exporting={exporting}
         />
       </div>
 

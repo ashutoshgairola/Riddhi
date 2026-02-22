@@ -71,7 +71,7 @@ export class TransactionModel {
       { returnDocument: 'after' },
     );
 
-    return updatedTransaction.value;
+    return updatedTransaction as unknown as Transaction | null;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
@@ -138,9 +138,11 @@ export class TransactionModel {
     }
 
     // Apply tag filters
+    // FIX: Simplified from { $elemMatch: { $in: tags } } which is functionally
+    // equivalent to { $in: tags } on an array field but unnecessarily complex
     if (query.tags) {
       const tags = query.tags.split(',');
-      filter.tags = { $elemMatch: { $in: tags } };
+      filter.tags = { $in: tags };
     }
 
     // Apply status filters
@@ -155,7 +157,7 @@ export class TransactionModel {
     const skip = (page - 1) * limit;
 
     // Set up sorting
-    const sort: any = {};
+    const sort: Record<string, 1 | -1> = {};
     if (query.sort) {
       sort[query.sort] = query.order === 'asc' ? 1 : -1;
     } else {
@@ -173,12 +175,13 @@ export class TransactionModel {
       .limit(limit)
       .toArray();
 
-    // Calculate pagination metadata
+    // FIX: Floor pages at 1 so frontend always has a valid page count
+    // even when total is 0 (empty state)
     const pagination = {
       total,
       page,
       limit,
-      pages: Math.ceil(total / limit),
+      pages: Math.max(1, Math.ceil(total / limit)),
     };
 
     return { items: transactions, ...pagination };

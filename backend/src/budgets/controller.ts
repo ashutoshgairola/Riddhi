@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { sendResponse } from '../common/utils';
+import { getErrorMessage, sendResponse } from '../common/utils';
 import { log } from '../config/logger';
 import { BudgetService } from './service';
 import {
@@ -42,7 +42,7 @@ export class BudgetController {
         data: budget,
         message: 'Current budget fetched successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error fetching current budget', {
         context: this.context,
         method: 'getCurrentBudget',
@@ -56,7 +56,7 @@ export class BudgetController {
   getBudgets = async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.body.user;
-      const query: GetBudgetsQuery = req.query as any;
+      const query: GetBudgetsQuery = req.query as unknown as GetBudgetsQuery;
 
       log.info('📋 Getting budgets list', {
         context: this.context,
@@ -67,11 +67,11 @@ export class BudgetController {
 
       // Convert numeric query params
       if (query.page) {
-        query.page = parseInt(query.page as any, 10);
+        query.page = parseInt(String(query.page), 10);
       }
 
       if (query.limit) {
-        query.limit = parseInt(query.limit as any, 10);
+        query.limit = parseInt(String(query.limit), 10);
       }
 
       const budgets = await this.budgetService.getBudgets(userId, query);
@@ -89,7 +89,7 @@ export class BudgetController {
         data: budgets,
         message: 'Budgets fetched successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error fetching budgets', {
         context: this.context,
         method: 'getBudgets',
@@ -103,6 +103,7 @@ export class BudgetController {
   getBudgetById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const { userId } = req.body.user;
 
       log.info('🔍 Getting budget by ID', {
         context: this.context,
@@ -111,7 +112,7 @@ export class BudgetController {
       });
 
       try {
-        const budget = await this.budgetService.getBudgetById(id);
+        const budget = await this.budgetService.getBudgetById(id, userId);
 
         log.info('✅ Budget fetched successfully', {
           context: this.context,
@@ -125,20 +126,20 @@ export class BudgetController {
           data: budget,
           message: 'Budget fetched successfully',
         });
-      } catch (error: any) {
-        if (error.message === 'Budget not found') {
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Budget not found') {
           log.warn('⚠️ Budget not found', {
             context: this.context,
             method: 'getBudgetById',
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(404).json({ error: error.message });
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error fetching budget', {
         context: this.context,
         method: 'getBudgetById',
@@ -196,32 +197,35 @@ export class BudgetController {
           data: budget,
           message: 'Budget created successfully',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (
-          error.message.includes('overlap') ||
-          error.message.includes('date') ||
-          error.message.includes('Category')
+          getErrorMessage(error).includes('overlap') ||
+          getErrorMessage(error).includes('date') ||
+          getErrorMessage(error).includes('Category')
         ) {
           log.warn('⚠️ Budget creation failed: Validation error', {
             context: this.context,
             method: 'createBudget',
             userId,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(400).json({ error: error.message });
-        } else if (error.message.includes('conflict') || error.message.includes('overlap')) {
+          res.status(400).json({ error: getErrorMessage(error) });
+        } else if (
+          getErrorMessage(error).includes('conflict') ||
+          getErrorMessage(error).includes('overlap')
+        ) {
           log.warn('⚠️ Budget creation failed: Conflict error', {
             context: this.context,
             method: 'createBudget',
             userId,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(409).json({ error: error.message });
+          res.status(409).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error creating budget', {
         context: this.context,
         method: 'createBudget',
@@ -260,39 +264,42 @@ export class BudgetController {
           data: budget,
           message: 'Budget updated successfully',
         });
-      } catch (error: any) {
-        if (error.message === 'Budget not found') {
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Budget not found') {
           log.warn('⚠️ Budget not found', {
             context: this.context,
             method: 'updateBudget',
             userId,
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(404).json({ error: error.message });
-        } else if (error.message.includes('date') || error.message.includes('invalid')) {
+          res.status(404).json({ error: getErrorMessage(error) });
+        } else if (
+          getErrorMessage(error).includes('date') ||
+          getErrorMessage(error).includes('invalid')
+        ) {
           log.warn('⚠️ Budget update failed: Validation error', {
             context: this.context,
             method: 'updateBudget',
             userId,
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(400).json({ error: error.message });
-        } else if (error.message.includes('overlap')) {
+          res.status(400).json({ error: getErrorMessage(error) });
+        } else if (getErrorMessage(error).includes('overlap')) {
           log.warn('⚠️ Budget update failed: Conflict error', {
             context: this.context,
             method: 'updateBudget',
             userId,
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(409).json({ error: error.message });
+          res.status(409).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error updating budget', {
         context: this.context,
         method: 'updateBudget',
@@ -332,21 +339,21 @@ export class BudgetController {
           data: null,
           message: 'Budget deleted successfully',
         });
-      } catch (error: any) {
-        if (error.message === 'Budget not found') {
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Budget not found') {
           log.warn('⚠️ Budget not found', {
             context: this.context,
             method: 'deleteBudget',
             userId,
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(404).json({ error: error.message });
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error deleting budget', {
         context: this.context,
         method: 'deleteBudget',
@@ -388,12 +395,10 @@ export class BudgetController {
           userId,
           budgetId: id,
         });
-        res
-          .status(400)
-          .json({
-            error:
-              'Missing required fields: name, allocated, and categoryIds (must be non-empty array)',
-          });
+        res.status(400).json({
+          error:
+            'Missing required fields: name, allocated, and categoryIds (must be non-empty array)',
+        });
         return;
       }
 
@@ -415,33 +420,34 @@ export class BudgetController {
           data: category,
           message: 'Budget category created successfully',
         });
-      } catch (error: any) {
-        if (error.message === 'Budget not found') {
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Budget not found') {
           log.warn('⚠️ Budget not found', {
             context: this.context,
             method: 'createBudgetCategory',
             userId,
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(404).json({ error: error.message });
+          res.status(404).json({ error: getErrorMessage(error) });
         } else if (
-          error.message.includes('already exists') ||
-          (error.message.includes('not found') && error.message.includes('category'))
+          getErrorMessage(error).includes('already exists') ||
+          (getErrorMessage(error).includes('not found') &&
+            getErrorMessage(error).includes('category'))
         ) {
           log.warn('⚠️ Budget category creation failed: Validation error', {
             context: this.context,
             method: 'createBudgetCategory',
             userId,
             budgetId: id,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(400).json({ error: error.message });
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error creating budget category', {
         context: this.context,
         method: 'createBudgetCategory',
@@ -488,22 +494,25 @@ export class BudgetController {
           data: category,
           message: 'Budget category updated successfully',
         });
-      } catch (error: any) {
-        if (error.message === 'Budget not found' || error.message === 'Budget category not found') {
+      } catch (error: unknown) {
+        if (
+          getErrorMessage(error) === 'Budget not found' ||
+          getErrorMessage(error) === 'Budget category not found'
+        ) {
           log.warn('⚠️ Resource not found', {
             context: this.context,
             method: 'updateBudgetCategory',
             userId,
             budgetId,
             categoryId,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(404).json({ error: error.message });
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error updating budget category', {
         context: this.context,
         method: 'updateBudgetCategory',
@@ -546,22 +555,25 @@ export class BudgetController {
           data: null,
           message: 'Budget category deleted successfully',
         });
-      } catch (error: any) {
-        if (error.message === 'Budget not found' || error.message === 'Budget category not found') {
+      } catch (error: unknown) {
+        if (
+          getErrorMessage(error) === 'Budget not found' ||
+          getErrorMessage(error) === 'Budget category not found'
+        ) {
           log.warn('⚠️ Resource not found', {
             context: this.context,
             method: 'deleteBudgetCategory',
             userId,
             budgetId,
             categoryId,
-            error: error.message,
+            error: getErrorMessage(error),
           });
-          res.status(404).json({ error: error.message });
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('💥 Error deleting budget category', {
         context: this.context,
         method: 'deleteBudgetCategory',

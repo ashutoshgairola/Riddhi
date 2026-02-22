@@ -1,11 +1,9 @@
 // src/components/common/Sidebar.tsx
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 import {
   BarChart2,
-  ChevronDown,
-  ChevronRight,
   CreditCard,
   FolderTree,
   List,
@@ -43,26 +41,15 @@ const NavItem: FC<NavItemProps> = ({
   isDark,
 }) => {
   const location = useLocation();
-  const [isExpanded, setIsExpanded] = useState(
-    () => location.pathname.startsWith(to) && to !== '/',
-  );
 
   const hasChildren = !!children;
   const isActive =
     location.pathname === to || (hasChildren && location.pathname.startsWith(to) && to !== '/');
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (hasChildren && !collapsed) {
-      e.preventDefault();
-      setIsExpanded(!isExpanded);
-    }
-  };
-
   return (
     <div>
       <NavLink
         to={disabled ? '#' : to}
-        onClick={disabled ? undefined : handleClick}
         className={({ isActive: routeActive }) => `
           flex items-center p-4 cursor-pointer
           ${
@@ -81,24 +68,15 @@ const NavItem: FC<NavItemProps> = ({
           {icon}
         </div>
         {!collapsed && (
-          <div className="flex items-center justify-between flex-1">
-            <span
-              className={`ml-4 font-medium ${disabled ? (isDark ? 'text-gray-500' : 'text-gray-400') : ''}`}
-            >
-              {label}
-            </span>
-            {hasChildren && !disabled && (
-              <span className="ml-2">
-                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </span>
-            )}
-          </div>
+          <span
+            className={`ml-4 font-medium ${disabled ? (isDark ? 'text-gray-500' : 'text-gray-400') : ''}`}
+          >
+            {label}
+          </span>
         )}
       </NavLink>
 
-      {hasChildren && !collapsed && isExpanded && (
-        <div className={isDark ? 'bg-gray-800' : 'bg-gray-50'}>{children}</div>
-      )}
+      {hasChildren && !collapsed && <div>{children}</div>}
     </div>
   );
 };
@@ -203,7 +181,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<TrendingUp size={20} />}
           label="Investments"
           collapsed={collapsed}
-          disabled={true}
+          disabled={false}
           isDark={isDark}
         />
 
@@ -212,7 +190,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
           icon={<BarChart2 size={20} />}
           label="Reports"
           collapsed={collapsed}
-          disabled={true}
+          disabled={false}
           isDark={isDark}
         />
 

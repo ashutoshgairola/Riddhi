@@ -24,11 +24,13 @@
     "mongodb": "^5.9.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.2.1",
     "pino": "^9.11.0",
     "pino-http": "^10.5.0",
     "pino-pretty": "^13.1.1",
     "uuid": "^13.0.0",
-    "validator": "^13.9.0"
+    "validator": "^13.9.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
@@ -40,9 +42,11 @@
     "@types/morgan": "^1.9.4",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.2.1",
+    "@types/node-cron": "^3.0.11",
     "@types/pino-http": "^6.1.0",
     "@types/uuid": "^11.0.0",
     "@types/validator": "^13.7.17",
+    "@types/web-push": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.59.6",
     "eslint": "^8.41.0",

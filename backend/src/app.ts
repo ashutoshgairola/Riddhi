@@ -13,14 +13,26 @@ import { BudgetController } from './budgets/controller';
 import { BudgetRoutes } from './budgets/routes';
 import { BudgetService } from './budgets/service';
 import { httpLogger, log, traceMiddleware } from './config/logger';
+import { DashboardController } from './dashboard/controller';
+import { DashboardRoutes } from './dashboard/routes';
+import { DashboardService } from './dashboard/service';
 import { GoalController } from './goals/controller';
 import { GoalRoutes } from './goals/routes';
 import { GoalService } from './goals/service';
+import { InvestmentController } from './investments/controller';
+import { InvestmentRoutes } from './investments/routes';
+import { InvestmentService } from './investments/service';
 import { AuthMiddleware } from './middleware/auth';
 import { ErrorMiddleware } from './middleware/error';
+import { NotificationsRoutes } from './notifications/routes';
+import { NotificationService } from './notifications/service';
 import { ReportController } from './reports/controller';
 import { ReportRoutes } from './reports/routes';
 import { ReportService } from './reports/service';
+import { SchedulerController } from './schedular/controller';
+import { SchedulerRoutes } from './schedular/routes';
+import { SchedulerService } from './schedular/service';
+import { SearchRoutes } from './search/routes';
 import { SettingsController } from './settings/controller';
 import { SettingsRoutes } from './settings/routes';
 import { SettingsService } from './settings/service';
@@ -98,6 +110,27 @@ export class App {
     const settingsController = new SettingsController(settingsService);
     const settingsRoutes = new SettingsRoutes(settingsController, authMiddleware);
 
+    // Investments routes
+    const investmentService = new InvestmentService(this.db);
+    const investmentController = new InvestmentController(investmentService);
+    const investmentRoutes = new InvestmentRoutes(investmentController, authMiddleware);
+
+    // Dashboard routes
+    const dashboardService = new DashboardService(this.db);
+    const dashboardController = new DashboardController(dashboardService);
+    const dashboardRoutes = new DashboardRoutes(dashboardController, authMiddleware);
+
+    // Scheduler routes
+    const notificationService = new NotificationService(this.db);
+    const notificationsRoutes = new NotificationsRoutes(this.db, authMiddleware);
+    const schedulerService = new SchedulerService(this.db, notificationService);
+    schedulerService.initialize().catch((error) => {
+      log.error('Failed to initialize scheduler service', { error, service: 'scheduler' });
+    });
+    schedulerService.start();
+    const schedulerController = new SchedulerController(schedulerService);
+    const schedulerRoutes = new SchedulerRoutes(schedulerController);
+
     // Initialize services
     authService.initialize().catch((error) => {
       log.error('Failed to initialize auth service', { error, service: 'auth' });
@@ -123,6 +156,18 @@ export class App {
       log.error('Failed to initialize report service', { error, service: 'report' });
     });
 
+    settingsService.initialize().catch((error) => {
+      log.error('Failed to initialize settings service', { error, service: 'settings' });
+    });
+
+    investmentService.initialize().catch((error) => {
+      log.error('Failed to initialize investment service', { error, service: 'investments' });
+    });
+
+    dashboardService.initialize().catch((error) => {
+      log.error('Failed to initialize dashboard service', { error, service: 'dashboard' });
+    });
+
     // Set up API routes
     this.app.use('/api/auth', authRoutes.getRouter());
     this.app.use('/api/transactions', transactionRoutes.getRouter());
@@ -131,11 +176,23 @@ export class App {
     this.app.use('/api/accounts', accountRoutes.getRouter());
     this.app.use('/api/reports', reportRoutes.getRouter());
     this.app.use('/api/settings', settingsRoutes.getRouter());
+    this.app.use('/api/investments', investmentRoutes.getRouter());
+    this.app.use('/api/dashboard', dashboardRoutes.getRouter());
+    this.app.use('/api/admin/scheduler', schedulerRoutes.router);
+    this.app.use('/api/notifications', notificationsRoutes.router);
+
+    const searchRoutes = new SearchRoutes(this.db, authMiddleware);
+    this.app.use('/api/search', searchRoutes.router);
 
     // Root route
     this.app.get('/', (_req, res) => {
       log.info('Root endpoint accessed');
       res.json({ message: 'Finance Tracker API' });
+    });
+
+    // Health check (used by Docker / load balancers)
+    this.app.get('/health', (_req, res) => {
+      res.json({ status: 'ok' });
     });
 
     log.info('API routes configured');

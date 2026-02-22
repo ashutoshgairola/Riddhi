@@ -26,7 +26,7 @@ export class UserModel {
       createdAt: dayjs().toDate(),
     };
 
-    const result = await this.collection.insertOne(newUser as any);
+    const result = await this.collection.insertOne(newUser);
     return { ...newUser, id: result.insertedId.toString() };
   }
 
@@ -42,10 +42,10 @@ export class UserModel {
     const result = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: { ...updates, updatedAt: dayjs().toDate() } },
-      { returnDocument: 'after' },
+      { returnDocument: 'after', includeResultMetadata: false },
     );
 
-    return result.value as unknown as User | null;
+    return result as User | null;
   }
 
   async updatePassword(id: string, hashedPassword: string): Promise<boolean> {

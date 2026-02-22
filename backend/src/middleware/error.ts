@@ -18,7 +18,7 @@ export class ErrorMiddleware {
       request: {
         method: req.method,
         url: req.originalUrl,
-        userId: (req as any).user?.userId || req.body?.user?.userId,
+        userId: req.user?.userId ?? req.body?.user?.userId,
         ip: req.ip,
         userAgent: req.get('user-agent'),
       },

@@ -11,49 +11,72 @@ import {
   YAxis,
 } from 'recharts';
 
-// Dummy data for the chart
-const cashFlowData = [
-  { name: 'Jan', income: 4000, expenses: 2400 },
-  { name: 'Feb', income: 3000, expenses: 2210 },
-  { name: 'Mar', income: 5000, expenses: 3290 },
-  { name: 'Apr', income: 5000, expenses: 3200 },
-  { name: 'May', income: 4000, expenses: 2800 },
-  { name: 'Jun', income: 4500, expenses: 3100 },
-];
+import { CashFlowPoint } from '../../types/dashboard.types';
 
-const CashFlowWidget: FC = () => {
+interface CashFlowWidgetProps {
+  cashFlow: CashFlowPoint[];
+  loading?: boolean;
+}
+
+const CashFlowWidget: FC<CashFlowWidgetProps> = ({ cashFlow, loading }) => {
+  const fmtINR = (value: number) =>
+    new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
       <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold dark:text-gray-100">Cash Flow</h2>
-          <select className="p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm">
-            <option>Last 6 months</option>
-            <option>This year</option>
-            <option>Last year</option>
-          </select>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Last 6 months</span>
         </div>
       </div>
       <div className="p-6">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={cashFlowData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip
-                formatter={(value: number) =>
-                  new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  }).format(value)
-                }
-              />
-              <Line type="monotone" dataKey="income" stroke="#4CAF50" activeDot={{ r: 8 }} />
-              <Line type="monotone" dataKey="expenses" stroke="#F44336" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {loading ? (
+          <div className="h-64 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
+        ) : cashFlow.length === 0 ? (
+          <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+            No cash flow data available
+          </div>
+        ) : (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={cashFlow}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="month"
+                  tickFormatter={(v: string) => v.split(' ')[0]}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis
+                  tickFormatter={(v: number) => fmtINR(v)}
+                  tick={{ fontSize: 11 }}
+                  width={70}
+                />
+                <Tooltip formatter={(value: number) => fmtINR(value)} />
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  name="Income"
+                  stroke="#16a34a"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="expenses"
+                  name="Expenses"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

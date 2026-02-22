@@ -40,7 +40,7 @@ export class UserPreferencesModel {
         { returnDocument: 'after' },
       );
 
-      return updatedPreferences.value!;
+      return updatedPreferences as unknown as UserPreferences;
     } else {
       // Create new preferences with defaults
       const defaultPreferences: UserPreferences = {

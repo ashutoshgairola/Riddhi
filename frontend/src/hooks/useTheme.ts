@@ -24,20 +24,15 @@ export const useTheme = () => {
       root.classList.remove('light', 'dark');
       body.classList.remove('bg-gray-50', 'bg-gray-900', 'text-gray-900', 'text-gray-100');
 
-      let effectiveTheme: 'light' | 'dark';
-      if (theme === 'system') {
-        // Use system preference
-        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
-      } else {
-        effectiveTheme = theme;
-      }
+      const effectiveTheme: 'light' | 'dark' =
+        theme === 'system'
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light'
+          : theme;
 
-      // Apply the theme class to html
       root.classList.add(effectiveTheme);
 
-      // Force apply theme styles immediately with !important
       if (effectiveTheme === 'light') {
         root.style.colorScheme = 'light';
         body.classList.add('bg-gray-50', 'text-gray-900');
@@ -53,11 +48,6 @@ export const useTheme = () => {
         body.style.setProperty('color', '#f3f4f6', 'important');
         root.style.setProperty('background-color', '#111827', 'important');
       }
-
-      // Debug logging
-      console.log('Applied theme:', effectiveTheme, 'from preference:', theme);
-      console.log('HTML classes:', root.classList.toString());
-      console.log('Body classes:', body.classList.toString());
     };
 
     applyTheme(userPreferences.theme);

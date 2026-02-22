@@ -43,7 +43,7 @@ export class NotificationSettingModel {
       { returnDocument: 'after' },
     );
 
-    return updatedSetting.value;
+    return updatedSetting as unknown as NotificationSetting | null;
   }
 
   async createDefaultSettings(userId: string): Promise<NotificationSetting[]> {

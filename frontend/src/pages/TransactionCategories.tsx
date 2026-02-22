@@ -3,7 +3,9 @@ import { FC, useCallback, useState } from 'react';
 
 import { Edit2, Plus, Trash2 } from 'lucide-react';
 
+import wallet03 from '../assets/empty-states/Wallet 03.svg';
 import ConfirmModal from '../components/common/ConfirmModal';
+import EmptyState from '../components/common/EmptyState';
 import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import Spinner from '../components/common/Spinner';
@@ -115,10 +117,11 @@ const TransactionCategories: FC = () => {
       <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-6">
           {categorizedItems.mainCategories.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <p>No categories found</p>
-              <p className="mt-2 text-sm">Click "Add Category" to create your first category</p>
-            </div>
+            <EmptyState
+              image={wallet03}
+              title="No categories found"
+              description='Click "Add Category" to create your first transaction category.'
+            />
           ) : (
             <div className="space-y-4">
               {categorizedItems.mainCategories.map((category) => (

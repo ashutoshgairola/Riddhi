@@ -1,14 +1,37 @@
 // src/components/transactions/TransactionList.tsx
 import { FC, useState } from 'react';
 
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Edit2, Trash2 } from 'lucide-react';
+import {
+  ArrowDown01,
+  ArrowDown10,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Download,
+  Edit2,
+  Filter,
+  Loader2,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
 
+import wallet01 from '../../assets/empty-states/Wallet 01.svg';
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
-import { Transaction, TransactionCategory } from '../../types/transaction.types';
+import {
+  TransactionFilters as FilterType,
+  Transaction,
+  TransactionCategory,
+  TransactionStatus,
+  TransactionType,
+} from '../../types/transaction.types';
+import { formatCurrency } from '../../utils';
 import { getIconComponent } from '../../utils/iconUtils';
+import EmptyState from '../common/EmptyState';
 import Spinner from '../common/Spinner';
-
-// Assuming you have a spinner component
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -19,6 +42,11 @@ interface TransactionListProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;
+  filters: FilterType;
+  onFilterChange: (filters: FilterType) => void;
+  onSortChange: (sort: string, order: 'asc' | 'desc') => void;
+  onExport: () => void;
+  exporting?: boolean;
 }
 
 interface TransactionItemProps {
@@ -38,14 +66,6 @@ const TransactionItem: FC<TransactionItemProps> = ({
   showDetails,
   category,
 }) => {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', {
@@ -56,7 +76,10 @@ const TransactionItem: FC<TransactionItemProps> = ({
   };
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg mb-2 overflow-hidden">
+    <div
+      id={`highlight-${transaction.id}`}
+      className="border border-gray-200 dark:border-gray-700 rounded-lg mb-2 overflow-hidden"
+    >
       <div
         className="p-4 bg-white dark:bg-gray-800 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
         onClick={() => toggleDetails(transaction.id)}
@@ -115,7 +138,7 @@ const TransactionItem: FC<TransactionItemProps> = ({
             }`}
           >
             {transaction.type === 'income' ? '+' : '-'}
-            {formatCurrency(transaction.amount)}
+            {formatCurrency(transaction.amount, 'INR')}
           </p>
 
           <button
@@ -216,46 +239,290 @@ const TransactionList: FC<TransactionListProps> = ({
   currentPage,
   totalPages,
   totalItems,
+  filters,
+  onFilterChange,
+  onSortChange,
+  onExport,
+  exporting = false,
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
   const { categories } = useTransactionCategories();
 
-  // Convert categories array to a map for quick lookup
-  const categoriesMap = categories.reduce<Record<string, TransactionCategory>>((acc, category) => {
-    acc[category.id] = category;
+  const categoriesMap = categories.reduce<Record<string, TransactionCategory>>((acc, cat) => {
+    acc[cat.id] = cat;
     return acc;
   }, {});
 
-  const toggleDetails = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
+  const toggleDetails = (id: string) => setExpandedId(expandedId === id ? null : id);
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) onPageChange(page);
   };
 
-  // Pagination handler
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      onPageChange(page);
-    }
+  const handleTypeToggle = (type: TransactionType) => {
+    const current = filters.types || [];
+    const next = current.includes(type) ? current.filter((t) => t !== type) : [...current, type];
+    onFilterChange({ ...filters, types: next.length ? next : undefined, page: 1 });
   };
+
+  const hasActiveFilters = Boolean(
+    filters.types?.length ||
+      filters.startDate ||
+      filters.endDate ||
+      filters.categoryIds?.length ||
+      filters.minAmount ||
+      filters.maxAmount ||
+      filters.tags?.length ||
+      filters.status?.length,
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-        <h2 className="text-lg font-medium dark:text-gray-100">{totalItems} Transactions</h2>
+      {/* ── Unified control bar ── */}
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-2">
+        {/* Transaction count */}
+        <span className="text-base font-semibold text-gray-800 dark:text-gray-100 shrink-0 mr-auto">
+          {totalItems} Transactions
+        </span>
 
-        <div className="flex items-center">
-          <select className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm mr-2">
-            <option value="date:desc">Sort by Date (Newest First)</option>
-            <option value="date:asc">Sort by Date (Oldest First)</option>
-            <option value="amount:desc">Sort by Amount (Highest First)</option>
-            <option value="amount:asc">Sort by Amount (Lowest First)</option>
-          </select>
-
-          <button className="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm">
-            Export
-          </button>
+        {/* Search */}
+        <div className="relative">
+          <Search
+            size={15}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search transactions..."
+            value={filters.searchTerm || ''}
+            onChange={(e) => onFilterChange({ ...filters, searchTerm: e.target.value, page: 1 })}
+            className="pl-8 pr-7 py-1.5 w-52 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:[color-scheme:dark]"
+          />
+          {filters.searchTerm && (
+            <button
+              onClick={() => onFilterChange({ ...filters, searchTerm: '', page: 1 })}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
+
+        {/* Filter toggle */}
+        <button
+          title={showFilters || hasActiveFilters ? 'Hide filters' : 'Show filters'}
+          onClick={() => setShowFilters((v) => !v)}
+          className={`relative p-2 rounded-lg border transition-colors ${
+            showFilters || hasActiveFilters
+              ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300'
+              : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+        >
+          <Filter size={16} />
+          {hasActiveFilters && (
+            <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-green-500" />
+          )}
+        </button>
+
+        {/* Sort — cycles through 4 options */}
+        <button
+          title={`Sort: ${
+            filters.sort === 'date' && filters.order === 'desc'
+              ? 'Date (Newest First)'
+              : filters.sort === 'date' && filters.order === 'asc'
+                ? 'Date (Oldest First)'
+                : filters.sort === 'amount' && filters.order === 'desc'
+                  ? 'Amount (High → Low)'
+                  : 'Amount (Low → High)'
+          } — click to cycle`}
+          onClick={() => {
+            const options: Array<[string, 'asc' | 'desc']> = [
+              ['date', 'desc'],
+              ['date', 'asc'],
+              ['amount', 'desc'],
+              ['amount', 'asc'],
+            ];
+            const current = options.findIndex(
+              ([s, o]) => s === (filters.sort ?? 'date') && o === (filters.order ?? 'desc'),
+            );
+            const [s, o] = options[(current + 1) % options.length];
+            onSortChange(s, o);
+          }}
+          className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          {filters.sort === 'amount' && filters.order === 'asc' ? (
+            <ArrowDown01 size={16} />
+          ) : filters.sort === 'amount' && filters.order === 'desc' ? (
+            <ArrowDown10 size={16} />
+          ) : filters.order === 'asc' ? (
+            <ArrowDownAZ size={16} />
+          ) : (
+            <ArrowUpAZ size={16} />
+          )}
+        </button>
+
+        {/* Export */}
+        <button
+          title="Export as CSV"
+          onClick={onExport}
+          disabled={exporting}
+          className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+        >
+          {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+        </button>
       </div>
 
+      {/* ── Expandable filter panel ── */}
+      {showFilters && (
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Type */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                Type
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(['income', 'expense', 'transfer'] as TransactionType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => handleTypeToggle(type)}
+                    className={`px-2.5 py-1 rounded-full text-xs capitalize transition-colors ${
+                      filters.types?.includes(type)
+                        ? type === 'income'
+                          ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+                          : type === 'expense'
+                            ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+                            : 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+                        : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date range */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                Date Range
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-green-500 dark:[color-scheme:dark]"
+                  value={filters.startDate || ''}
+                  onChange={(e) =>
+                    onFilterChange({ ...filters, startDate: e.target.value || undefined, page: 1 })
+                  }
+                />
+                <input
+                  type="date"
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-green-500 dark:[color-scheme:dark]"
+                  value={filters.endDate || ''}
+                  onChange={(e) =>
+                    onFilterChange({ ...filters, endDate: e.target.value || undefined, page: 1 })
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Amount range */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                Amount Range
+              </p>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    className="pl-5 pr-2 py-1.5 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-xs focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={filters.minAmount ?? ''}
+                    onChange={(e) =>
+                      onFilterChange({
+                        ...filters,
+                        minAmount: e.target.value ? +e.target.value : undefined,
+                        page: 1,
+                      })
+                    }
+                  />
+                </div>
+                <div className="relative flex-1">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    className="pl-5 pr-2 py-1.5 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-xs focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={filters.maxAmount ?? ''}
+                    onChange={(e) =>
+                      onFilterChange({
+                        ...filters,
+                        maxAmount: e.target.value ? +e.target.value : undefined,
+                        page: 1,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Status + clear */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                Status
+              </p>
+              <div className="flex gap-2 items-start">
+                <select
+                  className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-green-500 dark:[color-scheme:dark]"
+                  value={filters.status?.[0] || ''}
+                  onChange={(e) =>
+                    onFilterChange({
+                      ...filters,
+                      status: e.target.value ? [e.target.value as TransactionStatus] : undefined,
+                      page: 1,
+                    })
+                  }
+                >
+                  <option value="">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="cleared">Cleared</option>
+                  <option value="reconciled">Reconciled</option>
+                  <option value="void">Void</option>
+                </select>
+                {hasActiveFilters && (
+                  <button
+                    onClick={() =>
+                      onFilterChange({
+                        ...filters,
+                        types: undefined,
+                        startDate: undefined,
+                        endDate: undefined,
+                        categoryIds: undefined,
+                        minAmount: undefined,
+                        maxAmount: undefined,
+                        status: undefined,
+                        tags: undefined,
+                        page: 1,
+                      })
+                    }
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0"
+                  >
+                    <X size={12} /> Clear
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── List ── */}
       <div className="p-4">
         {loading ? (
           <div className="flex justify-center items-center py-8">
@@ -275,45 +542,30 @@ const TransactionList: FC<TransactionListProps> = ({
               />
             ))}
 
-            {/* Pagination controls */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center mt-6">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-full mr-2 ${
-                    currentPage === 1
-                      ? 'text-gray-400 dark:text-gray-600'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                  className={`p-2 rounded-full mr-2 ${currentPage === 1 ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 >
                   <ChevronLeft size={20} />
                 </button>
-
                 <div className="flex space-x-1">
                   {[...Array(totalPages)].map((_, i) => (
                     <button
                       key={i}
                       onClick={() => handlePageChange(i + 1)}
-                      className={`w-8 h-8 rounded-full ${
-                        currentPage === i + 1
-                          ? 'bg-green-600 text-white'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
+                      className={`w-8 h-8 rounded-full ${currentPage === i + 1 ? 'bg-green-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                     >
                       {i + 1}
                     </button>
                   ))}
                 </div>
-
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`p-2 rounded-full ml-2 ${
-                    currentPage === totalPages
-                      ? 'text-gray-400 dark:text-gray-600'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
+                  className={`p-2 rounded-full ml-2 ${currentPage === totalPages ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -321,9 +573,11 @@ const TransactionList: FC<TransactionListProps> = ({
             )}
           </>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">No transactions found</p>
-          </div>
+          <EmptyState
+            image={wallet01}
+            title="No transactions found"
+            description="Your transactions will appear here once you add them."
+          />
         )}
       </div>
     </div>

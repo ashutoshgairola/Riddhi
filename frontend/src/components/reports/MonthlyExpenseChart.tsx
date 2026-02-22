@@ -3,6 +3,8 @@ import { FC } from 'react';
 
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
 
+import { formatCurrency } from '../../utils';
+
 interface ExpenseData {
   name: string;
   amount: number;
@@ -15,20 +17,13 @@ interface MonthlyExpenseChartProps {
 const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#9C27B0'];
 
 const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-
   const customTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-white dark:bg-gray-700 p-3 border border-gray-200 dark:border-gray-600 rounded shadow-sm">
           <p className="font-medium dark:text-gray-100">{data.name}</p>
-          <p className="text-gray-600 dark:text-gray-300">{formatCurrency(data.amount)}</p>
+          <p className="text-gray-600 dark:text-gray-300">{formatCurrency(data.amount, 'INR')}</p>
           <p className="text-gray-600 dark:text-gray-300 text-sm">
             {`${((data.amount / data.totalAmount) * 100).toFixed(1)}% of total`}
           </p>
@@ -68,7 +63,7 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
                     fill="#8884d8"
                     dataKey="amount"
                   >
-                    {data.map((entry, index) => (
+                    {data.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -104,7 +99,7 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
                         </div>
                       </td>
                       <td className="text-right dark:text-gray-300">
-                        {formatCurrency(item.amount)}
+                        {formatCurrency(item.amount, 'INR')}
                       </td>
                       <td className="text-right dark:text-gray-300">
                         {((item.amount / total) * 100).toFixed(1)}%
@@ -113,7 +108,9 @@ const MonthlyExpenseChart: FC<MonthlyExpenseChartProps> = ({ data }) => {
                   ))}
                   <tr className="font-medium">
                     <td className="py-3 dark:text-gray-100">Total</td>
-                    <td className="text-right dark:text-gray-100">{formatCurrency(total)}</td>
+                    <td className="text-right dark:text-gray-100">
+                      {formatCurrency(total, 'INR')}
+                    </td>
                     <td className="text-right dark:text-gray-100">100%</td>
                   </tr>
                 </tbody>

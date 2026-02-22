@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { sendResponse } from '../common/utils';
+import { getErrorMessage, sendResponse } from '../common/utils';
 import { log } from '../config/logger';
 import { AuthService } from './service';
 import {
@@ -54,15 +54,16 @@ export class AuthController {
         data: user,
         message: 'User registered successfully',
       });
-    } catch (error: any) {
-      if (error.message === 'Email already registered') {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Email already registered') {
         log.warn('⚠️ Registration failed: Email already exists', {
           context: this.context,
           method: 'register',
           email: req.body.email,
-          error: error.message,
+          error: msg,
         });
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: msg });
       } else {
         log.error('💥 Registration failed: Internal server error', {
           context: this.context,
@@ -108,14 +109,15 @@ export class AuthController {
         data: user,
         message: 'Login successful',
       });
-    } catch (error: any) {
-      if (error.message === 'Invalid credentials') {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Invalid credentials') {
         log.warn('⚠️ Login failed: Invalid credentials', {
           context: this.context,
           method: 'login',
           email: req.body.email,
         });
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ error: msg });
       } else {
         log.error('💥 Login failed: Internal server error', {
           context: this.context,
@@ -159,15 +161,16 @@ export class AuthController {
         data: null,
         message: 'Password reset email sent successfully',
       });
-    } catch (error: any) {
-      if (error.message === 'Email not found') {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Email not found') {
         log.warn('⚠️ Password reset failed: Email not found', {
           context: this.context,
           method: 'resetPasswordRequest',
           email: req.body.email,
-          error: error.message,
+          error: msg,
         });
-        res.status(404).json({ error: error.message });
+        res.status(404).json({ error: msg });
       } else {
         log.error('💥 Password reset request failed: Internal server error', {
           context: this.context,
@@ -209,14 +212,15 @@ export class AuthController {
         data: null,
         message: 'Password reset successfully',
       });
-    } catch (error: any) {
-      if (error.message === 'Invalid or expired token') {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Invalid or expired token') {
         log.warn('⚠️ Password reset confirmation failed: Invalid token', {
           context: this.context,
           method: 'resetPasswordConfirm',
-          error: error.message,
+          error: msg,
         });
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: msg });
       } else {
         log.error('💥 Password reset confirmation failed: Internal server error', {
           context: this.context,
@@ -358,15 +362,16 @@ export class AuthController {
         data: null,
         message: 'Password changed successfully',
       });
-    } catch (error: any) {
-      if (error.message === 'Current password is incorrect') {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
+      if (msg === 'Current password is incorrect') {
         log.warn('⚠️ Change password failed: Incorrect current password', {
           context: this.context,
           method: 'changePassword',
           userId: req.body.user?.userId,
-          error: error.message,
+          error: msg,
         });
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ error: msg });
       } else {
         log.error('💥 Change password failed: Internal server error', {
           context: this.context,

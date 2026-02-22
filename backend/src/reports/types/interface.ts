@@ -140,11 +140,12 @@ export interface CustomReportResponse {
     compareAmount?: number;
     changePercentage?: number;
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]; // Varies based on report type and configuration
   metadata: {
     timeframe: string;
     startDate: string;
     endDate: string;
-    filters: Record<string, any>;
+    filters: Record<string, unknown>;
   };
 }

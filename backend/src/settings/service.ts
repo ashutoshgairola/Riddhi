@@ -4,6 +4,7 @@ import { Db } from 'mongodb';
 import path from 'path';
 
 import { AccountModel } from '../accounts/db';
+import { AccountType } from '../accounts/types/interface';
 import { BudgetModel } from '../budgets/db';
 import { createChildLogger } from '../config/logger';
 import { GoalModel } from '../goals/db';
@@ -161,14 +162,14 @@ export class SettingsService {
       await this.accountModel.create({
         userId,
         name: account.name,
-        type: account.type as any,
+        type: account.type as AccountType,
         balance: account.balance,
         currency: 'USD', // Default for mock
         institutionName: connectionDetails.institutionName,
         institutionLogo: connectionDetails.institutionLogo,
         lastUpdated: new Date(),
         isConnected: true,
-        connectionId: createdConnection._id!.toString(),
+        connectionId: createdConnection._id?.toString() ?? '',
         includeInNetWorth: true,
       });
     }
@@ -230,7 +231,7 @@ export class SettingsService {
     const { format, type = 'all' } = query;
 
     // Determine which data to export
-    let data: any = {};
+    const data: Record<string, unknown[]> = {};
 
     if (type === 'all' || type === 'transactions') {
       const transactionsResult = await this.transactionModel.findAll(userId, {});
@@ -288,7 +289,7 @@ export class SettingsService {
     }
 
     // Parse file content
-    let data: any[];
+    let data: Record<string, unknown>[];
 
     if (isJSON) {
       try {
@@ -379,7 +380,7 @@ export class SettingsService {
 
   private mapNotificationSettingToDTO(setting: NotificationSetting): NotificationSettingDTO {
     return {
-      id: setting._id!.toString(),
+      id: setting._id?.toString() ?? '',
       name: setting.name,
       description: setting.description,
       email: setting.email,
@@ -390,7 +391,7 @@ export class SettingsService {
 
   private mapAccountConnectionToDTO(connection: AccountConnection): AccountConnectionDTO {
     return {
-      id: connection._id!.toString(),
+      id: connection._id?.toString() ?? '',
       name: connection.name,
       type: connection.type,
       institutionName: connection.institutionName,
@@ -401,7 +402,7 @@ export class SettingsService {
     };
   }
 
-  private encryptCredentials(credentials: any): string {
+  private encryptCredentials(credentials: Record<string, unknown>): string {
     // In a real app, use a proper encryption library
     // This is just a simplistic example
     const secret = process.env.ENCRYPTION_KEY || 'default-secret-key';
@@ -429,7 +430,16 @@ export class SettingsService {
     // In a real app, this would call the banking API
 
     // Mock data based on institution ID
-    const mockInstitutions: Record<string, any> = {
+    const mockInstitutions: Record<
+      string,
+      {
+        name: string;
+        type: string;
+        institutionName: string;
+        institutionLogo?: string;
+        accounts: { id: string; name: string; type: string; balance: number }[];
+      }
+    > = {
       chase: {
         name: 'Chase Bank Connection',
         type: 'bank',
@@ -521,7 +531,7 @@ export class SettingsService {
     return mockData;
   }
 
-  private convertToCSV(data: any, type: string): string {
+  private convertToCSV(data: Record<string, unknown[]>, type: string): string {
     // Simple CSV conversion - in a real app, use a proper CSV library
     let csv = '';
     const items = data[type] || [];
@@ -531,7 +541,7 @@ export class SettingsService {
     }
 
     // Get headers from first item keys
-    const firstItem = items[0];
+    const firstItem = items[0] as Record<string, unknown>;
     const headers = Object.keys(firstItem).filter(
       (key) => !Array.isArray(firstItem[key]) && typeof firstItem[key] !== 'object',
     );
@@ -540,9 +550,10 @@ export class SettingsService {
     csv += headers.join(',') + '\n';
 
     // Add data rows
-    items.forEach((item: any) => {
+    items.forEach((item: unknown) => {
+      const record = item as Record<string, unknown>;
       const row = headers.map((header) => {
-        const value = item[header];
+        const value = record[header];
 
         // Format value for CSV
         if (value === null || value === undefined) {
@@ -564,7 +575,7 @@ export class SettingsService {
     return csv;
   }
 
-  private parseCSV(csvText: string, _type: string): any[] {
+  private parseCSV(csvText: string, _type: string): Record<string, unknown>[] {
     // Simple CSV parsing - in a real app, use a proper CSV parser library
     const lines = csvText.split('\n').filter((line) => line.trim() !== '');
 
@@ -611,7 +622,7 @@ export class SettingsService {
       values.push(currentValue);
 
       // Create object from headers and values
-      const obj: any = {};
+      const obj: Record<string, unknown> = {};
 
       for (let j = 0; j < headers.length; j++) {
         const header = headers[j];
@@ -627,7 +638,7 @@ export class SettingsService {
     return data;
   }
 
-  private convertValueType(value: string, header: string): any {
+  private convertValueType(value: string, header: string): unknown {
     // Convert string values to appropriate types based on the header
     if (value === '') {
       return null;
@@ -664,6 +675,7 @@ export class SettingsService {
 
   private async importTransactions(
     userId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transactions: any[],
     stats: ImportStats,
   ): Promise<void> {
@@ -692,6 +704,7 @@ export class SettingsService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async importBudgets(userId: string, budgets: any[], stats: ImportStats): Promise<void> {
     for (const budget of budgets) {
       try {
@@ -724,6 +737,7 @@ export class SettingsService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async importGoals(userId: string, goals: any[], stats: ImportStats): Promise<void> {
     for (const goal of goals) {
       try {

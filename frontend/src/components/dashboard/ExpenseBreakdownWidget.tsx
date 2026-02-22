@@ -3,58 +3,60 @@ import { FC } from 'react';
 
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
-// Dummy data for the chart
-const expenseData = [
-  { name: 'Housing', value: 1500, color: '#4CAF50' },
-  { name: 'Food', value: 450, color: '#2196F3' },
-  { name: 'Transport', value: 275, color: '#FFC107' },
-  { name: 'Entertainment', value: 385, color: '#9C27B0' },
-  { name: 'Utilities', value: 310, color: '#FF5722' },
-  { name: 'Other', value: 280, color: '#607D8B' },
-];
+import { ExpenseCategory } from '../../types/dashboard.types';
+import { formatCurrency } from '../../utils';
 
-const ExpenseBreakdownWidget: FC = () => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
+const PALETTE = ['#16a34a', '#4ade80', '#86efac', '#15803d', '#166534', '#bbf7d0'];
+
+interface ExpenseBreakdownWidgetProps {
+  expenseBreakdown: ExpenseCategory[];
+  loading?: boolean;
+}
+
+const ExpenseBreakdownWidget: FC<ExpenseBreakdownWidgetProps> = ({ expenseBreakdown, loading }) => {
+  const chartData = expenseBreakdown.map((e, i) => ({
+    name: e.categoryName,
+    value: e.amount,
+    color: e.color || PALETTE[i % PALETTE.length],
+  }));
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
       <div className="p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold dark:text-gray-100">Expense Breakdown</h2>
-          <select className="p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm">
-            <option>This month</option>
-            <option>Last month</option>
-            <option>This year</option>
-          </select>
+          <span className="text-sm text-gray-500 dark:text-gray-400">This month</span>
         </div>
       </div>
       <div className="p-6">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={expenseData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {expenseData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => formatCurrency(value as number)} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        {loading ? (
+          <div className="h-64 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
+        ) : chartData.length === 0 ? (
+          <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+            No expenses this month
+          </div>
+        ) : (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  dataKey="value"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => formatCurrency(value as number, 'INR')} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

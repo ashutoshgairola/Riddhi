@@ -11,6 +11,9 @@ import {
   YAxis,
 } from 'recharts';
 
+import { useTheme } from '../../hooks/useTheme';
+import { formatCurrency } from '../../utils';
+
 interface PerformanceData {
   date: string;
   value: number;
@@ -21,13 +24,7 @@ interface PortfolioPerformanceChartProps {
 }
 
 const PortfolioPerformanceChart: FC<PortfolioPerformanceChartProps> = ({ data }) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-
+  const { isDark } = useTheme();
   const formatDate = (dateString: string) => {
     const [year, month] = dateString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -48,21 +45,33 @@ const PortfolioPerformanceChart: FC<PortfolioPerformanceChartProps> = ({ data })
   }) => {
     if (active && payload && payload.length && payload[0].value !== undefined) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow-sm">
+        <div
+          className={`p-3 border rounded shadow-sm ${isDark ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-200 text-gray-900'}`}
+        >
           <p className="font-medium">{formatDate(label ?? '')}</p>
-          <p className="text-gray-600">{formatCurrency(payload[0].value)}</p>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+            {formatCurrency(payload[0].value, 'INR')}
+          </p>
         </div>
       );
     }
     return null;
   };
 
+  const gridColor = isDark ? '#374151' : '#E0E0E0';
+  const tickColor = isDark ? '#9ca3af' : '#6b7280';
+  const axisColor = isDark ? '#4b5563' : '#E0E0E0';
+
   return (
-    <div className="bg-white rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100">
+    <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow h-full`}>
+      <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Portfolio Performance</h2>
-          <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+          <h2 className={`text-xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+            Portfolio Performance
+          </h2>
+          <select
+            className={`px-3 py-2 border rounded-lg text-sm ${isDark ? 'bg-gray-700 border-gray-600 text-gray-200' : 'border-gray-200 text-gray-700'}`}
+          >
             <option>Last 12 months</option>
             <option>Last 6 months</option>
             <option>Last 3 months</option>
@@ -82,18 +91,18 @@ const PortfolioPerformanceChart: FC<PortfolioPerformanceChartProps> = ({ data })
                   <stop offset="95%" stopColor="#4CAF50" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatDate}
-                tick={{ fontSize: 12 }}
-                axisLine={{ stroke: '#E0E0E0' }}
+                tick={{ fontSize: 12, fill: tickColor }}
+                axisLine={{ stroke: axisColor }}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                tick={{ fontSize: 12 }}
-                axisLine={{ stroke: '#E0E0E0' }}
+                tick={{ fontSize: 12, fill: tickColor }}
+                axisLine={{ stroke: axisColor }}
                 tickLine={false}
               />
               <Tooltip content={customTooltip} />

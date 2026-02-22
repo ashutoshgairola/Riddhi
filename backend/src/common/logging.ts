@@ -4,7 +4,7 @@ import { Logger } from 'pino';
 /**
  * Utility function to wrap controller methods with consistent logging
  */
-export const withLogging = <T extends any[], R>(
+export const withLogging = <T extends unknown[], R>(
   logger: Logger,
   methodName: string,
   handler: (req: Request, res: Response, ...args: T) => Promise<R>,
@@ -14,8 +14,8 @@ export const withLogging = <T extends any[], R>(
     const requestLogger = logger.child({ requestId, method: methodName });
 
     // Log request start with sanitized data
-    const logData: any = {
-      userId: req.body.user?.userId || (req as any).user?.userId || (req as any).user?.id,
+    const logData: Record<string, unknown> = {
+      userId: req.body.user?.userId || req.user?.userId,
       url: req.originalUrl,
       method: req.method,
     };
@@ -44,25 +44,26 @@ export const withLogging = <T extends any[], R>(
       const result = await handler(req, res, ...args);
       requestLogger.info({ userId: logData.userId }, `${methodName} completed successfully`);
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       const errorData = {
         userId: logData.userId,
         error: {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
+          message: errMsg,
+          stack: error instanceof Error ? error.stack : undefined,
+          name: error instanceof Error ? error.name : 'UnknownError',
         },
       };
 
       if (
-        error.message &&
-        (error.message.includes('Invalid credentials') ||
-          error.message.includes('Email already registered') ||
-          error.message.includes('Email not found') ||
-          error.message.includes('Unauthorized') ||
-          error.message.includes('not found'))
+        errMsg &&
+        (errMsg.includes('Invalid credentials') ||
+          errMsg.includes('Email already registered') ||
+          errMsg.includes('Email not found') ||
+          errMsg.includes('Unauthorized') ||
+          errMsg.includes('not found'))
       ) {
-        requestLogger.warn(errorData, `${methodName} failed: ${error.message}`);
+        requestLogger.warn(errorData, `${methodName} failed: ${errMsg}`);
       } else {
         requestLogger.error(errorData, `${methodName} failed with unexpected error`);
       }
@@ -76,14 +77,15 @@ export const withLogging = <T extends any[], R>(
  * Extract user ID from request for logging purposes
  */
 export const getUserId = (req: Request): string | undefined => {
-  return req.body.user?.userId || (req as any).user?.userId || (req as any).user?.id;
+  // req.user is extended via declare global in middleware/auth.ts
+  return req.body.user?.userId || req.user?.userId;
 };
 
 /**
  * Create sanitized log data from request
  */
-export const createRequestLogData = (req: Request, additionalData?: Record<string, any>) => {
-  const logData: any = {
+export const createRequestLogData = (req: Request, additionalData?: Record<string, unknown>) => {
+  const logData: Record<string, unknown> = {
     userId: getUserId(req),
     url: req.originalUrl,
     method: req.method,

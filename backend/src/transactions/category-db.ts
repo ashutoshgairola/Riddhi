@@ -60,7 +60,7 @@ export class CategoryModel {
       { returnDocument: 'after' },
     );
 
-    return updatedCategory.value;
+    return updatedCategory as unknown as TransactionCategory | null;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {

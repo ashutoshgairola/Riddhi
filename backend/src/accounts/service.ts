@@ -51,7 +51,7 @@ export class AccountService {
 
     // Map to simplified transaction format for account detail
     const transactionSummaries = recentTransactions.map((transaction) => ({
-      id: transaction._id!.toString(),
+      id: transaction._id?.toString() ?? '',
       date: transaction.date.toISOString(),
       description: transaction.description,
       amount: transaction.amount,
@@ -216,7 +216,7 @@ export class AccountService {
 
   private mapAccountToDTO(account: Account): AccountDTO {
     return {
-      id: account._id!.toString(),
+      id: account._id?.toString() ?? '',
       name: account.name,
       type: account.type,
       balance: account.balance,

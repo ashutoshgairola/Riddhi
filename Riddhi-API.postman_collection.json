@@ -1,0 +1,2500 @@
+{
+  "info": {
+    "name": "₹iddhi Finance API",
+    "_postman_id": "riddhi-finance-api-v1",
+    "description": "Complete REST API collection for ₹iddhi — a full-stack personal finance management application.\n\n## Setup\n1. Set the `baseUrl` variable to `http://localhost:3000`\n2. Call **Login** to get a token — it is saved automatically to the `token` variable.\n3. All protected routes use `Bearer {{token}}` auth.\n\n## Auth Pattern\nAll protected endpoints require the `Authorization: Bearer {{token}}` header, which is pre-configured on every folder.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL of the API server"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Bearer token — set automatically after Login"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "Authenticated user's ID — set automatically after Login"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints — register, login, password reset, and profile management.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+            },
+            "description": "Create a new user account. Returns the created user along with a JWT token."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"68d2be9a1fe6585a5a8b7055\",\n  \"email\": \"john.doe@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"profileImageUrl\": null,\n  \"createdAt\": \"2025-07-25T10:00:00.000Z\",\n  \"lastLogin\": null,\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            },
+            {
+              "name": "400 Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"error\": \"Invalid email address\"\n}"
+            },
+            {
+              "name": "409 Conflict",
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"error\": \"Email already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.collectionVariables.set('token', res.token);",
+                  "}",
+                  "if (res.id) {",
+                  "  pm.collectionVariables.set('userId', res.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "description": "Authenticate with email and password. The JWT token is automatically saved to the `token` collection variable."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"68d2be9a1fe6585a5a8b7055\",\n  \"email\": \"john.doe@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"profileImageUrl\": null,\n  \"createdAt\": \"2025-07-25T10:00:00.000Z\",\n  \"lastLogin\": \"2025-07-25T12:00:00.000Z\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"error\": \"Invalid credentials\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password", "request"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}"
+            },
+            "description": "Initiate a password reset flow. A reset token is generated (check the DB or logs in development)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"message\": \"If the email exists, a reset link has been sent\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password", "confirm"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<reset-token-from-email>\",\n  \"newPassword\": \"NewSecurePass456!\"\n}"
+            },
+            "description": "Confirm the password reset using the token received via email."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"message\": \"Password reset successfully\"\n}"
+            },
+            {
+              "name": "400 Invalid/Expired Token",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"error\": \"Invalid or expired reset token\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Retrieve the authenticated user's profile."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"68d2be9a1fe6585a5a8b7055\",\n  \"email\": \"john.doe@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"profileImageUrl\": \"https://example.com/avatar.jpg\",\n  \"createdAt\": \"2025-07-25T10:00:00.000Z\",\n  \"lastLogin\": \"2025-07-25T12:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Johnathan\",\n  \"lastName\": \"Doe\",\n  \"profileImageUrl\": \"https://example.com/new-avatar.jpg\"\n}"
+            },
+            "description": "Update the authenticated user's profile. All fields are optional."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"68d2be9a1fe6585a5a8b7055\",\n  \"email\": \"john.doe@example.com\",\n  \"firstName\": \"Johnathan\",\n  \"lastName\": \"Doe\",\n  \"profileImageUrl\": \"https://example.com/new-avatar.jpg\",\n  \"createdAt\": \"2025-07-25T10:00:00.000Z\",\n  \"lastLogin\": \"2025-07-25T12:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"SecurePass123!\",\n  \"newPassword\": \"NewSecurePass456!\"\n}"
+            },
+            "description": "Change the authenticated user's password. Requires the current password for verification."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"message\": \"Password changed successfully\"\n}"
+            },
+            {
+              "name": "401 Wrong Current Password",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"error\": \"Current password is incorrect\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "description": "Manage financial transactions and transaction categories.",
+      "item": [
+        {
+          "name": "Categories",
+          "description": "CRUD for transaction categories. Categories can be nested (parent/child).",
+          "item": [
+            {
+              "name": "List Categories",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/transactions/categories",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "transactions", "categories"]
+                },
+                "description": "Retrieve all transaction categories for the authenticated user, including nested subcategories."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "[\n  {\n    \"id\": \"cat_001\",\n    \"name\": \"Food & Dining\",\n    \"color\": \"#F97316\",\n    \"icon\": \"utensils\",\n    \"parentId\": null,\n    \"subcategories\": [\n      {\n        \"id\": \"cat_002\",\n        \"name\": \"Restaurants\",\n        \"color\": \"#FB923C\",\n        \"icon\": \"fork-knife\",\n        \"parentId\": \"cat_001\",\n        \"subcategories\": []\n      }\n    ]\n  },\n  {\n    \"id\": \"cat_003\",\n    \"name\": \"Salary\",\n    \"color\": \"#22C55E\",\n    \"icon\": \"briefcase\",\n    \"parentId\": null,\n    \"subcategories\": []\n  }\n]"
+                }
+              ]
+            },
+            {
+              "name": "Create Category",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/transactions/categories",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "transactions", "categories"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Entertainment\",\n  \"color\": \"#A855F7\",\n  \"icon\": \"film\",\n  \"parentId\": null\n}"
+                },
+                "description": "Create a new transaction category. `parentId` is optional — omit it for top-level categories."
+              },
+              "response": [
+                {
+                  "name": "201 Created",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"id\": \"cat_004\",\n  \"name\": \"Entertainment\",\n  \"color\": \"#A855F7\",\n  \"icon\": \"film\",\n  \"parentId\": null,\n  \"subcategories\": []\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update Category",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/transactions/categories/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "transactions", "categories", ":id"],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "cat_004",
+                      "description": "Category ID"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Entertainment & Leisure\",\n  \"color\": \"#9333EA\"\n}"
+                },
+                "description": "Update an existing category. All fields are optional."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"id\": \"cat_004\",\n  \"name\": \"Entertainment & Leisure\",\n  \"color\": \"#9333EA\",\n  \"icon\": \"film\",\n  \"parentId\": null,\n  \"subcategories\": []\n}"
+                }
+              ]
+            },
+            {
+              "name": "Delete Category",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/transactions/categories/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "transactions", "categories", ":id"],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "cat_004",
+                      "description": "Category ID"
+                    }
+                  ]
+                },
+                "description": "Delete a transaction category by ID."
+              },
+              "response": [
+                {
+                  "name": "204 No Content",
+                  "status": "No Content",
+                  "code": 204,
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions?page=1&limit=20&types=expense,income&startDate=2025-01-01&endDate=2025-07-31&searchTerm=coffee&sort=date&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page (default: 20)"
+                },
+                {
+                  "key": "types",
+                  "value": "expense,income",
+                  "description": "Comma-separated list of types: income, expense, transfer"
+                },
+                {
+                  "key": "categoryIds",
+                  "value": "",
+                  "description": "Comma-separated category IDs",
+                  "disabled": true
+                },
+                {
+                  "key": "accountIds",
+                  "value": "",
+                  "description": "Comma-separated account IDs",
+                  "disabled": true
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01",
+                  "description": "ISO date filter start"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-07-31",
+                  "description": "ISO date filter end"
+                },
+                {
+                  "key": "minAmount",
+                  "value": "",
+                  "description": "Minimum amount filter",
+                  "disabled": true
+                },
+                {
+                  "key": "maxAmount",
+                  "value": "",
+                  "description": "Maximum amount filter",
+                  "disabled": true
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "coffee",
+                  "description": "Search in description"
+                },
+                {
+                  "key": "tags",
+                  "value": "",
+                  "description": "Comma-separated tags",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "cleared, pending, reconciled",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "date",
+                  "description": "Sort field: date, amount, description"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "description": "Sort order: asc, desc"
+                }
+              ]
+            },
+            "description": "List transactions with rich filtering and pagination. All query parameters are optional."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"txn_001\",\n      \"date\": \"2025-07-20T00:00:00.000Z\",\n      \"description\": \"Starbucks Coffee\",\n      \"amount\": 5.50,\n      \"type\": \"expense\",\n      \"categoryId\": \"cat_001\",\n      \"category\": {\n        \"id\": \"cat_001\",\n        \"name\": \"Food & Dining\",\n        \"color\": \"#F97316\",\n        \"icon\": \"utensils\"\n      },\n      \"accountId\": \"acc_001\",\n      \"notes\": \"Morning coffee\",\n      \"status\": \"cleared\",\n      \"tags\": [\"coffee\", \"morning\"],\n      \"attachments\": [],\n      \"isRecurring\": false\n    }\n  ],\n  \"pagination\": {\n    \"total\": 142,\n    \"page\": 1,\n    \"limit\": 20,\n    \"pages\": 8\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Transaction",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "txn_001",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Get a single transaction by ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"txn_001\",\n  \"date\": \"2025-07-20T00:00:00.000Z\",\n  \"description\": \"Starbucks Coffee\",\n  \"amount\": 5.50,\n  \"type\": \"expense\",\n  \"categoryId\": \"cat_001\",\n  \"category\": {\n    \"id\": \"cat_001\",\n    \"name\": \"Food & Dining\",\n    \"color\": \"#F97316\",\n    \"icon\": \"utensils\"\n  },\n  \"accountId\": \"acc_001\",\n  \"notes\": \"Morning coffee\",\n  \"status\": \"cleared\",\n  \"tags\": [\"coffee\"],\n  \"attachments\": [],\n  \"isRecurring\": false\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"error\": \"Transaction not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-07-25T00:00:00.000Z\",\n  \"description\": \"Monthly Rent\",\n  \"amount\": 1500.00,\n  \"type\": \"expense\",\n  \"categoryId\": \"cat_005\",\n  \"accountId\": \"acc_001\",\n  \"notes\": \"July rent payment\",\n  \"status\": \"cleared\",\n  \"tags\": [\"rent\", \"housing\"],\n  \"isRecurring\": true,\n  \"recurringDetails\": {\n    \"frequency\": \"monthly\",\n    \"interval\": 1\n  }\n}"
+            },
+            "description": "Create a new transaction.\n\n**Types**: `income`, `expense`, `transfer`\n**Status**: `cleared`, `pending`, `reconciled`\n**Recurring frequencies**: `daily`, `weekly`, `monthly`, `yearly`"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"txn_002\",\n  \"date\": \"2025-07-25T00:00:00.000Z\",\n  \"description\": \"Monthly Rent\",\n  \"amount\": 1500.00,\n  \"type\": \"expense\",\n  \"categoryId\": \"cat_005\",\n  \"accountId\": \"acc_001\",\n  \"notes\": \"July rent payment\",\n  \"status\": \"cleared\",\n  \"tags\": [\"rent\", \"housing\"],\n  \"isRecurring\": true,\n  \"recurringId\": \"rec_001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "txn_002",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1550.00,\n  \"notes\": \"July rent — slight increase\",\n  \"status\": \"cleared\"\n}"
+            },
+            "description": "Update an existing transaction. All body fields are optional."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"txn_002\",\n  \"date\": \"2025-07-25T00:00:00.000Z\",\n  \"description\": \"Monthly Rent\",\n  \"amount\": 1550.00,\n  \"type\": \"expense\",\n  \"categoryId\": \"cat_005\",\n  \"accountId\": \"acc_001\",\n  \"notes\": \"July rent — slight increase\",\n  \"status\": \"cleared\",\n  \"tags\": [\"rent\", \"housing\"]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "txn_002",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Permanently delete a transaction."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Upload Attachment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id/attachments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id", "attachments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "txn_001",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Receipt image or PDF (max 5MB)"
+                }
+              ]
+            },
+            "description": "Upload a receipt or document attachment to a transaction. Uses `multipart/form-data`. Max file size: 5MB. Accepted types: images and PDFs."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"att_001\",\n  \"fileName\": \"receipt_starbucks.jpg\",\n  \"fileType\": \"image/jpeg\",\n  \"url\": \"/uploads/att_001.jpg\",\n  \"thumbnailUrl\": \"/uploads/att_001_thumb.jpg\",\n  \"uploadedAt\": \"2025-07-25T12:00:00.000Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "description": "Manage bank accounts and financial accounts (checking, savings, credit, investment, loan, cash, other).",
+      "item": [
+        {
+          "name": "List Accounts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts?type=checking,savings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "checking,savings",
+                  "description": "Comma-separated account types: checking, savings, credit, investment, cash, loan, other",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all accounts for the authenticated user. Filter by comma-separated `type` values."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"acc_001\",\n      \"name\": \"HDFC Savings\",\n      \"type\": \"savings\",\n      \"balance\": 125000.00,\n      \"currency\": \"INR\",\n      \"institutionName\": \"HDFC Bank\",\n      \"institutionLogo\": \"https://example.com/hdfc-logo.png\",\n      \"lastUpdated\": \"2025-07-25T10:00:00.000Z\",\n      \"isConnected\": false,\n      \"includeInNetWorth\": true,\n      \"color\": \"#22C55E\"\n    },\n    {\n      \"id\": \"acc_002\",\n      \"name\": \"ICICI Credit Card\",\n      \"type\": \"credit\",\n      \"balance\": -15000.00,\n      \"currency\": \"INR\",\n      \"institutionName\": \"ICICI Bank\",\n      \"lastUpdated\": \"2025-07-24T18:00:00.000Z\",\n      \"isConnected\": false,\n      \"includeInNetWorth\": true,\n      \"color\": \"#EF4444\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Account",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"],
+              "variable": [
+                { "key": "id", "value": "acc_001", "description": "Account ID" }
+              ]
+            },
+            "description": "Get a single account by ID, including its recent transactions."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"acc_001\",\n  \"name\": \"HDFC Savings\",\n  \"type\": \"savings\",\n  \"balance\": 125000.00,\n  \"currency\": \"INR\",\n  \"institutionName\": \"HDFC Bank\",\n  \"lastUpdated\": \"2025-07-25T10:00:00.000Z\",\n  \"isConnected\": false,\n  \"includeInNetWorth\": true,\n  \"color\": \"#22C55E\",\n  \"transactions\": [\n    {\n      \"id\": \"txn_001\",\n      \"date\": \"2025-07-20T00:00:00.000Z\",\n      \"description\": \"Starbucks Coffee\",\n      \"amount\": 5.50,\n      \"type\": \"expense\",\n      \"status\": \"cleared\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SBI Savings\",\n  \"type\": \"savings\",\n  \"balance\": 50000.00,\n  \"currency\": \"INR\",\n  \"institutionName\": \"State Bank of India\",\n  \"includeInNetWorth\": true,\n  \"color\": \"#3B82F6\"\n}"
+            },
+            "description": "Create a new financial account.\n\n**Types**: `checking`, `savings`, `credit`, `investment`, `cash`, `loan`, `other`"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"acc_003\",\n  \"name\": \"SBI Savings\",\n  \"type\": \"savings\",\n  \"balance\": 50000.00,\n  \"currency\": \"INR\",\n  \"institutionName\": \"State Bank of India\",\n  \"lastUpdated\": \"2025-07-25T12:00:00.000Z\",\n  \"isConnected\": false,\n  \"includeInNetWorth\": true,\n  \"color\": \"#3B82F6\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"],
+              "variable": [
+                { "key": "id", "value": "acc_003", "description": "Account ID" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": 52500.00,\n  \"color\": \"#6366F1\"\n}"
+            },
+            "description": "Update an existing account. All fields are optional."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"acc_003\",\n  \"name\": \"SBI Savings\",\n  \"type\": \"savings\",\n  \"balance\": 52500.00,\n  \"currency\": \"INR\",\n  \"institutionName\": \"State Bank of India\",\n  \"lastUpdated\": \"2025-07-25T12:30:00.000Z\",\n  \"isConnected\": false,\n  \"includeInNetWorth\": true,\n  \"color\": \"#6366F1\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", ":id"],
+              "variable": [
+                { "key": "id", "value": "acc_003", "description": "Account ID" }
+              ]
+            },
+            "description": "Delete an account. Note: associated transactions are not automatically deleted."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "description": "Create and manage monthly/custom-period budgets with category allocations.",
+      "item": [
+        {
+          "name": "Get Current Budget",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", "current"]
+            },
+            "description": "Get the currently active budget (budget whose date range includes today)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_001\",\n  \"name\": \"July 2025\",\n  \"startDate\": \"2025-07-01T00:00:00.000Z\",\n  \"endDate\": \"2025-07-31T23:59:59.000Z\",\n  \"income\": 80000.00,\n  \"totalAllocated\": 65000.00,\n  \"totalSpent\": 34200.00,\n  \"categories\": [\n    {\n      \"id\": \"bcat_001\",\n      \"name\": \"Food & Dining\",\n      \"allocated\": 12000.00,\n      \"spent\": 7500.00,\n      \"categoryIds\": [\"cat_001\"],\n      \"color\": \"#F97316\",\n      \"icon\": \"utensils\",\n      \"rollover\": false\n    },\n    {\n      \"id\": \"bcat_002\",\n      \"name\": \"Housing\",\n      \"allocated\": 20000.00,\n      \"spent\": 20000.00,\n      \"categoryIds\": [\"cat_005\"],\n      \"color\": \"#3B82F6\",\n      \"icon\": \"home\",\n      \"rollover\": false\n    }\n  ]\n}"
+            },
+            {
+              "name": "200 No Active Budget",
+              "status": "OK",
+              "code": 200,
+              "body": "null"
+            }
+          ]
+        },
+        {
+          "name": "List Budgets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets?page=1&limit=12&startDate=2025-01-01&endDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number" },
+                {
+                  "key": "limit",
+                  "value": "12",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01",
+                  "description": "Filter budgets starting on or after this date"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31",
+                  "description": "Filter budgets ending on or before this date"
+                }
+              ]
+            },
+            "description": "Get a paginated list of budgets with optional date range filtering."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"bud_001\",\n      \"name\": \"July 2025\",\n      \"startDate\": \"2025-07-01T00:00:00.000Z\",\n      \"endDate\": \"2025-07-31T23:59:59.000Z\",\n      \"income\": 80000.00,\n      \"totalAllocated\": 65000.00,\n      \"totalSpent\": 34200.00\n    }\n  ],\n  \"total\": 7,\n  \"page\": 1,\n  \"limit\": 12,\n  \"pages\": 1\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Budget",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"],
+              "variable": [
+                { "key": "id", "value": "bud_001", "description": "Budget ID" }
+              ]
+            },
+            "description": "Get a single budget by ID with full category breakdown."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_001\",\n  \"name\": \"July 2025\",\n  \"startDate\": \"2025-07-01T00:00:00.000Z\",\n  \"endDate\": \"2025-07-31T23:59:59.000Z\",\n  \"income\": 80000.00,\n  \"totalAllocated\": 65000.00,\n  \"totalSpent\": 34200.00,\n  \"categories\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"August 2025\",\n  \"startDate\": \"2025-08-01\",\n  \"endDate\": \"2025-08-31\",\n  \"income\": 80000.00,\n  \"categories\": [\n    {\n      \"name\": \"Food & Dining\",\n      \"allocated\": 12000.00,\n      \"categoryIds\": [\"cat_001\"],\n      \"color\": \"#F97316\",\n      \"icon\": \"utensils\",\n      \"rollover\": false\n    },\n    {\n      \"name\": \"Housing\",\n      \"allocated\": 20000.00,\n      \"categoryIds\": [\"cat_005\"],\n      \"color\": \"#3B82F6\",\n      \"icon\": \"home\"\n    }\n  ]\n}"
+            },
+            "description": "Create a new budget for a given period. Each category references one or more transaction category IDs for automatic spend tracking."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_002\",\n  \"name\": \"August 2025\",\n  \"startDate\": \"2025-08-01T00:00:00.000Z\",\n  \"endDate\": \"2025-08-31T23:59:59.000Z\",\n  \"income\": 80000.00,\n  \"totalAllocated\": 32000.00,\n  \"totalSpent\": 0.00,\n  \"categories\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"],
+              "variable": [
+                { "key": "id", "value": "bud_002", "description": "Budget ID" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"August 2025 (Revised)\",\n  \"income\": 85000.00\n}"
+            },
+            "description": "Update an existing budget's top-level fields. To modify categories, use the budget category endpoints."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_002\",\n  \"name\": \"August 2025 (Revised)\",\n  \"startDate\": \"2025-08-01T00:00:00.000Z\",\n  \"endDate\": \"2025-08-31T23:59:59.000Z\",\n  \"income\": 85000.00,\n  \"totalAllocated\": 32000.00,\n  \"totalSpent\": 0.00\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Budget",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id"],
+              "variable": [
+                { "key": "id", "value": "bud_002", "description": "Budget ID" }
+              ]
+            },
+            "description": "Delete a budget."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Add Budget Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:id/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "budgets", ":id", "categories"],
+              "variable": [
+                { "key": "id", "value": "bud_001", "description": "Budget ID" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Transport\",\n  \"allocated\": 5000.00,\n  \"categoryIds\": [\"cat_006\"],\n  \"color\": \"#8B5CF6\",\n  \"icon\": \"car\",\n  \"rollover\": false\n}"
+            },
+            "description": "Add a new category to an existing budget."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_001\",\n  \"name\": \"July 2025\",\n  \"totalAllocated\": 70000.00,\n  \"categories\": [\n    {\n      \"id\": \"bcat_003\",\n      \"name\": \"Transport\",\n      \"allocated\": 5000.00,\n      \"spent\": 0.00,\n      \"categoryIds\": [\"cat_006\"],\n      \"color\": \"#8B5CF6\",\n      \"icon\": \"car\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Budget Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:budgetId/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "budgets",
+                ":budgetId",
+                "categories",
+                ":categoryId"
+              ],
+              "variable": [
+                {
+                  "key": "budgetId",
+                  "value": "bud_001",
+                  "description": "Budget ID"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "bcat_003",
+                  "description": "Budget Category ID"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allocated\": 6000.00,\n  \"notes\": \"Increased for fuel costs\"\n}"
+            },
+            "description": "Update a specific category within a budget."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_001\",\n  \"name\": \"July 2025\",\n  \"totalAllocated\": 71000.00,\n  \"categories\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Budget Category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/budgets/:budgetId/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "budgets",
+                ":budgetId",
+                "categories",
+                ":categoryId"
+              ],
+              "variable": [
+                {
+                  "key": "budgetId",
+                  "value": "bud_001",
+                  "description": "Budget ID"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "bcat_003",
+                  "description": "Budget Category ID"
+                }
+              ]
+            },
+            "description": "Remove a category from a budget."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"bud_001\",\n  \"name\": \"July 2025\",\n  \"totalAllocated\": 65000.00,\n  \"categories\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Goals",
+      "description": "Manage savings goals, debt payoff plans, retirement targets, and major purchases.",
+      "item": [
+        {
+          "name": "List Goals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals?page=1&limit=10&type=savings,retirement&status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number" },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "type",
+                  "value": "savings,retirement",
+                  "description": "Comma-separated goal types: savings, debt, retirement, major_purchase, other",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Comma-separated statuses: active, completed, paused",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all goals with optional type and status filtering."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"goal_001\",\n      \"name\": \"Emergency Fund\",\n      \"type\": \"savings\",\n      \"targetAmount\": 300000.00,\n      \"currentAmount\": 120000.00,\n      \"startDate\": \"2025-01-01T00:00:00.000Z\",\n      \"targetDate\": \"2025-12-31T00:00:00.000Z\",\n      \"accountId\": \"acc_001\",\n      \"color\": \"#22C55E\",\n      \"priority\": 1,\n      \"status\": \"active\",\n      \"contributionFrequency\": \"monthly\",\n      \"contributionAmount\": 15000.00\n    }\n  ],\n  \"pagination\": {\n    \"total\": 3,\n    \"page\": 1,\n    \"limit\": 10,\n    \"pages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Goal",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id"],
+              "variable": [
+                { "key": "id", "value": "goal_001", "description": "Goal ID" }
+              ]
+            },
+            "description": "Get a goal by ID with progress details including percentage complete, remaining amount, and projected completion date."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"goal_001\",\n  \"name\": \"Emergency Fund\",\n  \"type\": \"savings\",\n  \"targetAmount\": 300000.00,\n  \"currentAmount\": 120000.00,\n  \"startDate\": \"2025-01-01T00:00:00.000Z\",\n  \"targetDate\": \"2025-12-31T00:00:00.000Z\",\n  \"color\": \"#22C55E\",\n  \"priority\": 1,\n  \"status\": \"active\",\n  \"contributionFrequency\": \"monthly\",\n  \"contributionAmount\": 15000.00,\n  \"progress\": {\n    \"percentage\": 40.0,\n    \"remaining\": 180000.00,\n    \"projectedCompletion\": \"2026-01-15T00:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Laptop\",\n  \"type\": \"major_purchase\",\n  \"targetAmount\": 150000.00,\n  \"currentAmount\": 20000.00,\n  \"startDate\": \"2025-07-01\",\n  \"targetDate\": \"2025-12-31\",\n  \"accountId\": \"acc_001\",\n  \"notes\": \"MacBook Pro M4\",\n  \"color\": \"#6366F1\",\n  \"priority\": 2,\n  \"contributionFrequency\": \"monthly\",\n  \"contributionAmount\": 21666.00\n}"
+            },
+            "description": "Create a new financial goal.\n\n**Types**: `savings`, `debt`, `retirement`, `major_purchase`, `other`\n**Priority**: 1 (highest) to 3 (lowest)\n**Contribution frequencies**: `daily`, `weekly`, `biweekly`, `monthly`"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"goal_002\",\n  \"name\": \"New Laptop\",\n  \"type\": \"major_purchase\",\n  \"targetAmount\": 150000.00,\n  \"currentAmount\": 20000.00,\n  \"startDate\": \"2025-07-01T00:00:00.000Z\",\n  \"targetDate\": \"2025-12-31T00:00:00.000Z\",\n  \"color\": \"#6366F1\",\n  \"priority\": 2,\n  \"status\": \"active\",\n  \"contributionFrequency\": \"monthly\",\n  \"contributionAmount\": 21666.00\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id"],
+              "variable": [
+                { "key": "id", "value": "goal_002", "description": "Goal ID" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentAmount\": 41666.00,\n  \"notes\": \"MacBook Pro M4 — on track!\"\n}"
+            },
+            "description": "Update an existing goal. All fields are optional."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"goal_002\",\n  \"name\": \"New Laptop\",\n  \"currentAmount\": 41666.00,\n  \"status\": \"active\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id"],
+              "variable": [
+                { "key": "id", "value": "goal_002", "description": "Goal ID" }
+              ]
+            },
+            "description": "Delete a goal."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Complete Goal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id", "complete"],
+              "variable": [
+                { "key": "id", "value": "goal_001", "description": "Goal ID" }
+              ]
+            },
+            "description": "Mark a goal as completed."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"goal_001\",\n  \"status\": \"completed\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Pause Goal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id/pause",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id", "pause"],
+              "variable": [
+                { "key": "id", "value": "goal_001", "description": "Goal ID" }
+              ]
+            },
+            "description": "Pause an active goal."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"goal_001\",\n  \"status\": \"paused\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resume Goal",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/goals/:id/resume",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "goals", ":id", "resume"],
+              "variable": [
+                { "key": "id", "value": "goal_001", "description": "Goal ID" }
+              ]
+            },
+            "description": "Resume a paused goal."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"goal_001\",\n  \"status\": \"active\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Investments",
+      "description": "Portfolio management — holdings, transactions, returns, and portfolio-level analytics.",
+      "item": [
+        {
+          "name": "Portfolio Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/portfolio/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", "portfolio", "summary"]
+            },
+            "description": "Get a high-level summary of the entire investment portfolio: total value, total invested, gain/loss, returns, and number of holdings."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"totalValue\": 520000.00,\n  \"totalInvested\": 450000.00,\n  \"totalGainLoss\": 70000.00,\n  \"totalReturnPercent\": 15.56,\n  \"dayChange\": 2500.00,\n  \"dayChangePercent\": 0.48,\n  \"thirtyDayReturnPercent\": 3.2,\n  \"ytdReturnPercent\": 12.4,\n  \"numberOfHoldings\": 8\n}"
+            }
+          ]
+        },
+        {
+          "name": "Portfolio Allocation",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/portfolio/allocation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", "portfolio", "allocation"]
+            },
+            "description": "Get the asset class allocation breakdown of the portfolio."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "[\n  { \"assetClass\": \"stocks\", \"percentage\": 65.0, \"amount\": 338000.00, \"color\": \"#3B82F6\" },\n  { \"assetClass\": \"bonds\", \"percentage\": 20.0, \"amount\": 104000.00, \"color\": \"#22C55E\" },\n  { \"assetClass\": \"cash\", \"percentage\": 10.0, \"amount\": 52000.00, \"color\": \"#F59E0B\" },\n  { \"assetClass\": \"alternatives\", \"percentage\": 5.0, \"amount\": 26000.00, \"color\": \"#8B5CF6\" }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Portfolio Performance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/portfolio/performance?from=2025-01&to=2025-07",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", "portfolio", "performance"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2025-01",
+                  "description": "Start month in YYYY-MM format"
+                },
+                {
+                  "key": "to",
+                  "value": "2025-07",
+                  "description": "End month in YYYY-MM format"
+                }
+              ]
+            },
+            "description": "Get monthly portfolio value data points for the specified period. Used for the performance chart."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "[\n  { \"date\": \"2025-01\", \"value\": 460000.00 },\n  { \"date\": \"2025-02\", \"value\": 472000.00 },\n  { \"date\": \"2025-03\", \"value\": 465000.00 },\n  { \"date\": \"2025-04\", \"value\": 490000.00 },\n  { \"date\": \"2025-05\", \"value\": 505000.00 },\n  { \"date\": \"2025-06\", \"value\": 512000.00 },\n  { \"date\": \"2025-07\", \"value\": 520000.00 }\n]"
+            }
+          ]
+        },
+        {
+          "name": "List Investments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments?page=1&limit=20&assetClass=stocks&sort=currentValue&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number" },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "assetClass",
+                  "value": "stocks",
+                  "description": "Comma-separated: stocks, bonds, cash, alternatives, real_estate, other",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "",
+                  "description": "Comma-separated: individual_stock, etf, mutual_fund, bond, crypto, options, reit, other",
+                  "disabled": true
+                },
+                {
+                  "key": "accountId",
+                  "value": "",
+                  "description": "Filter by account ID",
+                  "disabled": true
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "",
+                  "description": "Search by name or ticker",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "currentValue",
+                  "description": "Sort field"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "description": "asc or desc"
+                }
+              ]
+            },
+            "description": "Get all investment holdings with filtering and sorting."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"inv_001\",\n      \"name\": \"Reliance Industries\",\n      \"ticker\": \"RELIANCE\",\n      \"assetClass\": \"stocks\",\n      \"type\": \"individual_stock\",\n      \"shares\": 50,\n      \"purchasePrice\": 2400.00,\n      \"currentPrice\": 2950.00,\n      \"purchaseDate\": \"2024-03-15\",\n      \"accountId\": \"acc_001\",\n      \"currency\": \"INR\",\n      \"currentValue\": 147500.00,\n      \"totalInvested\": 120000.00,\n      \"gainLoss\": 27500.00,\n      \"returnPercent\": 22.92\n    }\n  ],\n  \"total\": 8,\n  \"page\": 1,\n  \"limit\": 20,\n  \"pages\": 1\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Investment",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_001",
+                  "description": "Investment ID"
+                }
+              ]
+            },
+            "description": "Get a single investment holding by ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"inv_001\",\n  \"name\": \"Reliance Industries\",\n  \"ticker\": \"RELIANCE\",\n  \"assetClass\": \"stocks\",\n  \"type\": \"individual_stock\",\n  \"shares\": 50,\n  \"purchasePrice\": 2400.00,\n  \"currentPrice\": 2950.00,\n  \"purchaseDate\": \"2024-03-15\",\n  \"accountId\": \"acc_001\",\n  \"currency\": \"INR\",\n  \"sector\": \"Energy\",\n  \"region\": \"India\",\n  \"currentValue\": 147500.00,\n  \"totalInvested\": 120000.00,\n  \"gainLoss\": 27500.00,\n  \"returnPercent\": 22.92\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Investment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nifty 50 ETF\",\n  \"ticker\": \"NIFTYBEES\",\n  \"assetClass\": \"stocks\",\n  \"type\": \"etf\",\n  \"shares\": 100,\n  \"purchasePrice\": 220.00,\n  \"currentPrice\": 245.00,\n  \"purchaseDate\": \"2025-01-10\",\n  \"accountId\": \"acc_001\",\n  \"currency\": \"INR\",\n  \"sector\": \"Index\",\n  \"region\": \"India\"\n}"
+            },
+            "description": "Add a new investment holding.\n\n**Asset classes**: `stocks`, `bonds`, `cash`, `alternatives`, `real_estate`, `other`\n**Types**: `individual_stock`, `etf`, `mutual_fund`, `bond`, `crypto`, `options`, `reit`, `other`"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"inv_002\",\n  \"name\": \"Nifty 50 ETF\",\n  \"ticker\": \"NIFTYBEES\",\n  \"assetClass\": \"stocks\",\n  \"type\": \"etf\",\n  \"shares\": 100,\n  \"purchasePrice\": 220.00,\n  \"currentPrice\": 245.00,\n  \"currentValue\": 24500.00,\n  \"totalInvested\": 22000.00,\n  \"gainLoss\": 2500.00,\n  \"returnPercent\": 11.36\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Investment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_002",
+                  "description": "Investment ID"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPrice\": 252.00,\n  \"shares\": 150\n}"
+            },
+            "description": "Update an existing investment holding. Typically used to update the current price."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"inv_002\",\n  \"currentPrice\": 252.00,\n  \"shares\": 150,\n  \"currentValue\": 37800.00,\n  \"gainLoss\": 4800.00,\n  \"returnPercent\": 14.55\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Investment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_002",
+                  "description": "Investment ID"
+                }
+              ]
+            },
+            "description": "Delete an investment holding and all its associated transactions."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "List Investment Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id", "transactions"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_001",
+                  "description": "Investment ID"
+                }
+              ]
+            },
+            "description": "Get all buy/sell/dividend transactions for a specific holding."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"itxn_001\",\n      \"investmentId\": \"inv_001\",\n      \"type\": \"buy\",\n      \"shares\": 50,\n      \"price\": 2400.00,\n      \"amount\": 120000.00,\n      \"date\": \"2024-03-15\",\n      \"notes\": \"Initial purchase\"\n    }\n  ],\n  \"total\": 1\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Investment Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id", "transactions"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_001",
+                  "description": "Investment ID"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"buy\",\n  \"shares\": 10,\n  \"price\": 2950.00,\n  \"date\": \"2025-07-25\",\n  \"notes\": \"Added 10 more shares\"\n}"
+            },
+            "description": "Record a buy, sell, or dividend transaction for a holding.\n\n**Types**: `buy`, `sell`, `dividend`\n- For `dividend`: provide `amount` (not `shares`/`price`)\n- For `buy`/`sell`: provide `shares` and `price`; `amount` is computed automatically"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"id\": \"itxn_002\",\n  \"investmentId\": \"inv_001\",\n  \"type\": \"buy\",\n  \"shares\": 10,\n  \"price\": 2950.00,\n  \"amount\": 29500.00,\n  \"date\": \"2025-07-25\",\n  \"notes\": \"Added 10 more shares\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Investment Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id/transactions/:txId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id", "transactions", ":txId"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_001",
+                  "description": "Investment ID"
+                },
+                {
+                  "key": "txId",
+                  "value": "itxn_002",
+                  "description": "Investment Transaction ID"
+                }
+              ]
+            },
+            "description": "Delete a specific investment transaction."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get Investment Returns",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/investments/:id/returns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "investments", ":id", "returns"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "inv_001",
+                  "description": "Investment ID"
+                }
+              ]
+            },
+            "description": "Get a detailed return analysis for a single holding: unrealised gain/loss, realised gain/loss, dividend income, and total returns."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"investmentId\": \"inv_001\",\n  \"totalInvested\": 120000.00,\n  \"currentValue\": 147500.00,\n  \"unrealisedGainLoss\": 27500.00,\n  \"unrealisedReturnPercent\": 22.92,\n  \"realisedGainLoss\": 0.00,\n  \"dividendIncome\": 1200.00,\n  \"totalReturn\": 28700.00,\n  \"totalReturnPercent\": 23.92\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Financial insights and analytics — income/expense summaries, category breakdowns, budget performance, net worth trends, and custom reports.",
+      "item": [
+        {
+          "name": "Account Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/accounts/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "accounts", "summary"]
+            },
+            "description": "Get a summary of all accounts including total assets, liabilities, and net worth."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"totalAssets\": 695000.00,\n  \"totalLiabilities\": 15000.00,\n  \"netWorth\": 680000.00,\n  \"accounts\": [\n    { \"id\": \"acc_001\", \"name\": \"HDFC Savings\", \"type\": \"savings\", \"balance\": 125000.00 },\n    { \"id\": \"acc_002\", \"name\": \"ICICI Credit\", \"type\": \"credit\", \"balance\": -15000.00 }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Income vs Expense Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/income-expense?startDate=2025-01-01&endDate=2025-07-31&groupBy=month",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "income-expense"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01",
+                  "description": "Start date (ISO)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-07-31",
+                  "description": "End date (ISO)"
+                },
+                {
+                  "key": "groupBy",
+                  "value": "month",
+                  "description": "Grouping: month, week, day",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get income and expense totals grouped by time period. Useful for bar/line chart visualisations."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"totalIncome\": 560000.00,\n  \"totalExpenses\": 389000.00,\n  \"netSavings\": 171000.00,\n  \"savingsRate\": 30.54,\n  \"data\": [\n    { \"period\": \"2025-01\", \"income\": 80000.00, \"expenses\": 55000.00, \"net\": 25000.00 },\n    { \"period\": \"2025-02\", \"income\": 80000.00, \"expenses\": 52000.00, \"net\": 28000.00 }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Category Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/categories?startDate=2025-07-01&endDate=2025-07-31&type=expense",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "categories"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-07-01",
+                  "description": "Start date (ISO)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-07-31",
+                  "description": "End date (ISO)"
+                },
+                {
+                  "key": "type",
+                  "value": "expense",
+                  "description": "income or expense"
+                }
+              ]
+            },
+            "description": "Get spending/income breakdown by category for the specified period. Used for pie/donut charts."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"totalAmount\": 34200.00,\n  \"categories\": [\n    { \"categoryId\": \"cat_001\", \"name\": \"Food & Dining\", \"amount\": 7500.00, \"percentage\": 21.93, \"color\": \"#F97316\" },\n    { \"categoryId\": \"cat_005\", \"name\": \"Housing\", \"amount\": 20000.00, \"percentage\": 58.48, \"color\": \"#3B82F6\" },\n    { \"categoryId\": \"cat_006\", \"name\": \"Transport\", \"amount\": 4200.00, \"percentage\": 12.28, \"color\": \"#8B5CF6\" },\n    { \"categoryId\": \"cat_007\", \"name\": \"Utilities\", \"amount\": 2500.00, \"percentage\": 7.31, \"color\": \"#EAB308\" }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Budget Performance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/budget-performance?budgetId=bud_001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "budget-performance"],
+              "query": [
+                {
+                  "key": "budgetId",
+                  "value": "bud_001",
+                  "description": "Specific budget ID (optional — defaults to current)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get budget vs actual spending performance for each category."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"budgetId\": \"bud_001\",\n  \"budgetName\": \"July 2025\",\n  \"totalAllocated\": 65000.00,\n  \"totalSpent\": 34200.00,\n  \"utilizationPercent\": 52.62,\n  \"categories\": [\n    { \"name\": \"Food & Dining\", \"allocated\": 12000.00, \"spent\": 7500.00, \"remaining\": 4500.00, \"utilizationPercent\": 62.5 },\n    { \"name\": \"Housing\", \"allocated\": 20000.00, \"spent\": 20000.00, \"remaining\": 0.00, \"utilizationPercent\": 100.0 }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Net Worth Over Time",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/net-worth?startDate=2024-01-01&endDate=2025-07-31&groupBy=month",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "net-worth"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01",
+                  "description": "Start date"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-07-31",
+                  "description": "End date"
+                },
+                {
+                  "key": "groupBy",
+                  "value": "month",
+                  "description": "month or week"
+                }
+              ]
+            },
+            "description": "Get net worth trend data over time. Used for area/line charts."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"currentNetWorth\": 680000.00,\n  \"data\": [\n    { \"date\": \"2024-01\", \"netWorth\": 350000.00, \"assets\": 365000.00, \"liabilities\": 15000.00 },\n    { \"date\": \"2025-07\", \"netWorth\": 680000.00, \"assets\": 695000.00, \"liabilities\": 15000.00 }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Custom Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/custom",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "custom"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2025-01-01\",\n  \"endDate\": \"2025-06-30\",\n  \"types\": [\"expense\"],\n  \"categoryIds\": [\"cat_001\", \"cat_005\"],\n  \"accountIds\": [\"acc_001\"],\n  \"groupBy\": \"month\",\n  \"metrics\": [\"total\", \"average\", \"count\"]\n}"
+            },
+            "description": "Generate a custom financial report with user-defined filters, grouping, and metrics."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"summary\": {\n    \"total\": 204000.00,\n    \"average\": 34000.00,\n    \"count\": 48\n  },\n  \"data\": [\n    { \"period\": \"2025-01\", \"total\": 33000.00, \"average\": 1062.00, \"count\": 7 },\n    { \"period\": \"2025-02\", \"total\": 30500.00, \"average\": 1017.00, \"count\": 6 }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "Single-request endpoint that aggregates all dashboard widget data.",
+      "item": [
+        {
+          "name": "Get Dashboard Data",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard"]
+            },
+            "description": "Returns all data needed to render the dashboard in a single API call:\n- Net worth summary\n- Monthly cash flow (income vs expenses)\n- Budget overview (current period)\n- Savings goals progress\n- Recent transactions\n- Account balances"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"netWorth\": {\n    \"total\": 680000.00,\n    \"totalAssets\": 695000.00,\n    \"totalLiabilities\": 15000.00,\n    \"monthlyChange\": 12000.00,\n    \"monthlyChangePercent\": 1.80\n  },\n  \"cashFlow\": {\n    \"income\": 80000.00,\n    \"expenses\": 34200.00,\n    \"net\": 45800.00,\n    \"savingsRate\": 57.25\n  },\n  \"budgetOverview\": {\n    \"budgetId\": \"bud_001\",\n    \"budgetName\": \"July 2025\",\n    \"totalAllocated\": 65000.00,\n    \"totalSpent\": 34200.00,\n    \"utilizationPercent\": 52.62,\n    \"topCategories\": [\n      { \"name\": \"Housing\", \"allocated\": 20000.00, \"spent\": 20000.00, \"utilizationPercent\": 100 }\n    ]\n  },\n  \"goalsProgress\": [\n    { \"id\": \"goal_001\", \"name\": \"Emergency Fund\", \"targetAmount\": 300000.00, \"currentAmount\": 120000.00, \"progressPercent\": 40.0 }\n  ],\n  \"recentTransactions\": [\n    { \"id\": \"txn_001\", \"date\": \"2025-07-20T00:00:00.000Z\", \"description\": \"Starbucks Coffee\", \"amount\": 5.50, \"type\": \"expense\", \"categoryName\": \"Food & Dining\" }\n  ],\n  \"accounts\": [\n    { \"id\": \"acc_001\", \"name\": \"HDFC Savings\", \"type\": \"savings\", \"balance\": 125000.00, \"currency\": \"INR\" }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "description": "User preferences, notification settings, account connections, and data management.",
+      "item": [
+        {
+          "name": "Preferences",
+          "description": "User display preferences: currency, date format, theme, language, and start-of-week day.",
+          "item": [
+            {
+              "name": "Get Preferences",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/preferences",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "preferences"]
+                },
+                "description": "Get the authenticated user's display preferences."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"currency\": \"INR\",\n  \"dateFormat\": \"DD/MM/YYYY\",\n  \"theme\": \"light\",\n  \"startOfWeek\": \"monday\",\n  \"language\": \"en\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update Preferences",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/preferences",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "preferences"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currency\": \"USD\",\n  \"dateFormat\": \"MM/DD/YYYY\",\n  \"theme\": \"dark\",\n  \"startOfWeek\": \"sunday\",\n  \"language\": \"en\"\n}"
+                },
+                "description": "Update user display preferences. All fields are optional."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"currency\": \"USD\",\n  \"dateFormat\": \"MM/DD/YYYY\",\n  \"theme\": \"dark\",\n  \"startOfWeek\": \"sunday\",\n  \"language\": \"en\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Notifications",
+          "description": "Manage per-notification channel settings (email, push, SMS).",
+          "item": [
+            {
+              "name": "Get Notification Settings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/notifications",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "notifications"]
+                },
+                "description": "Get all notification settings for the authenticated user."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"data\": [\n    {\n      \"id\": \"notif_001\",\n      \"name\": \"Budget Alerts\",\n      \"description\": \"Alerts when you are close to or exceed a budget category\",\n      \"email\": true,\n      \"push\": true,\n      \"sms\": false\n    },\n    {\n      \"id\": \"notif_002\",\n      \"name\": \"Goal Milestones\",\n      \"description\": \"Notifications when you reach a savings goal milestone\",\n      \"email\": true,\n      \"push\": false,\n      \"sms\": false\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update Notification Setting",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/notifications/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "notifications", ":id"],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "notif_001",
+                      "description": "Notification Setting ID"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": true,\n  \"push\": true,\n  \"sms\": true\n}"
+                },
+                "description": "Toggle email/push/SMS channels for a specific notification. Provide at least one of `email`, `push`, or `sms`."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"id\": \"notif_001\",\n  \"name\": \"Budget Alerts\",\n  \"description\": \"Alerts when you are close to or exceed a budget category\",\n  \"email\": true,\n  \"push\": true,\n  \"sms\": true\n}"
+                },
+                {
+                  "name": "404 Not Found",
+                  "status": "Not Found",
+                  "code": 404,
+                  "body": "{\n  \"error\": \"Notification setting not found\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Connections",
+          "description": "Bank/institution account connection management (coming soon — placeholder endpoints).",
+          "item": [
+            {
+              "name": "List Connections",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/connections",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "connections"]
+                },
+                "description": "Get all bank/institution connections for the user."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"data\": []\n}"
+                }
+              ]
+            },
+            {
+              "name": "Connect Account",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/connections",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "connections"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"institutionId\": \"inst_hdfc_001\",\n  \"credentials\": {\n    \"username\": \"user@bank.com\",\n    \"password\": \"bankpassword\"\n  }\n}"
+                },
+                "description": "Connect a bank or financial institution account."
+              },
+              "response": [
+                {
+                  "name": "201 Created",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"id\": \"conn_001\",\n  \"name\": \"HDFC Savings\",\n  \"type\": \"bank\",\n  \"institutionName\": \"HDFC Bank\",\n  \"isConnected\": true,\n  \"lastUpdated\": \"2025-07-25T12:00:00.000Z\",\n  \"accounts\": []\n}"
+                }
+              ]
+            },
+            {
+              "name": "Refresh Connection",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/connections/:id/refresh",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "connections", ":id", "refresh"],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "conn_001",
+                      "description": "Connection ID"
+                    }
+                  ]
+                },
+                "description": "Refresh/sync a bank connection to pull the latest data."
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"id\": \"conn_001\",\n  \"isConnected\": true,\n  \"lastUpdated\": \"2025-07-25T13:00:00.000Z\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "Disconnect Account",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/connections/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "connections", ":id"],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "conn_001",
+                      "description": "Connection ID"
+                    }
+                  ]
+                },
+                "description": "Disconnect and remove a bank connection."
+              },
+              "response": [
+                {
+                  "name": "204 No Content",
+                  "status": "No Content",
+                  "code": 204,
+                  "body": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Data Management",
+          "description": "Export, import, and clear user data.",
+          "item": [
+            {
+              "name": "Export Data",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/data/export?format=json&type=all",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "data", "export"],
+                  "query": [
+                    {
+                      "key": "format",
+                      "value": "json",
+                      "description": "Export format: json or csv"
+                    },
+                    {
+                      "key": "type",
+                      "value": "all",
+                      "description": "Data type: transactions, budgets, goals, or all"
+                    }
+                  ]
+                },
+                "description": "Export user data as a JSON or CSV file download.\n\n**Formats**: `json`, `csv`\n**Types**: `transactions`, `budgets`, `goals`, `all`"
+              },
+              "response": [
+                {
+                  "name": "200 File Download",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" },
+                    {
+                      "key": "Content-Disposition",
+                      "value": "attachment; filename=\"riddhi-export-2025-07-25.json\""
+                    }
+                  ],
+                  "body": "{ ...exported data file content... }"
+                }
+              ]
+            },
+            {
+              "name": "Import Data",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/data/import",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "data", "import"]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "",
+                      "description": "JSON or CSV file to import (max 10MB)"
+                    },
+                    {
+                      "key": "type",
+                      "value": "transactions",
+                      "type": "text",
+                      "description": "Data type: transactions, budgets, goals"
+                    }
+                  ]
+                },
+                "description": "Import data from a JSON or CSV file. Uses `multipart/form-data`.\n\n**Supported types**: `transactions`, `budgets`, `goals`\n**Max file size**: 10MB"
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"message\": \"Import successful\",\n  \"stats\": {\n    \"imported\": 142,\n    \"skipped\": 3,\n    \"errors\": 0\n  }\n}"
+                },
+                {
+                  "name": "400 Invalid File",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "body": "{\n  \"error\": \"Invalid file format. Expected JSON or CSV.\"\n}"
+                }
+              ]
+            },
+            {
+              "name": "Clear Data",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/settings/data",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "settings", "data"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"types\": [\"transactions\", \"budgets\"],\n  \"confirmation\": \"DELETE MY DATA\"\n}"
+                },
+                "description": "⚠️ **Destructive action** — permanently deletes user data.\n\n- `types`: array containing any of `transactions`, `budgets`, `goals`, `accounts`\n- `confirmation`: must be the exact string `\"DELETE MY DATA\"` to proceed"
+              },
+              "response": [
+                {
+                  "name": "200 OK",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"message\": \"Data cleared successfully\"\n}"
+                },
+                {
+                  "name": "400 Invalid Confirmation",
+                  "status": "Bad Request",
+                  "code": 400,
+                  "body": "{\n  \"error\": \"Invalid confirmation text. Must be exactly \\\"DELETE MY DATA\\\"\"\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

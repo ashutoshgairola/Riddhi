@@ -29,9 +29,11 @@ export class BudgetModel {
     return { ...newBudget, _id: result.insertedId };
   }
 
-  async findById(id: string): Promise<Budget | null> {
+  // FIX: Added userId parameter — previously any user could read any budget by ObjectId
+  async findById(id: string, userId: string): Promise<Budget | null> {
     return this.collection.findOne({
       _id: new ObjectId(id),
+      userId,
     });
   }
 
@@ -51,7 +53,7 @@ export class BudgetModel {
       { returnDocument: 'after' },
     );
 
-    return updatedBudget.value;
+    return updatedBudget as unknown as Budget | null;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
@@ -195,12 +197,13 @@ export class BudgetModel {
       { returnDocument: 'after' },
     );
 
-    if (!result.value) {
+    const addedBudget = result as unknown as Budget | null;
+    if (!addedBudget) {
       return null;
     }
 
     // Find the added category
-    const addedCategory = result.value.categories.find(
+    const addedCategory = addedBudget.categories.find(
       (c) => c._id?.toString() === categoryWithId._id.toString(),
     );
 
@@ -213,8 +216,10 @@ export class BudgetModel {
     categoryId: string,
     updates: Partial<Omit<Budget['categories'][0], '_id' | 'categoryIds' | 'spent'>>,
   ): Promise<Budget['categories'][0] | null> {
-    // First get the current budget to calculate allocation difference
-    const budget = await this.findById(budgetId);
+    // FIX: We still need to read the budget to find the category and compute
+    // the allocation difference, but we now use atomic $inc for totalAllocated
+    // instead of read-then-$set which was vulnerable to concurrent writes.
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return null;
     }
@@ -231,20 +236,20 @@ export class BudgetModel {
       allocatedDifference = updates.allocated - category.allocated;
     }
 
-    // Update the category
-    const updateObject: any = {};
-
-    // Set up each field update
+    // Build positional $set for category fields
+    const setObject: Record<string, unknown> = { updatedAt: new Date() };
     for (const [key, value] of Object.entries(updates)) {
-      updateObject[`categories.$.${key}`] = value;
+      setObject[`categories.$.${key}`] = value;
     }
 
-    // Add updatedAt
-    updateObject.updatedAt = new Date();
-
-    // Update totalAllocated if needed
+    // FIX: Use atomic $inc for totalAllocated instead of computing and $set-ing.
+    // Previously, two rapid allocation edits could cause the second read to be stale,
+    // overwriting the first's change and drifting totalAllocated from the true sum.
+    const updateOp: { $set: Record<string, unknown>; $inc?: Record<string, number> } = {
+      $set: setObject,
+    };
     if (allocatedDifference !== 0) {
-      updateObject.totalAllocated = budget.totalAllocated + allocatedDifference;
+      updateOp.$inc = { totalAllocated: allocatedDifference };
     }
 
     const result = await this.collection.findOneAndUpdate(
@@ -253,22 +258,23 @@ export class BudgetModel {
         userId,
         'categories._id': new ObjectId(categoryId),
       },
-      { $set: updateObject },
+      updateOp,
       { returnDocument: 'after' },
     );
 
-    if (!result.value) {
+    const updatedBudget = result as unknown as Budget | null;
+    if (!updatedBudget) {
       return null;
     }
 
     // Find the updated category
-    const updatedCategory = result.value.categories.find((c) => c._id?.toString() === categoryId);
+    const updatedCategory = updatedBudget.categories.find((c) => c._id?.toString() === categoryId);
     return updatedCategory || null;
   }
 
   async deleteCategory(budgetId: string, userId: string, categoryId: string): Promise<boolean> {
     // First get the current budget to calculate new totalAllocated
-    const budget = await this.findById(budgetId);
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return false;
     }
@@ -280,6 +286,9 @@ export class BudgetModel {
     }
 
     // Remove the category and update totalAllocated
+    // FIX: Use $inc (atomic) and then clamp totalSpent to 0 minimum.
+    // Previously, if totalSpent was already out of sync, $inc with a negative
+    // value could push it below zero.
     const result = await this.collection.updateOne(
       { _id: new ObjectId(budgetId), userId },
       {
@@ -292,7 +301,21 @@ export class BudgetModel {
       },
     );
 
-    return result.modifiedCount === 1;
+    if (result.modifiedCount !== 1) {
+      return false;
+    }
+
+    // Floor totalSpent at 0 if it went negative
+    await this.collection.updateOne(
+      {
+        _id: new ObjectId(budgetId),
+        userId,
+        totalSpent: { $lt: 0 },
+      },
+      { $set: { totalSpent: 0 } },
+    );
+
+    return true;
   }
 
   // New methods for transaction integration
@@ -311,8 +334,32 @@ export class BudgetModel {
   }
 
   /**
-   * Adjust the spent amount for a specific category in a budget
-   * This method ensures spent amounts never go negative
+   * Helper to find the matching budget category for a given transaction category ID.
+   * Handles backward compatibility with old single-categoryId format.
+   */
+  private findMatchingBudgetCategory(
+    budget: Budget,
+    transactionCategoryId: string,
+  ): Budget['categories'][0] | null {
+    return (
+      budget.categories.find((c) => {
+        if (c.categoryIds && Array.isArray(c.categoryIds)) {
+          return c.categoryIds.includes(transactionCategoryId);
+        }
+        if ((c as any).categoryId) {
+          return (c as any).categoryId === transactionCategoryId;
+        }
+        return false;
+      }) || null
+    );
+  }
+
+  /**
+   * Adjust the spent amount for a specific category in a budget.
+   *
+   * FIX: Uses an aggregation pipeline update to atomically compute the new spent
+   * value. Previously this was a read-then-$set which meant two concurrent
+   * transactions could both read the same spent value and one update would be lost.
    */
   async adjustCategorySpent(
     budgetId: string,
@@ -320,47 +367,65 @@ export class BudgetModel {
     transactionCategoryId: string,
     amount: number,
   ): Promise<boolean> {
-    const budget = await this.findById(budgetId);
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return false;
     }
 
-    // Find the budget category that contains this transaction category
-    const budgetCategory = budget.categories.find((c) => {
-      // Handle backward compatibility - some categories might still have the old categoryId field
-      if (c.categoryIds && Array.isArray(c.categoryIds)) {
-        return c.categoryIds.includes(transactionCategoryId);
-      }
-      // Fallback for old format (single categoryId)
-      if ((c as any).categoryId) {
-        return (c as any).categoryId === transactionCategoryId;
-      }
-      return false;
-    });
+    const budgetCategory = this.findMatchingBudgetCategory(budget, transactionCategoryId);
     if (!budgetCategory) {
-      // Transaction category not in any budget category, skip
       return false;
     }
 
-    // Calculate new spent amount, ensuring it doesn't go negative
-    const currentSpent = budgetCategory.spent;
-    const newSpent = Math.max(0, currentSpent + amount);
-    const actualChange = newSpent - currentSpent;
-
-    // Update the budget category spent amount and total spent
+    // Use aggregation pipeline update for atomic increment with floor at 0
     const result = await this.collection.updateOne(
       {
         _id: new ObjectId(budgetId),
         userId,
         'categories._id': budgetCategory._id,
       },
-      {
-        $set: {
-          'categories.$.spent': newSpent,
-          totalSpent: Math.max(0, budget.totalSpent + actualChange),
-          updatedAt: new Date(),
+      [
+        {
+          $set: {
+            categories: {
+              $map: {
+                input: '$categories',
+                as: 'cat',
+                in: {
+                  $cond: {
+                    if: { $eq: ['$$cat._id', budgetCategory._id] },
+                    then: {
+                      $mergeObjects: [
+                        '$$cat',
+                        { spent: { $max: [0, { $add: ['$$cat.spent', amount] }] } },
+                      ],
+                    },
+                    else: '$$cat',
+                  },
+                },
+              },
+            },
+            updatedAt: new Date(),
+          },
         },
-      },
+        // Recompute totalSpent from the (now-updated) categories array
+        {
+          $set: {
+            totalSpent: {
+              $max: [
+                0,
+                {
+                  $reduce: {
+                    input: '$categories',
+                    initialValue: 0,
+                    in: { $add: ['$$value', '$$this.spent'] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ],
     );
 
     return result.modifiedCount === 1;
@@ -371,33 +436,26 @@ export class BudgetModel {
    */
   async getBudgetCategory(
     budgetId: string,
+    userId: string,
     transactionCategoryId: string,
   ): Promise<Budget['categories'][0] | null> {
-    const budget = await this.findById(budgetId);
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return null;
     }
 
-    return (
-      budget.categories.find((c) => {
-        // Handle backward compatibility - some categories might still have the old categoryId field
-        if (c.categoryIds && Array.isArray(c.categoryIds)) {
-          return c.categoryIds.includes(transactionCategoryId);
-        }
-        // Fallback for old format (single categoryId)
-        if ((c as any).categoryId) {
-          return (c as any).categoryId === transactionCategoryId;
-        }
-        return false;
-      }) || null
-    );
+    return this.findMatchingBudgetCategory(budget, transactionCategoryId);
   }
 
   /**
    * Check if a budget contains a specific transaction category
    */
-  async hasBudgetCategory(budgetId: string, transactionCategoryId: string): Promise<boolean> {
-    const category = await this.getBudgetCategory(budgetId, transactionCategoryId);
+  async hasBudgetCategory(
+    budgetId: string,
+    userId: string,
+    transactionCategoryId: string,
+  ): Promise<boolean> {
+    const category = await this.getBudgetCategory(budgetId, userId, transactionCategoryId);
     return category !== null;
   }
 
@@ -405,7 +463,7 @@ export class BudgetModel {
    * Reset all spent amounts for a budget (useful for budget recalculation)
    */
   async resetSpentAmounts(budgetId: string, userId: string): Promise<boolean> {
-    const budget = await this.findById(budgetId);
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return false;
     }
@@ -431,32 +489,33 @@ export class BudgetModel {
   }
 
   /**
-   * Bulk update spent amounts for multiple categories
+   * Bulk update spent amounts for multiple categories.
+   *
+   * NOTE: This replaces the entire categories array which is intentional for
+   * a full recalculation. Callers should ensure no other writes are in-flight
+   * for this budget when calling this method (e.g., call after resetSpentAmounts
+   * during a recalculation window).
    */
   async bulkUpdateCategorySpent(
     budgetId: string,
     userId: string,
     categoryUpdates: { transactionCategoryId: string; amount: number }[],
   ): Promise<boolean> {
-    const budget = await this.findById(budgetId);
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return false;
     }
 
     let newTotalSpent = 0;
     const updatedCategories = budget.categories.map((category) => {
-      // Check if any of the updates apply to this budget category's transaction categories
-      // Support backward compatibility: check both categoryIds (new) and categoryId (old)
       const relevantUpdates = categoryUpdates.filter((u) => {
         if (category.categoryIds && Array.isArray(category.categoryIds)) {
           return category.categoryIds.includes(u.transactionCategoryId);
         }
-        // Fallback to old format
         return (category as any).categoryId === u.transactionCategoryId;
       });
 
       if (relevantUpdates.length > 0) {
-        // Sum up all updates for this budget category
         const totalUpdate = relevantUpdates.reduce((sum, update) => sum + update.amount, 0);
         const newSpent = Math.max(0, category.spent + totalUpdate);
         newTotalSpent += newSpent;
@@ -517,8 +576,8 @@ export class BudgetModel {
   /**
    * Update budget totals (recalculate totalAllocated and totalSpent)
    */
-  async recalculateBudgetTotals(budgetId: string): Promise<boolean> {
-    const budget = await this.findById(budgetId);
+  async recalculateBudgetTotals(budgetId: string, userId: string): Promise<boolean> {
+    const budget = await this.findById(budgetId, userId);
     if (!budget) {
       return false;
     }
@@ -532,7 +591,7 @@ export class BudgetModel {
     }
 
     const result = await this.collection.updateOne(
-      { _id: new ObjectId(budgetId) },
+      { _id: new ObjectId(budgetId), userId },
       {
         $set: {
           totalAllocated,

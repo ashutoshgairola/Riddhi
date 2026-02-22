@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import dotenv from 'dotenv';
 import { Request, Response } from 'express';
+import os from 'os';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +19,7 @@ const loggerConfig: pino.LoggerOptions = {
 
   base: {
     pid: process.pid,
-    hostname: process.env.HOSTNAME || require('os').hostname(),
+    hostname: process.env.HOSTNAME || os.hostname(),
     environment: process.env.NODE_ENV || 'development',
     service: 'riddhi-api',
     version: process.env.npm_package_version || '1.0.0',
@@ -84,32 +85,32 @@ const formatTraceDisplay = (traceId?: string, context?: string) => {
 
 // Global logger function that automatically includes trace ID
 export const log = {
-  trace: (msg: string, obj?: any) => {
+  trace: (msg: string, obj?: Record<string, unknown>) => {
     const store = asyncLocalStorage.getStore();
     const { traceId, context } = formatTraceDisplay(store?.traceId, store?.context);
     return logger.child({ traceId, context }).trace(obj || {}, msg);
   },
-  debug: (msg: string, obj?: any) => {
+  debug: (msg: string, obj?: Record<string, unknown>) => {
     const store = asyncLocalStorage.getStore();
     const { traceId, context } = formatTraceDisplay(store?.traceId, store?.context);
     return logger.child({ traceId, context }).debug(obj || {}, msg);
   },
-  info: (msg: string, obj?: any) => {
+  info: (msg: string, obj?: Record<string, unknown>) => {
     const store = asyncLocalStorage.getStore();
     const { traceId, context } = formatTraceDisplay(store?.traceId, store?.context);
     return logger.child({ traceId, context }).info(obj || {}, msg);
   },
-  warn: (msg: string, obj?: any) => {
+  warn: (msg: string, obj?: Record<string, unknown>) => {
     const store = asyncLocalStorage.getStore();
     const { traceId, context } = formatTraceDisplay(store?.traceId, store?.context);
     return logger.child({ traceId, context }).warn(obj || {}, msg);
   },
-  error: (msg: string, obj?: any) => {
+  error: (msg: string, obj?: Record<string, unknown>) => {
     const store = asyncLocalStorage.getStore();
     const { traceId, context } = formatTraceDisplay(store?.traceId, store?.context);
     return logger.child({ traceId, context }).error(obj || {}, msg);
   },
-  fatal: (msg: string, obj?: any) => {
+  fatal: (msg: string, obj?: Record<string, unknown>) => {
     const store = asyncLocalStorage.getStore();
     const { traceId, context } = formatTraceDisplay(store?.traceId, store?.context);
     return logger.child({ traceId, context }).fatal(obj || {}, msg);
@@ -144,7 +145,7 @@ export const httpLoggerConfig = {
     return {
       userAgent: req.get('user-agent'),
       ip: req.ip || req.connection.remoteAddress,
-      userId: (req as any).user?.id,
+      userId: req.user?.userId,
       traceId,
       context,
     };
@@ -157,16 +158,16 @@ export const httpLoggerConfig = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const httpLogger = pinoHttp(httpLoggerConfig) as any;
 
 // Middleware to inject trace ID into async local storage
-export const traceMiddleware = (req: Request, _res: Response, next: any) => {
-  // Always generate a new trace ID for each request
+export const traceMiddleware = (req: Request, _res: Response, next: () => void) => {
   const traceId = uuidv4().slice(0, 8);
   const context = 'http';
 
-  // Inject trace ID into request for downstream use
-  (req as any).traceId = traceId;
+  // Inject trace ID into request for downstream use — req is extended with traceId for convenience
+  (req as Request & { traceId?: string }).traceId = traceId;
 
   // Run the rest of the request in the async local storage context
   asyncLocalStorage.run({ traceId, context }, () => {
@@ -174,7 +175,7 @@ export const traceMiddleware = (req: Request, _res: Response, next: any) => {
   });
 };
 
-export const createChildLogger = (context: Record<string, any>) => {
+export const createChildLogger = (context: Record<string, unknown>) => {
   return logger.child(context);
 };
 

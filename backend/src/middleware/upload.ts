@@ -57,7 +57,7 @@ export class UploadMiddleware {
   }
 
   handleUpload = (req: Request, res: Response, next: NextFunction): void => {
-    this.upload.single('file')(req, res, (err: any) => {
+    this.upload.single('file')(req, res, (err: unknown) => {
       if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
           return res.status(400).json({
@@ -65,8 +65,10 @@ export class UploadMiddleware {
           });
         }
         return res.status(400).json({ error: err.message });
-      } else if (err) {
+      } else if (err instanceof Error) {
         return res.status(400).json({ error: err.message });
+      } else if (err) {
+        return res.status(400).json({ error: String(err) });
       }
 
       // File upload successful, continue

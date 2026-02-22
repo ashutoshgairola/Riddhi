@@ -84,7 +84,7 @@ export class TransactionService {
 
     const date = new Date(transactionData.date);
 
-    let transaction: Transaction = {
+    const transaction: Transaction = {
       userId,
       date,
       description: transactionData.description,

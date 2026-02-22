@@ -6,162 +6,80 @@ import AssetAllocationChart from '../components/investments/AssetAllocationChart
 import InvestmentForm from '../components/investments/InvestmentForm';
 import InvestmentList from '../components/investments/InvestmentList';
 import PortfolioPerformanceChart from '../components/investments/PortfolioPerformanceChart';
-import { AssetAllocation, Investment } from '../types/investment.types';
-
-// Dummy investment data
-const investmentsData: Investment[] = [
-  {
-    id: '1',
-    name: 'S&P 500 ETF',
-    ticker: 'SPY',
-    assetClass: 'stocks',
-    type: 'etf',
-    shares: 15,
-    purchasePrice: 400,
-    currentPrice: 445,
-    purchaseDate: '2023-06-15',
-    accountId: '1',
-    dividendYield: 1.5,
-    sector: 'Diversified',
-    region: 'US',
-    currency: 'USD',
-  },
-  {
-    id: '2',
-    name: 'Total Bond Market ETF',
-    ticker: 'BND',
-    assetClass: 'bonds',
-    type: 'etf',
-    shares: 50,
-    purchasePrice: 85,
-    currentPrice: 88,
-    purchaseDate: '2023-08-10',
-    accountId: '1',
-    dividendYield: 2.8,
-    sector: 'Fixed Income',
-    region: 'US',
-    currency: 'USD',
-  },
-  {
-    id: '3',
-    name: 'Tech Company Stock',
-    ticker: 'TECH',
-    assetClass: 'stocks',
-    type: 'individual_stock',
-    shares: 10,
-    purchasePrice: 150,
-    currentPrice: 200,
-    purchaseDate: '2024-01-05',
-    accountId: '1',
-    dividendYield: 0.5,
-    sector: 'Technology',
-    region: 'US',
-    currency: 'USD',
-  },
-  {
-    id: '4',
-    name: 'International Developed Markets ETF',
-    ticker: 'VEA',
-    assetClass: 'stocks',
-    type: 'etf',
-    shares: 30,
-    purchasePrice: 45,
-    currentPrice: 48,
-    purchaseDate: '2023-11-12',
-    accountId: '1',
-    dividendYield: 2.2,
-    sector: 'Diversified',
-    region: 'International',
-    currency: 'USD',
-  },
-  {
-    id: '5',
-    name: 'REIT Index Fund',
-    ticker: 'VNQ',
-    assetClass: 'real_estate',
-    type: 'etf',
-    shares: 20,
-    purchasePrice: 90,
-    currentPrice: 95,
-    purchaseDate: '2024-02-18',
-    accountId: '1',
-    dividendYield: 3.8,
-    sector: 'Real Estate',
-    region: 'US',
-    currency: 'USD',
-  },
-  {
-    id: '6',
-    name: 'Emerging Markets Fund',
-    ticker: 'VWO',
-    assetClass: 'stocks',
-    type: 'etf',
-    shares: 25,
-    purchasePrice: 42,
-    currentPrice: 40,
-    purchaseDate: '2023-09-20',
-    accountId: '1',
-    dividendYield: 2.5,
-    sector: 'Diversified',
-    region: 'Emerging Markets',
-    currency: 'USD',
-  },
-];
-
-// Dummy asset allocation data
-const assetAllocationData: AssetAllocation[] = [
-  { assetClass: 'stocks', percentage: 65, amount: 10650, color: '#4CAF50' },
-  { assetClass: 'bonds', percentage: 20, amount: 4400, color: '#2196F3' },
-  { assetClass: 'real_estate', percentage: 10, amount: 1900, color: '#FFC107' },
-  { assetClass: 'cash', percentage: 5, amount: 700, color: '#9E9E9E' },
-];
-
-// Dummy performance data
-const performanceData = [
-  { date: '2023-05', value: 15000 },
-  { date: '2023-06', value: 15300 },
-  { date: '2023-07', value: 15800 },
-  { date: '2023-08', value: 16200 },
-  { date: '2023-09', value: 15900 },
-  { date: '2023-10', value: 16400 },
-  { date: '2023-11', value: 16800 },
-  { date: '2023-12', value: 17300 },
-  { date: '2024-01', value: 17600 },
-  { date: '2024-02', value: 17400 },
-  { date: '2024-03', value: 17900 },
-  { date: '2024-04', value: 18250 },
-];
+import { useHighlight } from '../hooks/useHighlight';
+import { useInvestments } from '../hooks/useInvestments';
+import { useTheme } from '../hooks/useTheme';
+import {
+  AssetClass,
+  CreateInvestmentRequest,
+  Investment,
+  UpdateInvestmentRequest,
+} from '../types/investment.types';
+import { formatCurrency } from '../utils';
 
 const Investments: FC = () => {
+  const { isDark } = useTheme();
   const [showAddInvestment, setShowAddInvestment] = useState(false);
   const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<AssetClass | null>(null);
 
-  const handleAddInvestment = () => {
+  const {
+    investments,
+    portfolioSummary,
+    allocations,
+    performance,
+    loading,
+    error,
+    createInvestment,
+    updateInvestment,
+    deleteInvestment,
+  } = useInvestments();
+
+  // Highlight investment from search navigation
+  useHighlight(loading);
+
+  const handleAddInvestment = (): void => {
     setEditingInvestment(null);
     setShowAddInvestment(true);
   };
 
-  const handleEditInvestment = (investment: Investment) => {
+  const handleEditInvestment = (investment: Investment): void => {
     setEditingInvestment(investment);
     setShowAddInvestment(true);
   };
 
-  const handleCloseForm = () => {
+  const handleCloseForm = (): void => {
     setShowAddInvestment(false);
     setEditingInvestment(null);
   };
 
-  // Filter investments by asset class if activeFilter is set
-  const filteredInvestments = activeFilter
-    ? investmentsData.filter((investment) => investment.assetClass === activeFilter)
-    : investmentsData;
+  const handleFormSubmit = async (
+    data: CreateInvestmentRequest | UpdateInvestmentRequest,
+  ): Promise<void> => {
+    if (editingInvestment) {
+      await updateInvestment(editingInvestment.id, data as UpdateInvestmentRequest);
+    } else {
+      await createInvestment(data as CreateInvestmentRequest);
+    }
+    handleCloseForm();
+  };
 
-  // Calculate total portfolio value
-  const portfolioValue = investmentsData.reduce(
-    (total, investment) => total + investment.shares * investment.currentPrice,
-    0,
-  );
+  const handleDeleteInvestment = async (id: string): Promise<void> => {
+    await deleteInvestment(id);
+  };
+
+  const filteredInvestments = activeFilter
+    ? investments.filter((inv) => inv.assetClass === activeFilter)
+    : investments;
+
+  const filterButtons: { label: string; value: AssetClass | null }[] = [
+    { label: 'All Assets', value: null },
+    { label: 'Stocks', value: 'stocks' },
+    { label: 'Bonds', value: 'bonds' },
+    { label: 'Real Estate', value: 'real_estate' },
+    { label: 'Alternatives', value: 'alternatives' },
+    { label: 'Cash', value: 'cash' },
+  ];
 
   return (
     <div>
@@ -178,103 +96,108 @@ const Investments: FC = () => {
         }
       />
 
+      {error && (
+        <div
+          className={`mt-4 p-3 rounded-lg text-sm border ${isDark ? 'bg-red-900/20 border-red-700 text-red-400' : 'bg-red-50 border-red-200 text-red-700'}`}
+        >
+          {error.message}
+        </div>
+      )}
+
       {/* Portfolio summary */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">Portfolio Value</p>
-          <p className="text-2xl font-bold">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD',
-            }).format(portfolioValue)}
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+          <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            Portfolio Value
+          </p>
+          <p className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+            {loading ? '—' : formatCurrency(portfolioSummary?.totalValue ?? 0, 'INR')}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">30-Day Return</p>
-          <p className="text-2xl font-bold text-green-600">+1.95%</p>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+          <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            30-Day Return
+          </p>
+          <p
+            className={`text-2xl font-bold ${
+              (portfolioSummary?.thirtyDayReturnPercent ?? 0) >= 0
+                ? 'text-green-500'
+                : 'text-red-500'
+            }`}
+          >
+            {loading
+              ? '—'
+              : `${(portfolioSummary?.thirtyDayReturnPercent ?? 0) >= 0 ? '+' : ''}${portfolioSummary?.thirtyDayReturnPercent?.toFixed(2) ?? '0.00'}%`}
+          </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-500 mb-1">YTD Return</p>
-          <p className="text-2xl font-bold text-green-600">+5.72%</p>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+          <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>YTD Return</p>
+          <p
+            className={`text-2xl font-bold ${
+              (portfolioSummary?.ytdReturnPercent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {loading
+              ? '—'
+              : `${(portfolioSummary?.ytdReturnPercent ?? 0) >= 0 ? '+' : ''}${portfolioSummary?.ytdReturnPercent?.toFixed(2) ?? '0.00'}%`}
+          </p>
         </div>
       </div>
 
       {/* Filter tabs */}
       <div className="mt-6 flex space-x-2 overflow-x-auto pb-2">
-        <button
-          className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            activeFilter === null ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
-          }`}
-          onClick={() => setActiveFilter(null)}
-        >
-          All Assets
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            activeFilter === 'stocks' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
-          }`}
-          onClick={() => setActiveFilter('stocks')}
-        >
-          Stocks
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            activeFilter === 'bonds' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
-          }`}
-          onClick={() => setActiveFilter('bonds')}
-        >
-          Bonds
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            activeFilter === 'real_estate' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
-          }`}
-          onClick={() => setActiveFilter('real_estate')}
-        >
-          Real Estate
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            activeFilter === 'alternatives' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
-          }`}
-          onClick={() => setActiveFilter('alternatives')}
-        >
-          Alternatives
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg whitespace-nowrap ${
-            activeFilter === 'cash' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
-          }`}
-          onClick={() => setActiveFilter('cash')}
-        >
-          Cash
-        </button>
+        {filterButtons.map(({ label, value }) => (
+          <button
+            key={label}
+            className={`px-4 py-2 rounded-lg whitespace-nowrap ${
+              activeFilter === value
+                ? 'bg-green-600 text-white'
+                : isDark
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+            onClick={() => setActiveFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Asset Allocation Chart */}
         <div>
-          <AssetAllocationChart allocations={assetAllocationData} />
+          <AssetAllocationChart allocations={allocations} />
         </div>
 
         {/* Performance Chart */}
         <div className="lg:col-span-2">
-          <PortfolioPerformanceChart data={performanceData} />
+          <PortfolioPerformanceChart data={performance} />
         </div>
       </div>
 
       {/* Investments List */}
       <div className="mt-6">
-        <InvestmentList investments={filteredInvestments} onEditInvestment={handleEditInvestment} />
+        <InvestmentList
+          investments={filteredInvestments}
+          onEditInvestment={handleEditInvestment}
+          onDeleteInvestment={handleDeleteInvestment}
+          loading={loading}
+        />
       </div>
 
       {/* Add/Edit Investment Modal */}
       {showAddInvestment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <InvestmentForm onClose={handleCloseForm} initialData={editingInvestment} />
+          <div
+            className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-md w-full p-6`}
+          >
+            <InvestmentForm
+              onClose={handleCloseForm}
+              onSubmit={handleFormSubmit}
+              initialData={editingInvestment}
+            />
           </div>
         </div>
       )}

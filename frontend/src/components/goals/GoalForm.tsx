@@ -3,12 +3,13 @@ import { FC, useState } from 'react';
 
 import { X } from 'lucide-react';
 
-import { Goal, GoalType } from '../../types/goal.types';
+import { CreateGoalRequest, Goal, GoalType, UpdateGoalRequest } from '../../types/goal.types';
 
 interface GoalFormProps {
   onClose: () => void;
-  onSubmit?: (data: Goal) => void;
+  onSubmit?: (data: CreateGoalRequest | UpdateGoalRequest) => Promise<void>;
   initialData?: Goal | null;
+  isLoading?: boolean;
 }
 
 // Color palette for goals
@@ -25,7 +26,8 @@ const colorPalette = [
   '#3F51B5',
 ];
 
-const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
+const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData, isLoading = false }) => {
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     type: initialData?.type || ('savings' as GoalType),
@@ -64,27 +66,39 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const processedData = {
-      ...formData,
+    const processedData: CreateGoalRequest = {
+      name: formData.name,
+      type: formData.type,
       targetAmount: parseFloat(formData.targetAmount),
       currentAmount: parseFloat(formData.currentAmount || '0'),
+      startDate: formData.startDate,
+      targetDate: formData.targetDate,
       priority: parseInt(formData.priority),
+      color: formData.color,
+      notes: formData.notes || undefined,
+      contributionFrequency:
+        (formData.contributionFrequency as CreateGoalRequest['contributionFrequency']) || undefined,
       contributionAmount: formData.contributionAmount
         ? parseFloat(formData.contributionAmount)
         : undefined,
-      id: initialData?.id || '',
-      status: initialData?.status || 'active',
     };
 
     if (onSubmit) {
-      onSubmit(processedData);
+      setSubmitting(true);
+      try {
+        await onSubmit(processedData);
+      } finally {
+        setSubmitting(false);
+      }
     }
 
     onClose();
   };
+
+  const isBusy = submitting || isLoading;
 
   return (
     <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto">
@@ -337,9 +351,10 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData }) => {
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          disabled={isBusy}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {initialData ? 'Update' : 'Add'} Goal
+          {isBusy ? 'Saving...' : initialData ? 'Update' : 'Add'} Goal
         </button>
       </div>
     </form>

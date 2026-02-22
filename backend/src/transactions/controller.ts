@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { sendResponse } from '../common/utils';
+import { getErrorMessage, sendResponse } from '../common/utils';
 import { createChildLogger } from '../config/logger';
 import { TransactionService } from './service';
 import {
@@ -22,11 +22,12 @@ export class TransactionController {
   getTransactions = async (req: Request, res: Response): Promise<void> => {
     const requestId = Math.random().toString(36).substring(7);
     const requestLogger = this.logger.child({ requestId, method: 'getTransactions' });
+    let userId!: string;
 
     try {
-      const userId = req.body.user!.userId;
+      userId = req.body.user?.userId ?? '';
       delete req.body.user;
-      const query: GetTransactionsQuery = req.query as any;
+      const query: GetTransactionsQuery = req.query as unknown as GetTransactionsQuery;
 
       requestLogger.info({ userId, query }, 'Get transactions request');
 
@@ -52,17 +53,18 @@ export class TransactionController {
       requestLogger.info({ userId }, 'Transactions retrieved successfully');
 
       sendResponse({ res, data: transactions, message: 'Transactions fetched successfully' });
-    } catch (error: any) {
-      requestLogger.error({ error, userId: req.body.user?.userId }, 'Error fetching transactions');
+    } catch (error: unknown) {
+      requestLogger.error({ error, userId }, 'Error fetching transactions');
       res.status(500).json({ error: 'Failed to fetch transactions' });
     }
   };
 
   getTransactionById = async (req: Request, res: Response): Promise<void> => {
     const requestLogger = this.logger.child({ method: 'getTransactionById' });
+    let userId!: string;
 
     try {
-      const userId = req.body.user!.userId;
+      userId = req.body.user!.userId;
       delete req.body.user;
       const { id } = req.params;
 
@@ -73,16 +75,13 @@ export class TransactionController {
       requestLogger.info({ userId, transactionId: id }, 'Transaction fetched successfully');
 
       sendResponse({ res, data: transaction, message: 'Transaction fetched successfully' });
-    } catch (error: any) {
-      if (error.message === 'Transaction not found') {
-        requestLogger.warn(
-          { userId: req.body.user?.userId, transactionId: req.params.id },
-          'Transaction not found',
-        );
-        res.status(404).json({ error: error.message });
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Transaction not found') {
+        requestLogger.warn({ userId, transactionId: req.params.id }, 'Transaction not found');
+        res.status(404).json({ error: getErrorMessage(error) });
       } else {
         requestLogger.error(
-          { error, userId: req.body.user?.userId, transactionId: req.params.id },
+          { error, userId, transactionId: req.params.id },
           'Error fetching transaction',
         );
         res.status(500).json({ error: 'Failed to fetch transaction' });
@@ -92,9 +91,10 @@ export class TransactionController {
 
   createTransaction = async (req: Request, res: Response): Promise<void> => {
     const requestLogger = this.logger.child({ method: 'createTransaction' });
+    let userId!: string;
 
     try {
-      const userId = req.body.user!.userId;
+      userId = req.body.user!.userId;
       delete req.body.user;
       const transactionData: CreateTransactionRequest = req.body;
 
@@ -141,23 +141,25 @@ export class TransactionController {
         message: 'Transaction created successfully',
         status: 201,
       });
-    } catch (error: any) {
-      if (error.message === 'Category not found') {
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Category not found') {
         requestLogger.warn(
-          { userId: req.body.user?.userId, error: error.message },
+          { userId, error: getErrorMessage(error) },
           'Transaction creation failed: Category not found',
         );
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: getErrorMessage(error) });
       } else {
-        requestLogger.error({ error, userId: req.body.user?.userId }, 'Error creating transaction');
+        requestLogger.error({ error, userId }, 'Error creating transaction');
         res.status(500).json({ error: 'Failed to create transaction' });
       }
     }
   };
 
   updateTransaction = async (req: Request, res: Response): Promise<void> => {
+    let userId!: string;
+
     try {
-      const userId = req.body.user!.userId;
+      userId = req.body.user!.userId;
       delete req.body.user;
       const { id } = req.params;
       const updates: UpdateTransactionRequest = req.body;
@@ -168,39 +170,43 @@ export class TransactionController {
         data: transaction,
         message: 'Transaction updated successfully',
       });
-    } catch (error: any) {
-      if (error.message === 'Transaction not found') {
-        res.status(404).json({ error: error.message });
-      } else if (error.message === 'Category not found') {
-        res.status(400).json({ error: error.message });
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Transaction not found') {
+        res.status(404).json({ error: getErrorMessage(error) });
+      } else if (getErrorMessage(error) === 'Category not found') {
+        res.status(400).json({ error: getErrorMessage(error) });
       } else {
-        this.logger.error({ error }, 'Error updating transaction:');
+        this.logger.error({ error, userId }, 'Error updating transaction:');
         res.status(500).json({ error: 'Failed to update transaction' });
       }
     }
   };
 
   deleteTransaction = async (req: Request, res: Response): Promise<void> => {
+    let userId!: string;
+
     try {
-      const userId = req.body.user!.userId;
+      userId = req.body.user!.userId;
       delete req.body.user;
       const { id } = req.params;
 
       await this.transactionService.deleteTransaction(id, userId);
       res.status(204).send();
-    } catch (error: any) {
-      if (error.message === 'Transaction not found') {
-        res.status(404).json({ error: error.message });
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Transaction not found') {
+        res.status(404).json({ error: getErrorMessage(error) });
       } else {
-        this.logger.error({ error }, 'Error deleting transaction:');
+        this.logger.error({ error, userId }, 'Error deleting transaction:');
         res.status(500).json({ error: 'Failed to delete transaction' });
       }
     }
   };
 
   uploadAttachment = async (req: Request, res: Response): Promise<void> => {
+    let userId!: string;
+
     try {
-      const userId = req.body.user!.userId;
+      userId = req.body.user!.userId;
       delete req.body.user;
       const { id } = req.params;
 
@@ -216,11 +222,11 @@ export class TransactionController {
         message: 'Attachment uploaded successfully',
         status: 201,
       });
-    } catch (error: any) {
-      if (error.message === 'Transaction not found') {
-        res.status(404).json({ error: error.message });
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Transaction not found') {
+        res.status(404).json({ error: getErrorMessage(error) });
       } else {
-        this.logger.error({ error }, 'Error uploading attachment:');
+        this.logger.error({ error, userId }, 'Error uploading attachment:');
         res.status(500).json({ error: 'Failed to upload attachment' });
       }
     }
@@ -241,7 +247,7 @@ export class TransactionController {
         data: categories,
         message: 'Categories fetched successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error fetching categories:');
       res.status(500).json({ error: 'Failed to fetch categories' });
     }
@@ -271,12 +277,12 @@ export class TransactionController {
         message: 'Category created successfully',
         status: 201,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
-        error.message === 'Category with this name already exists' ||
-        error.message === 'Parent category not found'
+        getErrorMessage(error) === 'Category with this name already exists' ||
+        getErrorMessage(error) === 'Parent category not found'
       ) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: getErrorMessage(error) });
       } else {
         this.logger.error({ error }, 'Error creating category:');
         res.status(500).json({ error: 'Failed to create category' });
@@ -304,15 +310,15 @@ export class TransactionController {
         data: category,
         message: 'Category updated successfully',
       });
-    } catch (error: any) {
-      if (error.message === 'Category not found') {
-        res.status(404).json({ error: error.message });
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Category not found') {
+        res.status(404).json({ error: getErrorMessage(error) });
       } else if (
-        error.message === 'Category with this name already exists' ||
-        error.message === 'Parent category not found' ||
-        error.message === 'Category cannot be its own parent'
+        getErrorMessage(error) === 'Category with this name already exists' ||
+        getErrorMessage(error) === 'Parent category not found' ||
+        getErrorMessage(error) === 'Category cannot be its own parent'
       ) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ error: getErrorMessage(error) });
       } else {
         this.logger.error({ error }, 'Error updating category:');
         res.status(500).json({ error: 'Failed to update category' });
@@ -333,14 +339,14 @@ export class TransactionController {
         message: 'Category deleted successfully',
         status: 204,
       });
-    } catch (error: any) {
-      if (error.message === 'Category not found') {
-        res.status(404).json({ error: error.message });
+    } catch (error: unknown) {
+      if (getErrorMessage(error) === 'Category not found') {
+        res.status(404).json({ error: getErrorMessage(error) });
       } else if (
-        error.message === 'Cannot delete category with associated transactions' ||
-        error.message === 'Cannot delete category with child categories'
+        getErrorMessage(error) === 'Cannot delete category with associated transactions' ||
+        getErrorMessage(error) === 'Cannot delete category with child categories'
       ) {
-        res.status(409).json({ error: error.message });
+        res.status(409).json({ error: getErrorMessage(error) });
       } else {
         this.logger.error({ error }, 'Error deleting category:');
         res.status(500).json({ error: 'Failed to delete category' });

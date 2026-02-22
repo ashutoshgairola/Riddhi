@@ -7,6 +7,7 @@ export class DatabaseConfig {
   private client: MongoClient | null = null;
   private db: Db | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 
   static getInstance(): DatabaseConfig {

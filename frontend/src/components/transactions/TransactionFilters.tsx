@@ -159,7 +159,8 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-3">
+        {/* Search */}
         <div className="relative flex-grow">
           <Search
             size={18}
@@ -174,31 +175,32 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
           />
         </div>
 
-        <div className="flex gap-2">
+        {/* Filter toggle */}
+        <button
+          className={`px-4 py-2 rounded-lg border shrink-0 flex items-center gap-2 text-sm transition-colors ${
+            showAdvancedFilters
+              ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300'
+              : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+          onClick={toggleAdvancedFilters}
+          type="button"
+        >
+          <Filter size={16} />
+          <span>Filters</span>
+          {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />}
+        </button>
+
+        {/* Clear filters */}
+        {hasActiveFilters && (
           <button
-            className={`px-4 py-2 rounded-lg border ${
-              showAdvancedFilters
-                ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-500'
-                : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-            } transition-colors flex items-center gap-2`}
-            onClick={toggleAdvancedFilters}
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2 text-sm shrink-0"
+            onClick={handleClearFilters}
             type="button"
           >
-            <Filter size={18} />
-            <span>Filters</span>
+            <X size={16} />
+            <span className="hidden sm:inline">Clear</span>
           </button>
-
-          {hasActiveFilters && (
-            <button
-              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
-              onClick={handleClearFilters}
-              type="button"
-            >
-              <X size={18} />
-              <span>Clear</span>
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
       {showAdvancedFilters && (

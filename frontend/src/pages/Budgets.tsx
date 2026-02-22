@@ -1,15 +1,18 @@
 // src/pages/Budgets.tsx
 import { FC, useCallback, useEffect, useState } from 'react';
 
+import wallet04 from '../assets/empty-states/Wallet 04.svg';
 import BudgetCategoryForm from '../components/budgets/BudgetCategoryForm';
 import BudgetCategoryList from '../components/budgets/BudgetCategoryList';
 import BudgetSummary from '../components/budgets/BudgetSummary';
 import CreateBudgetForm from '../components/budgets/CreateBudgetForm';
 import MonthlyBudgetOverview from '../components/budgets/MonthlyBudgetOverview';
+import EmptyState from '../components/common/EmptyState';
 import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import Spinner from '../components/common/Spinner';
 import { useBudget } from '../hooks/useBudget';
+import { useHighlight } from '../hooks/useHighlight';
 import { BudgetCategory, BudgetCategoryCreateDTO, BudgetCreateDTO } from '../types/budget.types';
 
 // Monthly overview data type
@@ -43,6 +46,9 @@ const Budgets: FC = () => {
     limit: 6, // Last 6 months by default
     page: 1,
   });
+
+  // Highlight budget from search navigation
+  useHighlight(loading);
 
   // When component loads or when budgets change, update the monthly data
   useEffect(() => {
@@ -217,17 +223,21 @@ const Budgets: FC = () => {
   // If no current budget, render a button to create one
   if (!currentBudget) {
     return (
-      <div className="text-center p-8">
-        <h2 className="text-xl font-bold dark:text-gray-100 mb-4">No active budget found</h2>
-        <p className="mb-6 text-gray-600 dark:text-gray-400">
-          Create a new budget to start tracking your expenses
-        </p>
-        <button
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          onClick={() => setShowCreateBudget(true)}
-        >
-          Create New Budget
-        </button>
+      <div className="p-6">
+        <PageHeader title="Budgets" />
+        <EmptyState
+          image={wallet04}
+          title="No active budget found"
+          description="Create a new budget to start tracking your expenses and stay on top of your finances."
+          action={
+            <button
+              className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
+              onClick={() => setShowCreateBudget(true)}
+            >
+              Create New Budget
+            </button>
+          }
+        />
 
         {/* Create Budget Modal */}
         {showCreateBudget && (
@@ -281,7 +291,10 @@ const Budgets: FC = () => {
       />
 
       {/* Budget Summary */}
-      <div className="mt-6">
+      <div
+        className="mt-6"
+        id={`highlight-${(selectedMonth === currentBudget.name ? currentBudget : budgetHistory.find((b) => b.name === selectedMonth) || currentBudget).id}`}
+      >
         <BudgetSummary
           budget={
             selectedMonth === currentBudget.name

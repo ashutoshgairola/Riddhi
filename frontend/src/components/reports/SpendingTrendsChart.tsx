@@ -3,6 +3,8 @@ import { FC } from 'react';
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+import { formatCurrency } from '../../utils';
+
 interface SpendingData {
   date: string;
   amount: number;
@@ -13,13 +15,6 @@ interface SpendingTrendsChartProps {
 }
 
 const SpendingTrendsChart: FC<SpendingTrendsChartProps> = ({ data }) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-
   const formatDate = (dateString: string) => {
     const [year, month] = dateString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -44,7 +39,9 @@ const SpendingTrendsChart: FC<SpendingTrendsChartProps> = ({ data }) => {
           <p className="font-medium dark:text-gray-100">
             {label ? formatDate(label) : 'Invalid Date'}
           </p>
-          <p className="text-gray-600 dark:text-gray-300">{formatCurrency(payload[0].value)}</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {formatCurrency(payload[0].value, 'INR')}
+          </p>
         </div>
       );
     }

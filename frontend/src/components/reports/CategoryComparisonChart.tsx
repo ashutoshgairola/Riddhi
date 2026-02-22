@@ -13,6 +13,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { formatCurrency } from '../../utils';
+
 interface CategoryData {
   name: string;
   current: number;
@@ -24,13 +26,6 @@ interface CategoryComparisonChartProps {
 }
 
 const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({ data }) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-
   const customTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (
       active &&
@@ -42,12 +37,12 @@ const CategoryComparisonChart: FC<CategoryComparisonChartProps> = ({ data }) => 
       return (
         <div className="bg-white dark:bg-gray-700 p-3 border border-gray-200 dark:border-gray-600 rounded shadow-sm">
           <p className="font-medium dark:text-gray-100">{label}</p>
-          <p className="text-green-600">Current: {formatCurrency(payload[0].value)}</p>
-          <p className="text-blue-600">Previous: {formatCurrency(payload[1].value)}</p>
+          <p className="text-green-600">Current: {formatCurrency(payload[0].value, 'INR')}</p>
+          <p className="text-blue-600">Previous: {formatCurrency(payload[1].value, 'INR')}</p>
           <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
             {payload[0].value > payload[1].value
-              ? `Increased by ${formatCurrency(payload[0].value - payload[1].value)}`
-              : `Decreased by ${formatCurrency(payload[1].value - payload[0].value)}`}
+              ? `Increased by ${formatCurrency(payload[0].value - payload[1].value, 'INR')}`
+              : `Decreased by ${formatCurrency(payload[1].value - payload[0].value, 'INR')}`}
           </p>
         </div>
       );

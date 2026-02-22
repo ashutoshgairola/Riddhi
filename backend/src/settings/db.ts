@@ -52,7 +52,7 @@ export class AccountModel {
       { returnDocument: 'after' },
     );
 
-    return updatedAccount.value;
+    return updatedAccount as unknown as Account | null;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {

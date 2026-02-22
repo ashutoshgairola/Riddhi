@@ -53,7 +53,7 @@ export class GoalModel {
       { returnDocument: 'after' },
     );
 
-    return updatedGoal.value;
+    return updatedGoal as unknown as Goal | null;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
@@ -112,7 +112,7 @@ export class GoalModel {
 
   async updateStatus(id: string, userId: string, status: GoalStatus): Promise<Goal | null> {
     // For completing a goal, set currentAmount to targetAmount
-    const updates: any = { status };
+    const updates: { status: GoalStatus; currentAmount?: number } = { status };
 
     if (status === 'completed') {
       const goal = await this.findById(id, userId);

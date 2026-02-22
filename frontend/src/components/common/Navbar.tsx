@@ -7,20 +7,26 @@ import {
   Bell,
   ChevronDown,
   CreditCard,
+  Landmark,
+  Loader2,
   LogOut,
   Menu,
-  Moon,
   PieChart,
-  Plus,
   Search,
   Settings,
-  Sun,
+  Target,
+  TrendingUp,
+  X,
 } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
+import { useSearch } from '../../hooks/useSearch';
 import { useTheme } from '../../hooks/useTheme';
+import { useToast } from '../../hooks/useToast';
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
-import { useTransactions } from '../../hooks/useTransactions';
+import notificationService, { NotificationLogDTO } from '../../services/api/notificationService';
+import { SearchResult, SearchResultType } from '../../services/api/searchService';
+import transactionService from '../../services/api/transactionService';
 import { TransactionCreateDTO } from '../../types/transaction.types';
 import AddTransactionForm from '../transactions/AddTransactionForm';
 import Modal from './Modal';
@@ -30,91 +36,105 @@ interface NavbarProps {
   toggleSidebar: () => void;
 }
 
+// Icon map for search result types
+const TYPE_ICONS: Record<SearchResultType, React.ReactNode> = {
+  transaction: <CreditCard size={14} className="text-blue-500" />,
+  budget: <PieChart size={14} className="text-purple-500" />,
+  goal: <Target size={14} className="text-green-500" />,
+  account: <Landmark size={14} className="text-yellow-500" />,
+  investment: <TrendingUp size={14} className="text-pink-500" />,
+};
+
+const TYPE_LABELS: Record<SearchResultType, string> = {
+  transaction: 'Transaction',
+  budget: 'Budget',
+  goal: 'Goal',
+  account: 'Account',
+  investment: 'Investment',
+};
+
+const formatAmount = (amount: number) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(amount);
+
 const Navbar = ({ toggleSidebar }: NavbarProps) => {
   const { user, loading, logout, isAuthenticated } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   // UI state
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
 
   // Data state
-  interface Notification {
-    id: string;
-    type: 'alert' | 'success' | 'info';
-    message: string;
-    date: string;
-    isRead: boolean;
-  }
-
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<NotificationLogDTO[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
 
+  // Search
+  const { query, setQuery, results, loading: searchLoading, clear: clearSearch } = useSearch();
+
   // Transaction hooks
-  const { createTransaction } = useTransactions();
   const { categories, loading: categoriesLoading } = useTransactionCategories();
+  const { warning } = useToast();
 
   // Refs for click outside detection
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Toggle quick add transaction modal
   const toggleAddTransaction = () => {
+    if (!showAddTransaction && !categoriesLoading && categories.length === 0) {
+      warning('Please create a category first before adding a transaction.', 'No categories');
+      return;
+    }
     setShowAddTransaction(!showAddTransaction);
   };
 
   // Handle transaction submission
   const handleTransactionSubmit = async (data: TransactionCreateDTO) => {
     try {
-      await createTransaction(data);
+      await transactionService.create(data);
       toggleAddTransaction();
     } catch (error) {
       console.error('Error creating transaction:', error);
     }
   };
 
-  // Mock fetch notifications - replace with actual API call in production
   const fetchNotifications = async () => {
     if (!isAuthenticated) return;
-
     try {
       setNotificationsLoading(true);
-
-      // Mock API call - replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Sample notification data - replace with API response
-      setNotifications([
-        {
-          id: '1',
-          type: 'alert',
-          message: 'You have exceeded your Shopping budget by ₹2,500',
-          date: new Date().toISOString(),
-          isRead: false,
-        },
-        {
-          id: '2',
-          type: 'success',
-          message: 'May 2025 budget has been created successfully',
-          date: new Date(Date.now() - 86400000).toISOString(),
-          isRead: true,
-        },
-        {
-          id: '3',
-          type: 'info',
-          message: 'New feature: Transaction labels are now available',
-          date: new Date(Date.now() - 172800000).toISOString(),
-          isRead: false,
-        },
-      ]);
+      const logs = await notificationService.getLogs(30);
+      setNotifications(logs);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
       setNotificationsLoading(false);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    try {
+      await notificationService.markRead(id);
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationService.markAllRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
     }
   };
 
@@ -135,6 +155,9 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setIsNotificationsOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -143,19 +166,11 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
     };
   }, []);
 
-  // Toggle dark mode
-  const handleToggleDarkMode = async () => {
-    await toggleTheme();
-  };
-
-  // Handle search
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchValue.trim()) {
-      // Navigate to search results page
-      navigate(`/transactions?search=${encodeURIComponent(searchValue)}`);
-      setSearchValue('');
-    }
+  // Navigate to a search result
+  const handleResultClick = (result: SearchResult) => {
+    clearSearch();
+    setIsSearchOpen(false);
+    navigate(result.url);
   };
 
   // Handle logout
@@ -234,47 +249,103 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
 
           {/* Center section: Search */}
           <div className="hidden sm:flex flex-1 max-w-md mx-4">
-            <form onSubmit={handleSearch} className="w-full">
+            <div ref={searchRef} className="relative w-full">
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search transactions, budgets, etc."
-                  className={`w-full pl-10 pr-4 py-2 rounded-full border ${isDark ? 'border-gray-600 bg-gray-800 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  placeholder="Search transactions, budgets, goals…"
+                  className={`w-full pl-10 pr-9 py-2 rounded-full border ${isDark ? 'border-gray-600 bg-gray-800 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent`}
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setIsSearchOpen(true);
+                  }}
+                  onFocus={() => query.length >= 2 && setIsSearchOpen(true)}
+                  onKeyDown={(e) => e.key === 'Escape' && (clearSearch(), setIsSearchOpen(false))}
+                  autoComplete="off"
                 />
                 <div
-                  className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}
                 >
-                  <Search size={18} />
+                  {searchLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Search size={18} />
+                  )}
                 </div>
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearSearch();
+                      setIsSearchOpen(false);
+                    }}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
-            </form>
+
+              {/* Search dropdown */}
+              {isSearchOpen && query.length >= 2 && (
+                <div
+                  className={`absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border z-30 overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+                >
+                  {searchLoading ? (
+                    <div className="p-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+                      <Loader2 size={16} className="animate-spin" /> Searching…
+                    </div>
+                  ) : results.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                      No results for <span className="font-medium">"{query}"</span>
+                    </div>
+                  ) : (
+                    <div className="max-h-80 overflow-y-auto">
+                      {results.map((result) => (
+                        <button
+                          key={result.id}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault(); // keep input focused, don't blur
+                            handleResultClick(result);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-b-0 ${isDark ? 'border-gray-700' : 'border-gray-100'}`}
+                        >
+                          <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            {TYPE_ICONS[result.type]}
+                          </span>
+                          <span className="flex-1 min-w-0">
+                            <span
+                              className={`block text-sm font-medium truncate ${isDark ? 'text-white' : 'text-gray-900'}`}
+                            >
+                              {result.title}
+                            </span>
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {result.subtitle}
+                            </span>
+                          </span>
+                          <span className="shrink-0 flex flex-col items-end gap-0.5">
+                            {result.amount !== undefined && (
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                {formatAmount(result.amount)}
+                              </span>
+                            )}
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                              {TYPE_LABELS[result.type]}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right section: User profile, notifications, etc. */}
           <div className="flex items-center space-x-3">
-            {/* Quick Add button */}
-            {isAuthenticated && (
-              <button
-                onClick={toggleAddTransaction}
-                className="hidden md:flex items-center rounded-full bg-green-600 text-white p-2 hover:bg-green-700"
-                aria-label="Quick add"
-                title="Quick add transaction"
-              >
-                <Plus size={20} />
-              </button>
-            )}
-
-            {/* Dark/light mode toggle */}
-            <button
-              onClick={handleToggleDarkMode}
-              className={`p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
             {/* Notifications dropdown */}
             {isAuthenticated && (
               <div ref={notificationsRef} className="relative">
@@ -291,8 +362,16 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
 
                 {isNotificationsOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-600">
-                    <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+                    <div className="p-3 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
                       <h3 className="font-medium text-gray-800 dark:text-white">Notifications</h3>
+                      {notifications.some((n) => !n.isRead) && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-xs text-green-600 dark:text-green-400 hover:underline"
+                        >
+                          Mark all read
+                        </button>
+                      )}
                     </div>
 
                     <div className="max-h-80 overflow-y-auto">
@@ -304,39 +383,33 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
-                            className={`p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${!notification.isRead ? 'bg-green-50 dark:bg-green-900/20' : ''}`}
+                            onClick={() => !notification.isRead && handleMarkRead(notification.id)}
+                            className={`p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${!notification.isRead ? 'bg-green-50 dark:bg-green-900/20 cursor-pointer' : ''}`}
                           >
-                            <div className="flex justify-between">
-                              <p className="text-sm font-medium text-gray-800 dark:text-white">
-                                {notification.message}
+                            <div className="flex justify-between gap-2">
+                              <p className="text-sm font-medium text-gray-800 dark:text-white leading-snug">
+                                {notification.subject}
                               </p>
                               {!notification.isRead && (
-                                <span className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-1"></span>
+                                <span className="shrink-0 w-2 h-2 bg-green-500 rounded-full mt-1" />
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {new Date(notification.date).toLocaleString()}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 capitalize">
+                                {notification.type.replace(/_/g, ' ')}
+                              </span>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(notification.createdAt).toLocaleString()}
+                              </p>
+                            </div>
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                          No notifications yet
+                        <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                          <Bell size={24} className="mx-auto mb-2 opacity-40" />
+                          <p className="text-sm">No notifications yet</p>
                         </div>
                       )}
-                    </div>
-
-                    <div className="p-2 border-t border-gray-200 dark:border-gray-600">
-                      <button
-                        className="w-full text-center text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 p-1"
-                        onClick={() => {
-                          setIsNotificationsOpen(false);
-                          // Navigate to notifications page if you have one
-                          // navigate('/notifications');
-                        }}
-                      >
-                        View all notifications
-                      </button>
                     </div>
                   </div>
                 )}
@@ -442,20 +515,77 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
 
       {/* Mobile search bar - shown on small screens */}
       <div className="sm:hidden p-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <form onSubmit={handleSearch}>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500">
-              <Search size={18} />
-            </div>
+        <div ref={searchRef} className="relative">
+          <input
+            type="text"
+            placeholder="Search…"
+            className="w-full pl-10 pr-9 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setIsSearchOpen(true);
+            }}
+            onFocus={() => query.length >= 2 && setIsSearchOpen(true)}
+            onKeyDown={(e) => e.key === 'Escape' && (clearSearch(), setIsSearchOpen(false))}
+            autoComplete="off"
+          />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+            {searchLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={18} />}
           </div>
-        </form>
+          {query && (
+            <button
+              type="button"
+              onClick={() => {
+                clearSearch();
+                setIsSearchOpen(false);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <X size={14} />
+            </button>
+          )}
+
+          {/* Mobile search dropdown */}
+          {isSearchOpen && query.length >= 2 && (
+            <div className="absolute top-full mt-1 left-0 right-0 rounded-xl shadow-xl border z-30 overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              {searchLoading ? (
+                <div className="p-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+                  <Loader2 size={16} className="animate-spin" /> Searching…
+                </div>
+              ) : results.length === 0 ? (
+                <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No results for <span className="font-medium">"{query}"</span>
+                </div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto">
+                  {results.map((result) => (
+                    <button
+                      key={result.id}
+                      type="button"
+                      onClick={() => handleResultClick(result)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-b-0 border-gray-100 dark:border-gray-700"
+                    >
+                      <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                        {TYPE_ICONS[result.type]}
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium truncate text-gray-900 dark:text-white">
+                          {result.title}
+                        </span>
+                        <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {result.subtitle}
+                        </span>
+                      </span>
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 shrink-0">
+                        {TYPE_LABELS[result.type]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Logout confirmation modal */}

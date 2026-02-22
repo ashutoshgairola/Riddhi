@@ -11,6 +11,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { formatCurrency } from '../../utils';
+
 interface ProgressChartData {
   date: string;
   amount: number;
@@ -22,13 +24,6 @@ interface GoalProgressChartProps {
 }
 
 const GoalProgressChart: FC<GoalProgressChartProps> = ({ data, targetAmount }) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-
   const formatDate = (dateString: string) => {
     const [year, month] = dateString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -81,7 +76,9 @@ const GoalProgressChart: FC<GoalProgressChartProps> = ({ data, targetAmount }) =
       <div className="p-6">
         <div className="mb-4">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Combined Goal Target</p>
-          <p className="text-2xl font-bold dark:text-gray-100">{formatCurrency(targetAmount)}</p>
+          <p className="text-2xl font-bold dark:text-gray-100">
+            {formatCurrency(targetAmount, 'INR')}
+          </p>
         </div>
 
         <div className="h-64">
@@ -90,7 +87,7 @@ const GoalProgressChart: FC<GoalProgressChartProps> = ({ data, targetAmount }) =
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="formatted" />
               <YAxis />
-              <Tooltip formatter={(value) => formatCurrency(value as number)} />
+              <Tooltip formatter={(value) => formatCurrency(value as number, 'INR')} />
               <Line
                 type="monotone"
                 dataKey="amount"

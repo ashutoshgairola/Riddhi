@@ -58,7 +58,7 @@ export class AccountConnectionModel {
       { returnDocument: 'after' },
     );
 
-    return updatedConnection.value;
+    return updatedConnection as unknown as AccountConnection | null;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {

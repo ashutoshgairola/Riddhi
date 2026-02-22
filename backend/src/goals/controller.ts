@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 
+import { getErrorMessage } from '../common/utils';
 import { createChildLogger } from '../config/logger';
 import { GoalService } from './service';
 import { CreateGoalRequest, GetGoalsQuery, UpdateGoalRequest } from './types/interface';
@@ -16,18 +17,19 @@ export class GoalController {
     const requestLogger = this.logger.child({ method: 'getGoals' });
 
     try {
-      const userId = req.user!.userId;
-      const query: GetGoalsQuery = req.query as any;
+      const userId = req.body.user?.userId ?? '';
+      delete req.body.user;
+      const query: GetGoalsQuery = req.query as unknown as GetGoalsQuery;
 
       requestLogger.info({ userId }, 'Getting goals');
 
       // Convert numeric query params
       if (query.page) {
-        query.page = parseInt(query.page as any, 10);
+        query.page = parseInt(String(query.page), 10);
       }
 
       if (query.limit) {
-        query.limit = parseInt(query.limit as any, 10);
+        query.limit = parseInt(String(query.limit), 10);
       }
 
       const goals = await this.goalService.getGoals(userId, query);
@@ -35,28 +37,29 @@ export class GoalController {
       requestLogger.info({ userId }, 'Goals fetched successfully');
 
       res.status(200).json(goals);
-    } catch (error: any) {
-      requestLogger.error({ error, userId: req.user?.userId }, 'Error fetching goals');
+    } catch (error: unknown) {
+      requestLogger.error({ error }, 'Error fetching goals');
       res.status(500).json({ error: 'Failed to fetch goals' });
     }
   };
 
   getGoalById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         const goal = await this.goalService.getGoalById(id, userId);
         res.status(200).json(goal);
-      } catch (error: any) {
-        if (error.message === 'Goal not found') {
-          res.status(404).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Goal not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error fetching goal:');
       res.status(500).json({ error: 'Failed to fetch goal' });
     }
@@ -66,7 +69,8 @@ export class GoalController {
     const requestLogger = this.logger.child({ method: 'createGoal' });
 
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const goalData: CreateGoalRequest = req.body;
 
       requestLogger.info({ userId, goalName: goalData.name, type: goalData.type }, 'Creating goal');
@@ -101,50 +105,51 @@ export class GoalController {
         );
 
         res.status(201).json(goal);
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (
-          error.message.includes('date') ||
-          error.message.includes('amount') ||
-          error.message.includes('priority')
+          getErrorMessage(error).includes('date') ||
+          getErrorMessage(error).includes('amount') ||
+          getErrorMessage(error).includes('priority')
         ) {
           requestLogger.warn(
-            { userId, error: error.message },
+            { userId, error: getErrorMessage(error) },
             'Goal creation failed: Validation error',
           );
-          res.status(400).json({ error: error.message });
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
-      requestLogger.error({ error, userId: req.user?.userId }, 'Error creating goal');
+    } catch (error: unknown) {
+      requestLogger.error({ error }, 'Error creating goal');
       res.status(500).json({ error: 'Failed to create goal' });
     }
   };
 
   updateGoal = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const { id } = req.params;
       const updates: UpdateGoalRequest = req.body;
 
       try {
         const goal = await this.goalService.updateGoal(id, userId, updates);
         res.status(200).json(goal);
-      } catch (error: any) {
-        if (error.message === 'Goal not found') {
-          res.status(404).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Goal not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
         } else if (
-          error.message.includes('date') ||
-          error.message.includes('amount') ||
-          error.message.includes('priority')
+          getErrorMessage(error).includes('date') ||
+          getErrorMessage(error).includes('amount') ||
+          getErrorMessage(error).includes('priority')
         ) {
-          res.status(400).json({ error: error.message });
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error updating goal:');
       res.status(500).json({ error: 'Failed to update goal' });
     }
@@ -152,20 +157,21 @@ export class GoalController {
 
   deleteGoal = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         await this.goalService.deleteGoal(id, userId);
         res.status(204).send();
-      } catch (error: any) {
-        if (error.message === 'Goal not found') {
-          res.status(404).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Goal not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error deleting goal:');
       res.status(500).json({ error: 'Failed to delete goal' });
     }
@@ -173,22 +179,23 @@ export class GoalController {
 
   completeGoal = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         const goal = await this.goalService.completeGoal(id, userId);
         res.status(200).json(goal);
-      } catch (error: any) {
-        if (error.message === 'Goal not found') {
-          res.status(404).json({ error: error.message });
-        } else if (error.message.includes('already completed')) {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Goal not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
+        } else if (getErrorMessage(error).includes('already completed')) {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error completing goal:');
       res.status(500).json({ error: 'Failed to complete goal' });
     }
@@ -196,25 +203,26 @@ export class GoalController {
 
   pauseGoal = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         const goal = await this.goalService.pauseGoal(id, userId);
         res.status(200).json(goal);
-      } catch (error: any) {
-        if (error.message === 'Goal not found') {
-          res.status(404).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Goal not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
         } else if (
-          error.message.includes('already paused') ||
-          error.message.includes('cannot be paused')
+          getErrorMessage(error).includes('already paused') ||
+          getErrorMessage(error).includes('cannot be paused')
         ) {
-          res.status(400).json({ error: error.message });
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error pausing goal:');
       res.status(500).json({ error: 'Failed to pause goal' });
     }
@@ -222,22 +230,23 @@ export class GoalController {
 
   resumeGoal = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const userId = req.body.user!.userId;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         const goal = await this.goalService.resumeGoal(id, userId);
         res.status(200).json(goal);
-      } catch (error: any) {
-        if (error.message === 'Goal not found') {
-          res.status(404).json({ error: error.message });
-        } else if (error.message.includes('Only paused goals')) {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Goal not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
+        } else if (getErrorMessage(error).includes('Only paused goals')) {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error resuming goal:');
       res.status(500).json({ error: 'Failed to resume goal' });
     }

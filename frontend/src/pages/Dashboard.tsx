@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import { FC, useState } from 'react';
+import { FC } from 'react';
 
 import PageHeader from '../components/common/PageHeader';
 import BudgetProgressWidget from '../components/dashboard/BudgetProgressWidget';
@@ -8,9 +8,12 @@ import ExpenseBreakdownWidget from '../components/dashboard/ExpenseBreakdownWidg
 import FinancialSummaryWidget from '../components/dashboard/FinancialSummaryWidget';
 import GoalsWidget from '../components/dashboard/GoalsWidget';
 import RecentTransactionsWidget from '../components/dashboard/RecentTransactionsWidget';
+import { useDashboard } from '../hooks/useDashboard';
 
 const Dashboard: FC = () => {
-  const [selectedMonth, setSelectedMonth] = useState('April 2025');
+  const { data, loading } = useDashboard();
+
+  const currentMonth = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
 
   return (
     <div>
@@ -18,47 +21,47 @@ const Dashboard: FC = () => {
         title="Dashboard"
         subtitle="Your financial overview"
         actions={
-          <select
-            className="p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-          >
-            <option>April 2025</option>
-            <option>March 2025</option>
-            <option>February 2025</option>
-          </select>
+          <span className="p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm">
+            {currentMonth}
+          </span>
         }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {/* Financial Summary Widget */}
         <div className="col-span-1 md:col-span-2 lg:col-span-3">
-          <FinancialSummaryWidget />
+          <FinancialSummaryWidget summary={data?.summary ?? null} loading={loading} />
         </div>
 
         {/* Cash Flow Widget */}
         <div className="col-span-1 lg:col-span-2">
-          <CashFlowWidget />
+          <CashFlowWidget cashFlow={data?.cashFlow ?? []} loading={loading} />
         </div>
 
         {/* Expense Breakdown Widget */}
         <div className="col-span-1">
-          <ExpenseBreakdownWidget />
+          <ExpenseBreakdownWidget
+            expenseBreakdown={data?.expenseBreakdown ?? []}
+            loading={loading}
+          />
         </div>
 
         {/* Recent Transactions */}
         <div className="col-span-1 lg:col-span-2">
-          <RecentTransactionsWidget />
+          <RecentTransactionsWidget
+            transactions={data?.recentTransactions ?? []}
+            loading={loading}
+          />
         </div>
 
         {/* Budget Progress */}
         <div className="col-span-1">
-          <BudgetProgressWidget />
+          <BudgetProgressWidget budgetProgress={data?.budgetProgress ?? []} loading={loading} />
         </div>
 
         {/* Financial Goals */}
         <div className="col-span-1 md:col-span-2 lg:col-span-3">
-          <GoalsWidget />
+          <GoalsWidget goals={data?.goals ?? []} loading={loading} />
         </div>
       </div>
     </div>

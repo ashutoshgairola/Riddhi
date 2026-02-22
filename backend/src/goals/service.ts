@@ -141,11 +141,17 @@ export class GoalService {
       }
 
       goalUpdates.currentAmount = updates.currentAmount;
+    }
 
-      // If current amount equals target amount, automatically mark the goal as completed
-      if (updates.currentAmount === targetAmount) {
-        goalUpdates.status = 'completed';
-      }
+    // FIX: Auto-complete when currentAmount meets targetAmount,
+    // regardless of which field triggered it (target reduction OR current increase).
+    // Previously this only fired inside the `updates.currentAmount !== undefined` block,
+    // so reducing targetAmount to match currentAmount left the goal stuck as active.
+    const effectiveTarget = goalUpdates.targetAmount ?? goal.targetAmount;
+    const effectiveCurrent = goalUpdates.currentAmount ?? goal.currentAmount;
+
+    if (effectiveCurrent >= effectiveTarget && goal.status === 'active') {
+      goalUpdates.status = 'completed';
     }
 
     // Handle date updates
@@ -287,7 +293,7 @@ export class GoalService {
 
   private mapGoalToDTO(goal: Goal): GoalDTO {
     return {
-      id: goal._id!.toString(),
+      id: goal._id?.toString() ?? '',
       name: goal.name,
       type: goal.type,
       targetAmount: goal.targetAmount,
@@ -307,14 +313,23 @@ export class GoalService {
   private mapGoalToDetailDTO(goal: Goal): GoalDetailDTO {
     const dto = this.mapGoalToDTO(goal);
 
-    // Calculate progress
-    const percentage = (goal.currentAmount / goal.targetAmount) * 100;
-    const remaining = goal.targetAmount - goal.currentAmount;
+    // FIX: Guard zero targetAmount AND clamp percentage to 100
+    const percentage =
+      goal.targetAmount > 0 ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
+    // FIX: Floor remaining at 0 to handle any overshoot edge case
+    const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
 
     let projectedCompletion: string | undefined = undefined;
 
-    // Calculate projected completion date if we have contribution info
-    if (goal.contributionFrequency && goal.contributionAmount && goal.contributionAmount > 0) {
+    // FIX: Only calculate projected completion for active goals with remaining amount.
+    // Previously this ran for completed/paused goals, returning misleading dates.
+    if (
+      goal.status === 'active' &&
+      remaining > 0 &&
+      goal.contributionFrequency &&
+      goal.contributionAmount &&
+      goal.contributionAmount > 0
+    ) {
       const daysLeft = this.calculateDaysToCompletion(
         remaining,
         goal.contributionAmount,
@@ -345,9 +360,12 @@ export class GoalService {
   ): number {
     const contributions = Math.ceil(remainingAmount / contributionAmount);
 
-    // Convert contributions to days based on frequency
+    // FIX: Added daily frequency so it doesn't silently fall through to 30 days
     let daysPerContribution: number;
     switch (frequency) {
+      case 'daily':
+        daysPerContribution = 1;
+        break;
       case 'weekly':
         daysPerContribution = 7;
         break;
@@ -355,7 +373,7 @@ export class GoalService {
         daysPerContribution = 14;
         break;
       case 'monthly':
-        daysPerContribution = 30; // approximation
+        daysPerContribution = 30;
         break;
       default:
         daysPerContribution = 30;

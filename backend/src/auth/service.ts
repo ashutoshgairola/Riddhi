@@ -62,7 +62,9 @@ export class AuthService {
     }
 
     // Update last login time
-    await this.userModel.updateLastLogin(user.id!);
+    if (user._id) {
+      await this.userModel.updateLastLogin(user._id.toString());
+    }
     user.lastLogin = dayjs().toDate();
 
     const token = this.generateToken(user);
@@ -174,7 +176,7 @@ export class AuthService {
 
   private generateToken(user: User): string {
     const payload: AuthToken = {
-      userId: user._id!.toString(),
+      userId: user._id?.toString() ?? '',
       email: user.email,
     };
 
@@ -185,10 +187,11 @@ export class AuthService {
 
   private mapUserToDTO(user: User, token?: string): UserDTO {
     const userDTO: UserDTO = {
-      id: user._id!.toString(),
+      id: user._id?.toString() ?? user.id ?? '',
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      phone: user.phone,
       profileImageUrl: user.profileImageUrl,
       createdAt: user.createdAt.toISOString(),
       lastLogin: user.lastLogin ? user.lastLogin.toISOString() : undefined,

@@ -1,17 +1,92 @@
 // src/components/goals/GoalList.tsx
-import { FC } from 'react';
+import { FC, useState } from 'react';
 
-import { AlertCircle, Calendar, CheckCircle, DollarSign, Edit2 } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowDown01,
+  ArrowDown10,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  Calendar,
+  CheckCircle,
+  DollarSign,
+  Edit2,
+  Pause,
+  Play,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
 
+import wallet02 from '../../assets/empty-states/Wallet 02.svg';
 import { Goal, GoalType } from '../../types/goal.types';
 import { formatCurrency } from '../../utils';
+import EmptyState from '../common/EmptyState';
 
 interface GoalListProps {
   goals: Goal[];
   onEditGoal: (goal: Goal) => void;
+  onDeleteGoal?: (id: string) => void;
+  onCompleteGoal?: (id: string) => void;
+  onPauseGoal?: (id: string) => void;
+  onResumeGoal?: (id: string) => void;
 }
 
-const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
+type SortOption = 'priority' | 'progress' | 'dueDate' | 'name';
+type SortOrder = 'asc' | 'desc';
+
+const SORT_CYCLES: { sort: SortOption; order: SortOrder }[] = [
+  { sort: 'priority', order: 'asc' },
+  { sort: 'dueDate', order: 'asc' },
+  { sort: 'progress', order: 'desc' },
+  { sort: 'name', order: 'asc' },
+];
+
+const SORT_LABELS: Record<SortOption, string> = {
+  priority: 'Priority',
+  progress: 'Progress',
+  dueDate: 'Due Date',
+  name: 'Name',
+};
+
+const GoalList: FC<GoalListProps> = ({
+  goals,
+  onEditGoal,
+  onDeleteGoal,
+  onCompleteGoal,
+  onPauseGoal,
+  onResumeGoal,
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortIndex, setSortIndex] = useState(0);
+  const currentSort = SORT_CYCLES[sortIndex];
+
+  const filteredGoals = goals
+    .filter(
+      (g) =>
+        !searchTerm ||
+        g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        g.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (g.notes ?? '').toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    .sort((a, b) => {
+      const dir = currentSort.order === 'asc' ? 1 : -1;
+      switch (currentSort.sort) {
+        case 'priority':
+          return (a.priority - b.priority) * dir;
+        case 'progress': {
+          const pA = a.targetAmount ? a.currentAmount / a.targetAmount : 0;
+          const pB = b.targetAmount ? b.currentAmount / b.targetAmount : 0;
+          return (pA - pB) * dir;
+        }
+        case 'dueDate':
+          return (new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime()) * dir;
+        case 'name':
+          return a.name.localeCompare(b.name) * dir;
+        default:
+          return 0;
+      }
+    });
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -110,26 +185,58 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold dark:text-gray-100">Your Goals</h2>
-          <select className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm">
-            <option>Sort by Priority</option>
-            <option>Sort by Progress</option>
-            <option>Sort by Due Date</option>
-          </select>
+      {/* Header with search + sort */}
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-2">
+        <span className="text-base font-semibold text-gray-800 dark:text-gray-100 shrink-0 mr-auto">
+          {filteredGoals.length} Goal{filteredGoals.length !== 1 ? 's' : ''}
+        </span>
+
+        {/* Search */}
+        <div className="relative">
+          <Search
+            size={15}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search goals..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8 pr-7 py-1.5 w-44 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
+
+        {/* Sort cycling button */}
+        <button
+          title={`Sort: ${SORT_LABELS[currentSort.sort]} ${currentSort.order === 'asc' ? '↑' : '↓'} — click to cycle`}
+          onClick={() => setSortIndex((i) => (i + 1) % SORT_CYCLES.length)}
+          className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          {currentSort.sort === 'name' && currentSort.order === 'asc' && <ArrowUpAZ size={16} />}
+          {currentSort.sort === 'name' && currentSort.order === 'desc' && <ArrowDownAZ size={16} />}
+          {currentSort.sort !== 'name' && currentSort.order === 'desc' && <ArrowDown10 size={16} />}
+          {currentSort.sort !== 'name' && currentSort.order === 'asc' && <ArrowDown01 size={16} />}
+        </button>
       </div>
 
       <div className="p-6">
-        {goals.length > 0 ? (
+        {filteredGoals.length > 0 ? (
           <div className="space-y-4">
-            {goals.map((goal) => {
+            {filteredGoals.map((goal) => {
               const progressPercentage = calculatePercentage(goal.currentAmount, goal.targetAmount);
 
               return (
                 <div
                   key={goal.id}
+                  id={`highlight-${goal.id}`}
                   className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                 >
                   <div className="p-4">
@@ -147,15 +254,58 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
                         <h3 className="font-medium dark:text-gray-100">{goal.name}</h3>
                       </div>
 
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-1">
                         {getGoalStatusElement(goal)}
 
-                        <button
-                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 ml-3"
-                          onClick={() => onEditGoal(goal)}
-                        >
-                          <Edit2 size={18} />
-                        </button>
+                        {goal.status === 'active' && onPauseGoal && (
+                          <button
+                            title="Pause goal"
+                            className="text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 ml-2"
+                            onClick={() => onPauseGoal(goal.id)}
+                          >
+                            <Pause size={16} />
+                          </button>
+                        )}
+
+                        {goal.status === 'paused' && onResumeGoal && (
+                          <button
+                            title="Resume goal"
+                            className="text-gray-400 hover:text-green-500 dark:hover:text-green-400 ml-2"
+                            onClick={() => onResumeGoal(goal.id)}
+                          >
+                            <Play size={16} />
+                          </button>
+                        )}
+
+                        {goal.status !== 'completed' && onCompleteGoal && (
+                          <button
+                            title="Mark as completed"
+                            className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 ml-1"
+                            onClick={() => onCompleteGoal(goal.id)}
+                          >
+                            <CheckCircle size={16} />
+                          </button>
+                        )}
+
+                        {goal.status !== 'completed' && (
+                          <button
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 ml-1"
+                            onClick={() => onEditGoal(goal)}
+                            title="Edit goal"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        )}
+
+                        {onDeleteGoal && (
+                          <button
+                            title="Delete goal"
+                            className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 ml-1"
+                            onClick={() => onDeleteGoal(goal.id)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -203,12 +353,15 @@ const GoalList: FC<GoalListProps> = ({ goals, onEditGoal }) => {
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">No goals found</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              Create your first financial goal
-            </p>
-          </div>
+          <EmptyState
+            image={wallet02}
+            title={searchTerm ? 'No matching goals' : 'No goals found'}
+            description={
+              searchTerm
+                ? `No goals match "${searchTerm}". Try a different search term.`
+                : 'Create your first financial goal and start working towards it.'
+            }
+          />
         )}
       </div>
     </div>

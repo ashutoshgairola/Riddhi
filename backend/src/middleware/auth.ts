@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../auth/service';
 
 // Extend Express Request interface to include user property
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -13,6 +14,7 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export class AuthMiddleware {
   private authService: AuthService;

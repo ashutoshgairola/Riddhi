@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 
+import { getErrorMessage } from '../common/utils';
 import { createChildLogger } from '../config/logger';
 import { SettingsService } from './service';
 import {
@@ -25,7 +26,8 @@ export class SettingsController {
     const requestLogger = this.logger.child({ method: 'getUserPreferences' });
 
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
 
       requestLogger.info({ userId }, 'Getting user preferences');
 
@@ -34,8 +36,8 @@ export class SettingsController {
       requestLogger.info({ userId }, 'User preferences fetched successfully');
 
       res.status(200).json(preferences);
-    } catch (error: any) {
-      requestLogger.error({ error, userId: req.user?.userId }, 'Error fetching user preferences');
+    } catch (error: unknown) {
+      requestLogger.error({ error }, 'Error fetching user preferences');
       res.status(500).json({ error: 'Failed to fetch user preferences' });
     }
   };
@@ -44,7 +46,8 @@ export class SettingsController {
     const requestLogger = this.logger.child({ method: 'updateUserPreferences' });
 
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const updates: UpdateUserPreferencesRequest = req.body;
 
       requestLogger.info({ userId }, 'Updating user preferences');
@@ -54,8 +57,8 @@ export class SettingsController {
       requestLogger.info({ userId }, 'User preferences updated successfully');
 
       res.status(200).json(preferences);
-    } catch (error: any) {
-      requestLogger.error({ error, userId: req.user?.userId }, 'Error updating user preferences');
+    } catch (error: unknown) {
+      requestLogger.error({ error }, 'Error updating user preferences');
       res.status(500).json({ error: 'Failed to update user preferences' });
     }
   };
@@ -63,11 +66,12 @@ export class SettingsController {
   // Notification Settings
   getNotificationSettings = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
 
       const settings = await this.settingsService.getNotificationSettings(userId);
       res.status(200).json(settings);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error fetching notification settings:');
       res.status(500).json({ error: 'Failed to fetch notification settings' });
     }
@@ -75,7 +79,8 @@ export class SettingsController {
 
   updateNotificationSetting = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const { id } = req.params;
       const updates: UpdateNotificationSettingRequest = req.body;
 
@@ -88,14 +93,14 @@ export class SettingsController {
       try {
         const setting = await this.settingsService.updateNotificationSetting(id, userId, updates);
         res.status(200).json(setting);
-      } catch (error: any) {
-        if (error.message === 'Notification setting not found') {
-          res.status(404).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Notification setting not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error updating notification setting:');
       res.status(500).json({ error: 'Failed to update notification setting' });
     }
@@ -104,11 +109,12 @@ export class SettingsController {
   // Account Connections
   getAccountConnections = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
 
       const connections = await this.settingsService.getAccountConnections(userId);
       res.status(200).json(connections);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error fetching account connections:');
       res.status(500).json({ error: 'Failed to fetch account connections' });
     }
@@ -116,7 +122,8 @@ export class SettingsController {
 
   connectAccount = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const connectionData: ConnectAccountRequest = req.body;
 
       // Basic validation
@@ -128,14 +135,14 @@ export class SettingsController {
       try {
         const connection = await this.settingsService.connectAccount(userId, connectionData);
         res.status(201).json(connection);
-      } catch (error: any) {
-        if (error.message.includes('credentials')) {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error).includes('credentials')) {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error connecting account:');
       res.status(500).json({ error: 'Failed to connect account' });
     }
@@ -143,22 +150,23 @@ export class SettingsController {
 
   refreshConnection = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         const connection = await this.settingsService.refreshConnection(id, userId);
         res.status(200).json(connection);
-      } catch (error: any) {
-        if (error.message === 'Connection not found') {
-          res.status(404).json({ error: error.message });
-        } else if (error.message === 'Connection is not active') {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Connection not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
+        } else if (getErrorMessage(error) === 'Connection is not active') {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error refreshing connection:');
       res.status(500).json({ error: 'Failed to refresh connection' });
     }
@@ -166,20 +174,21 @@ export class SettingsController {
 
   disconnectAccount = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const { id } = req.params;
 
       try {
         await this.settingsService.disconnectAccount(id, userId);
         res.status(204).send();
-      } catch (error: any) {
-        if (error.message === 'Connection not found') {
-          res.status(404).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Connection not found') {
+          res.status(404).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error disconnecting account:');
       res.status(500).json({ error: 'Failed to disconnect account' });
     }
@@ -188,8 +197,9 @@ export class SettingsController {
   // Data Management
   exportData = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
-      const query: ExportDataQuery = req.query as any;
+      const { userId } = req.body.user;
+      delete req.body.user;
+      const query: ExportDataQuery = req.query as unknown as ExportDataQuery;
 
       // Validate format
       if (query.format !== 'json' && query.format !== 'csv') {
@@ -213,14 +223,14 @@ export class SettingsController {
         fileStream.on('end', () => {
           fs.unlinkSync(filePath);
         });
-      } catch (error: any) {
-        if (error.message === 'Invalid format') {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error) === 'Invalid format') {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error exporting data:');
       res.status(500).json({ error: 'Failed to export data' });
     }
@@ -228,7 +238,8 @@ export class SettingsController {
 
   importData = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const file = req.file;
       const { type } = req.body;
 
@@ -251,14 +262,14 @@ export class SettingsController {
           message: 'Import successful',
           stats,
         });
-      } catch (error: any) {
-        if (error.message.includes('format') || error.message.includes('type')) {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (getErrorMessage(error).includes('format') || getErrorMessage(error).includes('type')) {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error importing data:');
       res.status(500).json({ error: 'Failed to import data' });
     }
@@ -266,7 +277,8 @@ export class SettingsController {
 
   clearData = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.userId;
+      const { userId } = req.body.user;
+      delete req.body.user;
       const clearRequest: ClearDataRequest = req.body;
 
       // Validate request
@@ -296,14 +308,17 @@ export class SettingsController {
       try {
         await this.settingsService.clearData(userId, clearRequest);
         res.status(200).json({ message: 'Data cleared successfully' });
-      } catch (error: any) {
-        if (error.message.includes('confirmation') || error.message.includes('type')) {
-          res.status(400).json({ error: error.message });
+      } catch (error: unknown) {
+        if (
+          getErrorMessage(error).includes('confirmation') ||
+          getErrorMessage(error).includes('type')
+        ) {
+          res.status(400).json({ error: getErrorMessage(error) });
         } else {
           throw error;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error({ error }, 'Error clearing data:');
       res.status(500).json({ error: 'Failed to clear data' });
     }

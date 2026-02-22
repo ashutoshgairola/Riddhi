@@ -1,6 +1,7 @@
 import { Db } from 'mongodb';
 
 import { AccountModel } from '../accounts/db';
+import { Account } from '../accounts/types/interface';
 import { BudgetModel } from '../budgets/db';
 import { CategoryModel } from '../transactions/category-db';
 import { TransactionModel } from '../transactions/db';
@@ -61,7 +62,7 @@ export class ReportService {
 
     // First, initialize account balance changes to 0
     accounts.forEach((account) => {
-      accountBalanceChanges.set(account._id!.toString(), 0);
+      accountBalanceChanges.set(account._id?.toString() ?? '', 0);
     });
 
     // Calculate transaction-based balance changes during the period
@@ -84,7 +85,7 @@ export class ReportService {
 
     // Format account data with change calculations
     const accountsData = accounts.map((account) => {
-      const id = account._id!.toString();
+      const id = account._id?.toString() ?? '';
       const changeAmount = accountBalanceChanges.get(id) || 0;
 
       // Categorize as asset or liability
@@ -140,7 +141,9 @@ export class ReportService {
 
     // Get categories for enriching the data
     const categories = await this.categoryModel.findAll(userId);
-    const categoryMap = new Map(categories.map((category) => [category._id!.toString(), category]));
+    const categoryMap = new Map(
+      categories.map((category) => [category._id?.toString() ?? '', category]),
+    );
 
     // Initialize counters
     let totalIncome = 0;
@@ -176,8 +179,8 @@ export class ReportService {
         }
 
         // Update time series
-        const entry = timeSeriesMap.get(date)!;
-        entry.income += amount;
+        const entryIncome = timeSeriesMap.get(date);
+        if (entryIncome) entryIncome.income += amount;
       } else if (transaction.type === 'expense') {
         totalExpenses += amount;
 
@@ -188,8 +191,8 @@ export class ReportService {
         }
 
         // Update time series
-        const entry = timeSeriesMap.get(date)!;
-        entry.expenses += amount;
+        const entryExpense = timeSeriesMap.get(date);
+        if (entryExpense) entryExpense.expenses += amount;
       }
     });
 
@@ -348,7 +351,7 @@ export class ReportService {
     const transactionData = transactions
       .filter((t) => t.type === 'expense')
       .map((t) => ({
-        id: t._id!.toString(),
+        id: t._id?.toString() ?? '',
         date: t.date.toISOString(),
         description: t.description,
         amount: t.amount,
@@ -375,7 +378,7 @@ export class ReportService {
 
     if (query.budgetId) {
       // Get specific budget
-      budget = await this.budgetModel.findById(query.budgetId);
+      budget = await this.budgetModel.findById(query.budgetId, userId);
       if (!budget) {
         throw new Error('Budget not found');
       }
@@ -443,7 +446,7 @@ export class ReportService {
       .sort((a, b) => b.percentUsed - a.percentUsed); // Sort by percent used descending
 
     return {
-      budgetId: budget._id!.toString(),
+      budgetId: budget._id?.toString() ?? '',
       budgetName: budget.name,
       startDate: budget.startDate.toISOString(),
       endDate: budget.endDate.toISOString(),
@@ -558,7 +561,7 @@ export class ReportService {
     );
 
     // Prepare filters for query
-    const filters: Record<string, any> = {};
+    const filters: { categoryIds?: string[]; accountIds?: string[] } = {};
 
     if (reportRequest.categoryIds && reportRequest.categoryIds.length > 0) {
       filters.categoryIds = reportRequest.categoryIds;
@@ -569,6 +572,7 @@ export class ReportService {
     }
 
     // Fetch data based on report type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: any[] = [];
     let totalAmount = 0;
     let compareAmount = 0;
@@ -661,7 +665,7 @@ export class ReportService {
             startDate,
             endDate,
             'category',
-            { ...filters, categoryId: filters.categoryIds[0] },
+            { ...filters, categoryId: filters.categoryIds?.[0] },
           );
           compareAmount = previousPeriodData.total;
         }
@@ -803,7 +807,7 @@ export class ReportService {
     startDate: Date,
     endDate: Date,
     interval: 'day' | 'week' | 'month' | 'year',
-    accounts: any[],
+    accounts: Account[],
   ): Promise<{ date: string; assets: number; liabilities: number; netWorth: number }[]> {
     // Get all transactions in the date range
     const transactions = await this.transactionModel.findByDateRange(userId, startDate, endDate);
@@ -851,7 +855,7 @@ export class ReportService {
 
         // Apply transactions in reverse (from now back to the date point)
         for (const transaction of transactions.filter(
-          (t) => t.accountId === account._id!.toString() && t.date > datePoint,
+          (t) => t.accountId === (account._id?.toString() ?? '') && t.date > datePoint,
         )) {
           if (transaction.type === 'income') {
             balance -= transaction.amount;
@@ -886,10 +890,10 @@ export class ReportService {
     startDate: Date,
     endDate: Date,
     groupBy: string,
-    filters: Record<string, any>,
-  ): Promise<{ data: any[]; total: number }> {
+    filters: { categoryIds?: string[]; accountIds?: string[] },
+  ): Promise<{ data: Record<string, unknown>[]; total: number }> {
     // Build query for transactions
-    const query: any = {
+    const query: Record<string, unknown> = {
       userId,
       date: { $gte: startDate, $lte: endDate },
       type: 'expense',
@@ -922,7 +926,7 @@ export class ReportService {
       // Get category names
       const categoryIds = Object.keys(groupedData).filter((id) => id !== 'uncategorized');
       const categories = await this.categoryModel.findByIds(categoryIds, userId);
-      const categoryMap = new Map(categories.map((c) => [c._id!.toString(), c.name]));
+      const categoryMap = new Map(categories.map((c) => [c._id?.toString() ?? '', c.name]));
 
       // Format data
       const data = Object.entries(groupedData).map(([categoryId, amount]) => ({
@@ -957,10 +961,10 @@ export class ReportService {
     startDate: Date,
     endDate: Date,
     groupBy: string,
-    filters: Record<string, any>,
-  ): Promise<{ data: any[]; total: number }> {
+    filters: { categoryIds?: string[]; accountIds?: string[] },
+  ): Promise<{ data: Record<string, unknown>[]; total: number }> {
     // Build query for transactions
-    const query: any = {
+    const query: Record<string, unknown> = {
       userId,
       date: { $gte: startDate, $lte: endDate },
       type: 'income',
@@ -993,7 +997,7 @@ export class ReportService {
       // Get category names
       const categoryIds = Object.keys(groupedData).filter((id) => id !== 'uncategorized');
       const categories = await this.categoryModel.findByIds(categoryIds, userId);
-      const categoryMap = new Map(categories.map((c) => [c._id!.toString(), c.name]));
+      const categoryMap = new Map(categories.map((c) => [c._id?.toString() ?? '', c.name]));
 
       // Format data
       const data = Object.entries(groupedData).map(([categoryId, amount]) => ({
@@ -1029,7 +1033,7 @@ export class ReportService {
     endDate: Date,
     categoryId: string,
     groupBy: string,
-  ): Promise<{ data: any[]; total: number }> {
+  ): Promise<{ data: Record<string, unknown>[]; total: number }> {
     // Get category
     const category = await this.categoryModel.findById(categoryId, userId);
     if (!category) {
@@ -1072,7 +1076,7 @@ export class ReportService {
     startDate: Date,
     endDate: Date,
     type: 'expense' | 'income' | 'category',
-    filters: Record<string, any>,
+    filters: { categoryIds?: string[]; accountIds?: string[]; categoryId?: string },
   ): Promise<{ total: number }> {
     // Calculate previous period dates
     const periodLength = endDate.getTime() - startDate.getTime();
@@ -1080,7 +1084,7 @@ export class ReportService {
     const previousPeriodStartDate = new Date(previousPeriodEndDate.getTime() - periodLength);
 
     // Build query for transactions
-    const query: any = {
+    const query: Record<string, unknown> = {
       userId,
       date: { $gte: previousPeriodStartDate, $lte: previousPeriodEndDate },
     };
