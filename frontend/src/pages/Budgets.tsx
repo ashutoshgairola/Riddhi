@@ -258,16 +258,13 @@ const Budgets: FC = () => {
         title="Budgets"
         subtitle="Plan and track your spending"
         actions={
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <select
-              className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg"
+              className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm min-w-[140px]"
               value={selectedMonth}
               onChange={(e) => handleMonthChange(e.target.value)}
             >
-              {/* Current budget option */}
               <option value={currentBudget.name}>{currentBudget.name}</option>
-
-              {/* Past budgets options */}
               {budgetHistory.map((budget) => (
                 <option key={budget.id} value={budget.name}>
                   {budget.name}
@@ -276,13 +273,13 @@ const Budgets: FC = () => {
             </select>
             <button
               onClick={() => setShowAddCategory(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-full hover:bg-green-700 active:scale-95 transition-all select-none"
             >
               Add Category
             </button>
             <button
               onClick={() => setShowCreateBudget(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-95 transition-all select-none"
             >
               New Budget
             </button>
@@ -292,7 +289,7 @@ const Budgets: FC = () => {
 
       {/* Budget Summary */}
       <div
-        className="mt-6"
+        className="mt-4 sm:mt-6"
         id={`highlight-${(selectedMonth === currentBudget.name ? currentBudget : budgetHistory.find((b) => b.name === selectedMonth) || currentBudget).id}`}
       >
         <BudgetSummary
@@ -304,7 +301,7 @@ const Budgets: FC = () => {
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="mt-4 sm:mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Budget Categories */}
         <div className="lg:col-span-2">
           <BudgetCategoryList

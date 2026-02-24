@@ -1,6 +1,7 @@
 // src/pages/Investments.tsx
 import { FC, useState } from 'react';
 
+import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import AssetAllocationChart from '../components/investments/AssetAllocationChart';
 import InvestmentForm from '../components/investments/InvestmentForm';
@@ -89,7 +90,7 @@ const Investments: FC = () => {
         actions={
           <button
             onClick={handleAddInvestment}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-full hover:bg-green-700 active:scale-95 transition-all select-none"
           >
             Add Investment
           </button>
@@ -104,23 +105,21 @@ const Investments: FC = () => {
         </div>
       )}
 
-      {/* Portfolio summary */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
-          <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            Portfolio Value
-          </p>
-          <p className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+      {/* Portfolio summary — 1 col on mobile, 3 col on md+ */}
+      <div className="mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-4">
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow p-3`}>
+          <p className={`text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Portfolio</p>
+          <p
+            className={`text-sm sm:text-xl font-bold tabular-nums ${isDark ? 'text-gray-100' : 'text-gray-900'}`}
+          >
             {loading ? '—' : formatCurrency(portfolioSummary?.totalValue ?? 0, 'INR')}
           </p>
         </div>
 
-        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
-          <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            30-Day Return
-          </p>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow p-3`}>
+          <p className={`text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>30D Return</p>
           <p
-            className={`text-2xl font-bold ${
+            className={`text-sm sm:text-xl font-bold tabular-nums ${
               (portfolioSummary?.thirtyDayReturnPercent ?? 0) >= 0
                 ? 'text-green-500'
                 : 'text-red-500'
@@ -132,10 +131,10 @@ const Investments: FC = () => {
           </p>
         </div>
 
-        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
-          <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>YTD Return</p>
+        <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow p-3`}>
+          <p className={`text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>YTD</p>
           <p
-            className={`text-2xl font-bold ${
+            className={`text-sm sm:text-xl font-bold tabular-nums ${
               (portfolioSummary?.ytdReturnPercent ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'
             }`}
           >
@@ -146,17 +145,17 @@ const Investments: FC = () => {
         </div>
       </div>
 
-      {/* Filter tabs */}
-      <div className="mt-6 flex space-x-2 overflow-x-auto pb-2">
+      {/* Filter tabs — horizontally scrollable on mobile */}
+      <div className="mt-4 sm:mt-6 flex space-x-2 overflow-x-auto pb-1 -mx-1 px-1">
         {filterButtons.map(({ label, value }) => (
           <button
             key={label}
-            className={`px-4 py-2 rounded-lg whitespace-nowrap ${
+            className={`px-4 py-2 rounded-full whitespace-nowrap min-h-[36px] text-sm font-medium shrink-0 select-none transition-colors ${
               activeFilter === value
                 ? 'bg-green-600 text-white'
                 : isDark
-                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 active:bg-gray-600'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100'
             }`}
             onClick={() => setActiveFilter(value)}
           >
@@ -165,7 +164,8 @@ const Investments: FC = () => {
         ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Charts — stacked on mobile, side-by-side on lg+ */}
+      <div className="mt-4 sm:mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Asset Allocation Chart */}
         <div>
           <AssetAllocationChart allocations={allocations} />
@@ -178,7 +178,7 @@ const Investments: FC = () => {
       </div>
 
       {/* Investments List */}
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <InvestmentList
           investments={filteredInvestments}
           onEditInvestment={handleEditInvestment}
@@ -187,20 +187,14 @@ const Investments: FC = () => {
         />
       </div>
 
-      {/* Add/Edit Investment Modal */}
-      {showAddInvestment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div
-            className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-md w-full p-6`}
-          >
-            <InvestmentForm
-              onClose={handleCloseForm}
-              onSubmit={handleFormSubmit}
-              initialData={editingInvestment}
-            />
-          </div>
-        </div>
-      )}
+      {/* Add/Edit Investment Modal — uses responsive Modal component */}
+      <Modal isOpen={showAddInvestment} onClose={handleCloseForm} size="md">
+        <InvestmentForm
+          onClose={handleCloseForm}
+          onSubmit={handleFormSubmit}
+          initialData={editingInvestment}
+        />
+      </Modal>
     </div>
   );
 };

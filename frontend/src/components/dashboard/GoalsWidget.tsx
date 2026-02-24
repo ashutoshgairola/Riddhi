@@ -65,7 +65,7 @@ const GoalCard: FC<GoalCardProps> = ({ goal }) => {
 const GoalsWidget: FC<GoalsWidgetProps> = ({ goals, loading }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold dark:text-gray-100">Financial Goals</h2>
           <Link
@@ -76,9 +76,9 @@ const GoalsWidget: FC<GoalsWidgetProps> = ({ goals, loading }) => {
           </Link>
         </div>
       </div>
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
@@ -99,7 +99,7 @@ const GoalsWidget: FC<GoalsWidgetProps> = ({ goals, loading }) => {
             No active goals yet
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {goals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} />
             ))}

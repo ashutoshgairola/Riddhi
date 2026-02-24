@@ -5,6 +5,46 @@
 @layer base {
   html {
     @apply transition-colors duration-300;
+    /* Prevent tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
+    /* Smooth touch scrolling */
+    touch-action: manipulation;
+    /* System font for native feel */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    /* Prevent pull-to-refresh conflicts */
+    overscroll-behavior: contain;
+  }
+
+  body {
+    /* Prevent horizontal overflow */
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Smooth scrolling for programmatic navigation */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  /* Remove input/select native styling on mobile */
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  input[type='date'],
+  input[type='search'],
+  input[type='tel'],
+  select,
+  textarea {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Prevent iOS zoom on focus (font-size must be >= 16px on inputs) */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
   }
 
   .light {
@@ -36,5 +76,39 @@
 
   .dark * {
     color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  /* Scrollable containers with momentum scrolling */
+  .scroll-container {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Select-none for UI chrome — prevents accidental text selection */
+  .ui-chrome {
+    @apply select-none;
+  }
+
+  /* 60fps-safe transitions: only animate transform + opacity */
+  .animate-safe {
+    @apply transition-[transform,opacity];
+  }
+
+  /* Mobile active feedback */
+  .btn-tap {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+
+  /* Fixed bottom nav safe area */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Content max-width */
+  .content-max {
+    @apply max-w-[1440px] mx-auto;
   }
 }

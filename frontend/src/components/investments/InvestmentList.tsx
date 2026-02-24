@@ -291,17 +291,17 @@ const InvestmentList: FC<InvestmentListProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => onEditInvestment(investment)}
-                        className={`mr-3 ${isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-900'}`}
+                        className={`p-1.5 touch-manipulation ${isDark ? 'text-indigo-400 hover:text-indigo-300 active:text-indigo-200' : 'text-indigo-600 hover:text-indigo-900 active:text-indigo-700'} transition-colors`}
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
                         onClick={() => onDeleteInvestment(investment.id)}
-                        className={
+                        className={`p-1.5 touch-manipulation transition-colors ${
                           isDark
-                            ? 'text-red-400 hover:text-red-300'
-                            : 'text-red-600 hover:text-red-900'
-                        }
+                            ? 'text-red-400 hover:text-red-300 active:text-red-200'
+                            : 'text-red-600 hover:text-red-900 active:text-red-700'
+                        }`}
                       >
                         <Trash2 size={16} />
                       </button>

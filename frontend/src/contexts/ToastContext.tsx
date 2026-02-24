@@ -1,7 +1,10 @@
-import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
+
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,8 +33,6 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-// ── Hook ─────────────────────────────────────────────────────────────────────
-
 export function useToast(): ToastContextValue {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error('useToast must be used within <ToastProvider>');
@@ -51,7 +52,6 @@ const DEFAULT_DURATION: Record<ToastType, number> = {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  // Use a counter for stable IDs without useId per toast
   const counter = useRef(0);
 
   const dismiss = useCallback((id: string) => {
@@ -60,20 +60,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const dismissAll = useCallback(() => setToasts([]), []);
 
+  // Auto-dismiss timer has moved to ToastItem to support hover-pause.
   const toast = useCallback(
     (opts: Omit<Toast, 'id'>): string => {
       const id = `toast-${++counter.current}`;
       const duration = opts.duration ?? DEFAULT_DURATION[opts.type];
-
       setToasts((prev) => [...prev, { ...opts, id, duration }]);
-
-      if (duration > 0) {
-        setTimeout(() => dismiss(id), duration);
-      }
-
       return id;
     },
-    [dismiss],
+    [],
   );
 
   const success = useCallback(
@@ -143,19 +138,99 @@ const TOAST_STYLES: Record<
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
   const { icon: Icon, bar, iconColor, bg, border } = TOAST_STYLES[toast.type];
+  const bp = useBreakpoint();
+  const prefersReducedMotion = useReducedMotion();
+  const duration = toast.duration ?? DEFAULT_DURATION[toast.type];
+
+  // Progress bar (1 → 0 over duration ms)
+  const [progress, setProgress] = useState(1);
+  const pausedRef = useRef(false);
+  const startTimeRef = useRef(Date.now());
+  const elapsedRef = useRef(0);
+
+  // Auto-dismiss + progress tracking
+  useEffect(() => {
+    if (!duration) return;
+    startTimeRef.current = Date.now();
+
+    const tick = setInterval(() => {
+      if (pausedRef.current) return;
+      const totalElapsed = elapsedRef.current + (Date.now() - startTimeRef.current);
+      const pct = Math.max(0, 1 - totalElapsed / duration);
+      setProgress(pct);
+      if (pct <= 0) {
+        clearInterval(tick);
+        onDismiss(toast.id);
+      }
+    }, 40);
+
+    return () => clearInterval(tick);
+  }, [duration, toast.id, onDismiss]);
+
+  // Hover-pause — desktop only
+  const handleMouseEnter = () => {
+    if (bp !== 'desktop') return;
+    pausedRef.current = true;
+    elapsedRef.current += Date.now() - startTimeRef.current;
+  };
+  const handleMouseLeave = () => {
+    if (bp !== 'desktop') return;
+    pausedRef.current = false;
+    startTimeRef.current = Date.now();
+  };
+
+  // Framer Motion per-breakpoint variants
+  const variants = prefersReducedMotion
+    ? { hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } }
+    : bp === 'desktop'
+      ? {
+          hidden: { opacity: 0, x: 64, scale: 0.95 },
+          visible: { opacity: 1, x: 0, scale: 1 },
+          exit: { opacity: 0, x: 32, scale: 0.95 },
+        }
+      : {
+          hidden: { opacity: 0, y: 48 },
+          visible: { opacity: 1, y: 0 },
+          exit: { opacity: 0, y: 16 },
+        };
+
+  const swipeProps =
+    bp !== 'desktop'
+      ? {
+          drag: 'x' as const,
+          dragConstraints: { left: 0, right: 0 },
+          dragElastic: 0.4,
+          onDragEnd: (_: unknown, info: { offset: { x: number } }) => {
+            if (Math.abs(info.offset.x) > 72) onDismiss(toast.id);
+          },
+        }
+      : {};
+
+  const isFullWidth = bp === 'mobile';
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 24, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -12, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className={`relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border shadow-lg ${bg} ${border} px-4 py-3`}
+      variants={variants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      {...swipeProps}
+      className={[
+        'relative flex items-start gap-3 overflow-hidden rounded-xl border shadow-lg',
+        'px-4 py-3 cursor-grab active:cursor-grabbing',
+        bg,
+        border,
+        isFullWidth ? 'w-full' : 'w-full max-w-sm',
+      ].join(' ')}
       role="alert"
       aria-live="polite"
+      style={{ touchAction: bp !== 'desktop' ? 'pan-y' : undefined }}
     >
-      {/* Colour bar */}
+      {/* Left accent bar */}
       <span className={`absolute inset-y-0 left-0 w-1 rounded-l-xl ${bar}`} />
 
       {/* Icon */}
@@ -169,24 +244,38 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
           </p>
         )}
         <p
-          className={`text-sm leading-snug ${
+          className={[
+            'text-sm leading-snug',
+            isFullWidth ? 'truncate' : '',
             toast.title
               ? 'text-zinc-500 dark:text-zinc-400'
-              : 'text-zinc-700 dark:text-zinc-200 font-medium'
-          }`}
+              : 'text-zinc-700 dark:text-zinc-200 font-medium',
+          ].join(' ')}
         >
           {toast.message}
         </p>
       </div>
 
-      {/* Dismiss */}
-      <button
-        onClick={() => onDismiss(toast.id)}
-        className="shrink-0 rounded-md p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
-        aria-label="Dismiss notification"
-      >
-        <X className="h-4 w-4" />
-      </button>
+      {/* Dismiss — desktop only */}
+      {bp === 'desktop' && (
+        <button
+          onClick={() => onDismiss(toast.id)}
+          className="shrink-0 rounded-md p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+          aria-label="Dismiss notification"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Progress bar */}
+      {!!duration && !prefersReducedMotion && (
+        <div className="absolute bottom-0 left-1 right-0 h-0.5 overflow-hidden rounded-br-xl">
+          <div
+            className={`h-full ${bar} transition-none`}
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -200,15 +289,27 @@ function ToastContainer({
   toasts: Toast[];
   onDismiss: (id: string) => void;
 }) {
+  const bp = useBreakpoint();
+
   if (toasts.length === 0) return null;
 
+  const maxVisible = bp === 'mobile' ? 2 : 3;
+  const visible = toasts.slice(-maxVisible);
+
+  const containerClass =
+    bp === 'mobile'
+      ? // Full-width, anchored to bottom, safe area padding
+        'fixed bottom-0 left-0 right-0 z-[60] flex flex-col-reverse gap-2 px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none'
+      : bp === 'tablet'
+        ? // Bottom-right, fixed width
+          'fixed bottom-6 right-6 z-[60] flex flex-col-reverse gap-2 w-full max-w-sm pointer-events-none'
+        : // Top-right desktop
+          'fixed top-6 right-6 z-[60] flex flex-col-reverse gap-2 w-full max-w-sm pointer-events-none';
+
   return (
-    <div
-      aria-label="Notifications"
-      className="fixed bottom-6 right-6 z-[9999] flex flex-col-reverse gap-2 w-full max-w-sm pointer-events-none"
-    >
+    <div aria-label="Notifications" className={containerClass}>
       <AnimatePresence mode="popLayout">
-        {toasts.map((t) => (
+        {visible.map((t) => (
           <div key={t.id} className="pointer-events-auto">
             <ToastItem toast={t} onDismiss={onDismiss} />
           </div>

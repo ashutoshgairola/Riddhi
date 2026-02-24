@@ -14,7 +14,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, subtitle, actions }) => {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{title}</h1>
         {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>}
       </div>
-      {actions && <div className="mt-4 md:mt-0">{actions}</div>}
+      {actions && <div className="mt-2 md:mt-0">{actions}</div>}
     </div>
   );
 };

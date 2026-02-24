@@ -234,7 +234,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
-              className={`mr-2 p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} lg:hidden`}
+              className={`mr-2 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full ${isDark ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'} lg:hidden touch-manipulation`}
               aria-label="Toggle sidebar"
             >
               <Menu size={20} className={isDark ? 'text-gray-300' : 'text-gray-600'} />
@@ -351,7 +351,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
               <div ref={notificationsRef} className="relative">
                 <button
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 relative"
+                  className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 relative touch-manipulation"
                   aria-label="Notifications"
                 >
                   <Bell size={20} className="text-gray-600 dark:text-gray-300" />
@@ -361,7 +361,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                 </button>
 
                 {isNotificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-600">
+                  <div className="absolute right-0 mt-2 w-80 max-w-[min(320px,calc(100vw-1rem))] bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-600">
                     <div className="p-3 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
                       <h3 className="font-medium text-gray-800 dark:text-white">Notifications</h3>
                       {notifications.some((n) => !n.isRead) && (
@@ -425,7 +425,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
               <div ref={profileRef} className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex items-center space-x-2 p-2 min-w-[44px] min-h-[44px] rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 touch-manipulation"
                   aria-label="User menu"
                 >
                   <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-700 dark:text-green-300 font-medium">
@@ -598,13 +598,13 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
           <div className="flex justify-center space-x-4">
             <button
               onClick={() => setIsLogoutModalOpen(false)}
-              className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium"
+              className="px-4 py-2.5 min-h-[44px] rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 active:bg-gray-400 font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 font-medium"
+              className="px-4 py-2.5 min-h-[44px] rounded bg-red-600 text-white hover:bg-red-700 active:bg-red-800 font-medium transition-colors"
             >
               Sign Out
             </button>

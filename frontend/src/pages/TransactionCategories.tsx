@@ -99,7 +99,7 @@ const TransactionCategories: FC = () => {
         subtitle="Manage categories for your transactions"
         actions={
           <button
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 min-h-[44px] bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 transition-all select-none flex items-center gap-2 text-sm"
             onClick={handleAddCategory}
           >
             <Plus size={18} />
@@ -114,7 +114,7 @@ const TransactionCategories: FC = () => {
         </div>
       )}
 
-      <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-6">
           {categorizedItems.mainCategories.length === 0 ? (
             <EmptyState

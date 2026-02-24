@@ -27,55 +27,49 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budget }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-        <h2 className="text-xl font-bold dark:text-gray-100">{budget.name} Budget Summary</h2>
+      <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="text-lg font-bold dark:text-gray-100">{budget.name} Budget Summary</h2>
       </div>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Income</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Income</p>
+                <p className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">
                   {formatCurrency(budget.income, 'INR')}
                 </p>
               </div>
 
-              <div className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Budgeted</p>
-                <div className="flex justify-between items-end">
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {formatCurrency(budget.totalAllocated, 'INR')}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {calculatePercentage(budget.totalAllocated, budget.income)} of income
-                  </p>
-                </div>
+              <div className="p-3 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Budgeted</p>
+                <p className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                  {formatCurrency(budget.totalAllocated, 'INR')}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {calculatePercentage(budget.totalAllocated, budget.income)} of income
+                </p>
               </div>
 
-              <div className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Spent</p>
-                <div className="flex justify-between items-end">
-                  <p className="text-2xl font-bold text-red-600">
-                    {formatCurrency(budget.totalSpent, 'INR')}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {calculatePercentage(budget.totalSpent, budget.totalAllocated)} of budget
-                  </p>
-                </div>
+              <div className="p-3 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Spent</p>
+                <p className="text-lg font-bold tabular-nums text-red-600">
+                  {formatCurrency(budget.totalSpent, 'INR')}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {calculatePercentage(budget.totalSpent, budget.totalAllocated)} of budget
+                </p>
               </div>
 
-              <div className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Remaining Budget</p>
-                <div className="flex justify-between items-end">
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(remainingBudget, 'INR')}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {calculatePercentage(remainingBudget, budget.totalAllocated)} of budget
-                  </p>
-                </div>
+              <div className="p-3 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Remaining</p>
+                <p className="text-lg font-bold tabular-nums text-green-600">
+                  {formatCurrency(remainingBudget, 'INR')}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {calculatePercentage(remainingBudget, budget.totalAllocated)} of budget
+                </p>
               </div>
             </div>
           </div>

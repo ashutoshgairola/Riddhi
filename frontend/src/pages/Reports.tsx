@@ -94,49 +94,46 @@ const Reports: FC = () => {
 
   return (
     <div>
-      <PageHeader
-        title="Financial Reports"
-        subtitle="Analyze your financial data"
-        actions={
-          <div className="flex items-center space-x-2">
-            <select
-              className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm"
-              value={selectedTimeframe}
-              onChange={(e) => setSelectedTimeframe(e.target.value as ReportTimeframe)}
-            >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-              <option value="custom">Custom Range</option>
-            </select>
-            {selectedTimeframe === 'custom' && (
-              <>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm"
-                />
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm"
-                />
-              </>
-            )}
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-60 text-sm"
-            >
-              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-              {loading ? 'Loading…' : 'Generate'}
-            </button>
+      <PageHeader title="Financial Reports" subtitle="Analyze your financial data" />
+
+      {/* ── Controls (responsive: stacked mobile, inline md+) ── */}
+      <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row flex-wrap gap-2 sm:items-center">
+        <select
+          className="px-3 py-2 min-h-[44px] border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm flex-1 sm:flex-none"
+          value={selectedTimeframe}
+          onChange={(e) => setSelectedTimeframe(e.target.value as ReportTimeframe)}
+        >
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+          <option value="custom">Custom Range</option>
+        </select>
+        {selectedTimeframe === 'custom' && (
+          <div className="flex gap-2 flex-1 sm:flex-none">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="flex-1 px-3 py-2 min-h-[44px] border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm dark:[color-scheme:dark]"
+            />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="flex-1 px-3 py-2 min-h-[44px] border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm dark:[color-scheme:dark]"
+            />
           </div>
-        }
-      />
+        )}
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="px-5 py-2 min-h-[44px] bg-green-600 text-white rounded-full hover:bg-green-700 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 text-sm font-medium select-none transition-all"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+          {loading ? 'Loading…' : 'Generate'}
+        </button>
+      </div>
 
       {/* Error banner */}
       {error && (
@@ -148,25 +145,25 @@ const Reports: FC = () => {
         </div>
       )}
 
-      {/* Report Type Tabs */}
-      <div className="mt-6 flex space-x-2 overflow-x-auto pb-2">
+      {/* Report Type Tabs — horizontally scrollable on mobile */}
+      <div className="mt-4 sm:mt-6 flex space-x-2 overflow-x-auto pb-1 -mx-1 px-1">
         {reportTypes.map(({ label, value }) => (
           <button
             key={value}
-            className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full whitespace-nowrap min-h-[36px] text-sm font-medium shrink-0 select-none transition-colors ${
               selectedReportType === value
                 ? 'bg-green-600 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
             onClick={() => setSelectedReportType(value)}
           >
-            {label} Report
+            {label}
           </button>
         ))}
       </div>
 
-      {/* Summary Cards */}
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Summary Cards — 2 col on mobile, 4 col on md+ */}
+      <div className="mt-4 sm:mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Spending</p>
           {loading ? (
@@ -244,7 +241,7 @@ const Reports: FC = () => {
       {/* Charts — Spending / Income views */}
       {(selectedReportType === 'spending' || selectedReportType === 'income') && (
         <>
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="mt-4 sm:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <SpendingTrendsChart
               data={
                 loading
@@ -259,7 +256,7 @@ const Reports: FC = () => {
             />
             <CategoryComparisonChart data={loading ? [] : categoryComparisonData} />
           </div>
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <MonthlyExpenseChart data={loading ? [] : monthlyExpenseData} />
           </div>
         </>
@@ -267,8 +264,10 @@ const Reports: FC = () => {
 
       {/* Net Worth view */}
       {selectedReportType === 'net_worth' && (
-        <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold dark:text-gray-100 mb-4">Net Worth Over Time</h2>
+        <div className="mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold dark:text-gray-100 mb-4">
+            Net Worth Over Time
+          </h2>
           {loading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -282,37 +281,45 @@ const Reports: FC = () => {
               description="Net worth data will appear here once you have accounts and transactions."
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 text-left">
-                    <th className="pb-2 text-gray-500 dark:text-gray-400">Date</th>
-                    <th className="pb-2 text-right text-gray-500 dark:text-gray-400">Assets</th>
-                    <th className="pb-2 text-right text-gray-500 dark:text-gray-400">
-                      Liabilities
-                    </th>
-                    <th className="pb-2 text-right text-gray-500 dark:text-gray-400">Net Worth</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {(netWorth?.timeSeriesData ?? []).map((row, i) => (
-                    <tr key={i}>
-                      <td className="py-3 dark:text-gray-300">{row.date}</td>
-                      <td className="py-3 text-right text-green-600">
-                        {formatCurrency(row.assets, 'INR')}
-                      </td>
-                      <td className="py-3 text-right text-red-500">
-                        {formatCurrency(row.liabilities, 'INR')}
-                      </td>
-                      <td
-                        className={`py-3 text-right font-medium ${row.netWorth >= 0 ? 'dark:text-gray-100' : 'text-red-600'}`}
-                      >
-                        {formatCurrency(row.netWorth, 'INR')}
-                      </td>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[480px] px-4 sm:px-0">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700 text-left">
+                      <th className="pb-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        Date
+                      </th>
+                      <th className="pb-2 text-right text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        Assets
+                      </th>
+                      <th className="pb-2 text-right text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        Liabilities
+                      </th>
+                      <th className="pb-2 text-right text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        Net Worth
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {(netWorth?.timeSeriesData ?? []).map((row, i) => (
+                      <tr key={i}>
+                        <td className="py-3 dark:text-gray-300 whitespace-nowrap">{row.date}</td>
+                        <td className="py-3 text-right text-green-600 whitespace-nowrap">
+                          {formatCurrency(row.assets, 'INR')}
+                        </td>
+                        <td className="py-3 text-right text-red-500 whitespace-nowrap">
+                          {formatCurrency(row.liabilities, 'INR')}
+                        </td>
+                        <td
+                          className={`py-3 text-right font-medium whitespace-nowrap ${row.netWorth >= 0 ? 'dark:text-gray-100' : 'text-red-600'}`}
+                        >
+                          {formatCurrency(row.netWorth, 'INR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -320,8 +327,10 @@ const Reports: FC = () => {
 
       {/* Budget performance view */}
       {selectedReportType === 'category' && (
-        <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold dark:text-gray-100 mb-4">Budget Performance</h2>
+        <div className="mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold dark:text-gray-100 mb-4">
+            Budget Performance
+          </h2>
           {loading ? (
             <div className="space-y-3">
               {[...Array(4)].map((_, i) => (
@@ -336,23 +345,23 @@ const Reports: FC = () => {
             />
           ) : (
             <>
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 sm:p-3">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Budgeted</p>
-                  <p className="font-bold dark:text-gray-100">
+                  <p className="font-bold dark:text-gray-100 text-sm sm:text-base">
                     {formatCurrency(budgetPerformance.totalBudgeted, 'INR')}
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 sm:p-3">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Spent</p>
-                  <p className="font-bold dark:text-gray-100">
+                  <p className="font-bold dark:text-gray-100 text-sm sm:text-base">
                     {formatCurrency(budgetPerformance.totalSpent, 'INR')}
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 sm:p-3">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Remaining</p>
                   <p
-                    className={`font-bold ${budgetPerformance.remainingBudget > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`font-bold text-sm sm:text-base ${budgetPerformance.remainingBudget > 0 ? 'text-green-600' : 'text-red-600'}`}
                   >
                     {formatCurrency(budgetPerformance.remainingBudget, 'INR')}
                   </p>
@@ -362,8 +371,8 @@ const Reports: FC = () => {
                 {budgetPerformance.categories.map((cat, i) => (
                   <div key={i}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="dark:text-gray-300">{cat.categoryName}</span>
-                      <span className="dark:text-gray-400">
+                      <span className="dark:text-gray-300 truncate mr-2">{cat.categoryName}</span>
+                      <span className="dark:text-gray-400 shrink-0 text-xs sm:text-sm">
                         {formatCurrency(cat.spent, 'INR')} / {formatCurrency(cat.budgeted, 'INR')}
                       </span>
                     </div>
@@ -382,7 +391,7 @@ const Reports: FC = () => {
       )}
 
       {/* Export Controls */}
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <ReportExportControls
           reportType={selectedReportType}
           incomeExpense={incomeExpense}

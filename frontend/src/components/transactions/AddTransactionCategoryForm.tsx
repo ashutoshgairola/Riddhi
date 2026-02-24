@@ -1,12 +1,13 @@
 // src/components/transactions/AddTransactionCategoryForm.tsx
 import { FC, useState } from 'react';
 
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import { CategoryCreateDTO, CategoryUpdateDTO } from '../../services/api/categoryService';
 import { TransactionCategory } from '../../types/transaction.types';
 import IconSelector from '../common/IconSelector';
+import { ModalFooter, ModalHeader } from '../common/Modal';
 
 interface AddTransactionCategoryFormProps {
   onClose: () => void;
@@ -145,130 +146,123 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold dark:text-gray-100">
-          {initialData ? 'Edit Transaction Category' : 'Add Transaction Category'}
-        </h2>
+    <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+      <ModalHeader
+        title={initialData ? 'Edit Transaction Category' : 'Add Transaction Category'}
+        onClose={onClose}
+      />
+
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-4">
+        {formErrors.submit && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {formErrors.submit}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Category Name*
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="e.g., Groceries, Entertainment, Transportation"
+            className={`w-full px-3 py-2.5 border ${
+              formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+          />
+          {formErrors.name && (
+            <p className="mt-1 text-sm text-red-600 flex items-center">
+              <AlertCircle size={14} className="mr-1" /> {formErrors.name}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Color*
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {colorPalette.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={`w-10 h-10 rounded-full border-2 ${
+                  formData.color === color
+                    ? 'border-gray-800 dark:border-gray-200 ring-2 ring-offset-2 ring-gray-500 dark:ring-offset-gray-800'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => handleColorSelect(color)}
+                title={color}
+              />
+            ))}
+          </div>
+          {formErrors.color && (
+            <p className="mt-1 text-sm text-red-600 flex items-center">
+              <AlertCircle size={14} className="mr-1" /> {formErrors.color}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            Icon*
+          </label>
+          <IconSelector
+            selectedIcon={formData.icon || 'more-horizontal'}
+            onIconSelect={handleIconSelect}
+          />
+          {formErrors.icon && (
+            <p className="mt-2 text-sm text-red-600 flex items-center">
+              <AlertCircle size={14} className="mr-1" /> {formErrors.icon}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Parent Category
+          </label>
+          <select
+            name="parentId"
+            value={formData.parentId || ''}
+            onChange={handleChange}
+            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">None (Make this a main category)</option>
+            {parentCategories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {formData.parentId ? 'This will be a subcategory' : 'This will be a main category'}
+          </p>
+        </div>
+      </div>
+      {/* end body */}
+
+      <ModalFooter>
         <button
           type="button"
           onClick={onClose}
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+          disabled={isSubmitting}
         >
-          <X size={20} />
+          Cancel
         </button>
-      </div>
-
-      {formErrors.submit && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {formErrors.submit}
-        </div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Category Name*
-        </label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="e.g., Groceries, Entertainment, Transportation"
-          className={`w-full px-3 py-2 border ${
-            formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-          } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-        />
-        {formErrors.name && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <AlertCircle size={14} className="mr-1" /> {formErrors.name}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Color*
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {colorPalette.map((color) => (
-            <button
-              key={color}
-              type="button"
-              className={`w-10 h-10 rounded-full border-2 ${
-                formData.color === color
-                  ? 'border-gray-800 dark:border-gray-200 ring-2 ring-offset-2 ring-gray-500 dark:ring-offset-gray-800'
-                  : 'border-gray-300 dark:border-gray-600'
-              }`}
-              style={{ backgroundColor: color }}
-              onClick={() => handleColorSelect(color)}
-              title={color}
-            />
-          ))}
-        </div>
-        {formErrors.color && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <AlertCircle size={14} className="mr-1" /> {formErrors.color}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Icon*
-        </label>
-        <IconSelector
-          selectedIcon={formData.icon || 'more-horizontal'}
-          onIconSelect={handleIconSelect}
-        />
-        {formErrors.icon && (
-          <p className="mt-2 text-sm text-red-600 flex items-center">
-            <AlertCircle size={14} className="mr-1" /> {formErrors.icon}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Parent Category
-        </label>
-        <select
-          name="parentId"
-          value={formData.parentId || ''}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        <button
+          type="submit"
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400"
+          disabled={isSubmitting}
         >
-          <option value="">None (Make this a main category)</option>
-          {parentCategories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {formData.parentId ? 'This will be a subcategory' : 'This will be a main category'}
-        </p>
-      </div>
-
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex justify-end space-x-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Saving...' : initialData ? 'Update' : 'Add'} Category
-          </button>
-        </div>
-      </div>
+          {isSubmitting ? 'Saving...' : initialData ? 'Update' : 'Add'} Category
+        </button>
+      </ModalFooter>
     </form>
   );
 };

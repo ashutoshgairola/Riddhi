@@ -183,15 +183,15 @@ const Transactions: FC = () => {
         title="Transactions"
         subtitle="View and manage your financial transactions"
         actions={
-          <div className="flex space-x-2">
+          <div className="flex gap-2 flex-wrap">
             <button
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-95 transition-all select-none"
               onClick={() => setIsAddCategoryModalOpen(true)}
             >
               Add Category
             </button>
             <button
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-full hover:bg-green-700 active:scale-95 transition-all select-none"
               onClick={handleAddTransaction}
             >
               Add Transaction
@@ -200,7 +200,7 @@ const Transactions: FC = () => {
         }
       />
 
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <TransactionList
           transactions={transactions}
           loading={loading}

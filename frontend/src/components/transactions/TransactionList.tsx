@@ -81,10 +81,10 @@ const TransactionItem: FC<TransactionItemProps> = ({
       className="border border-gray-200 dark:border-gray-700 rounded-lg mb-2 overflow-hidden"
     >
       <div
-        className="p-4 bg-white dark:bg-gray-800 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="p-4 bg-white dark:bg-gray-800 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 select-none active:bg-gray-50 dark:active:bg-gray-700"
         onClick={() => toggleDetails(transaction.id)}
       >
-        <div className="flex items-center">
+        <div className="flex items-center min-w-0 flex-1">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
             style={{
@@ -103,14 +103,14 @@ const TransactionItem: FC<TransactionItemProps> = ({
             )}
           </div>
 
-          <div>
-            <p className="font-medium dark:text-gray-100">{transaction.description}</p>
+          <div className="min-w-0">
+            <p className="font-medium dark:text-gray-100 truncate">{transaction.description}</p>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {formatDate(transaction.date)}
               </p>
               {category && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[90px] truncate">
                   {category?.icon && (
                     <>
                       {(() => {
@@ -131,9 +131,9 @@ const TransactionItem: FC<TransactionItemProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0 ml-2">
           <p
-            className={`font-medium mr-4 ${
+            className={`font-medium mr-2 sm:mr-4 text-sm sm:text-base tabular-nums ${
               transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
             }`}
           >
@@ -142,7 +142,7 @@ const TransactionItem: FC<TransactionItemProps> = ({
           </p>
 
           <button
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            className="p-1.5 -m-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 active:text-gray-700 transition-colors touch-manipulation"
             onClick={(e) => {
               e.stopPropagation();
               onEdit(transaction.id);
@@ -152,7 +152,7 @@ const TransactionItem: FC<TransactionItemProps> = ({
           </button>
 
           <button
-            className="text-gray-400 hover:text-red-600 ml-2"
+            className="p-1.5 -m-1 ml-1 text-gray-400 hover:text-red-600 active:text-red-700 transition-colors touch-manipulation"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(transaction.id);
@@ -296,7 +296,7 @@ const TransactionList: FC<TransactionListProps> = ({
             placeholder="Search transactions..."
             value={filters.searchTerm || ''}
             onChange={(e) => onFilterChange({ ...filters, searchTerm: e.target.value, page: 1 })}
-            className="pl-8 pr-7 py-1.5 w-52 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:[color-scheme:dark]"
+            className="pl-8 pr-7 py-1.5 w-36 sm:w-52 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:[color-scheme:dark]"
           />
           {filters.searchTerm && (
             <button
@@ -543,29 +543,62 @@ const TransactionList: FC<TransactionListProps> = ({
             ))}
 
             {totalPages > 1 && (
-              <div className="flex justify-center items-center mt-6">
+              <div className="flex justify-center items-center mt-6 gap-1">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-full mr-2 ${currentPage === 1 ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                  className={`p-2 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center transition-colors ${currentPage === 1 ? 'text-gray-300 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200'}`}
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <div className="flex space-x-1">
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handlePageChange(i + 1)}
-                      className={`w-8 h-8 rounded-full ${currentPage === i + 1 ? 'bg-green-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+
+                {/* Smart pagination: show truncated range on mobile */}
+                <div className="flex items-center gap-1">
+                  {(() => {
+                    const pages: (number | '...')[] = [];
+                    if (totalPages <= 7) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i);
+                    } else {
+                      pages.push(1);
+                      if (currentPage > 3) pages.push('...');
+                      for (
+                        let i = Math.max(2, currentPage - 1);
+                        i <= Math.min(totalPages - 1, currentPage + 1);
+                        i++
+                      )
+                        pages.push(i);
+                      if (currentPage < totalPages - 2) pages.push('...');
+                      pages.push(totalPages);
+                    }
+                    return pages.map((p, idx) =>
+                      p === '...' ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="w-8 text-center text-gray-400 dark:text-gray-500 text-sm select-none"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => handlePageChange(p as number)}
+                          className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                            currentPage === p
+                              ? 'bg-green-600 text-white'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ),
+                    );
+                  })()}
                 </div>
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`p-2 rounded-full ml-2 ${currentPage === totalPages ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                  className={`p-2 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center transition-colors ${currentPage === totalPages ? 'text-gray-300 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200'}`}
                 >
                   <ChevronRight size={20} />
                 </button>

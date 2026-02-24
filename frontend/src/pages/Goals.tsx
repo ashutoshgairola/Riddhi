@@ -1,6 +1,7 @@
 // src/pages/Goals.tsx
 import { FC, useState } from 'react';
 
+import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import GoalForm from '../components/goals/GoalForm';
 import GoalList from '../components/goals/GoalList';
@@ -8,6 +9,13 @@ import GoalProgressChart from '../components/goals/GoalProgressChart';
 import { useGoals } from '../hooks/useGoals';
 import { useHighlight } from '../hooks/useHighlight';
 import { CreateGoalRequest, Goal, UpdateGoalRequest } from '../types/goal.types';
+
+const FILTER_TABS = [
+  { label: 'All', value: null },
+  { label: 'Savings', value: 'savings' },
+  { label: 'Debt', value: 'debt' },
+  { label: 'Purchases', value: 'major_purchase' },
+] as const;
 
 const Goals: FC = () => {
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -80,7 +88,7 @@ const Goals: FC = () => {
         actions={
           <button
             onClick={handleAddGoal}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-full hover:bg-green-700 active:scale-95 transition-all select-none"
           >
             Add Goal
           </button>
@@ -94,51 +102,24 @@ const Goals: FC = () => {
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="mt-6 flex space-x-2">
-        <button
-          className={`px-4 py-2 rounded-lg ${
-            activeFilter === null
-              ? 'bg-green-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-          }`}
-          onClick={() => setActiveFilter(null)}
-        >
-          All Goals
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${
-            activeFilter === 'savings'
-              ? 'bg-green-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-          }`}
-          onClick={() => setActiveFilter('savings')}
-        >
-          Savings
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${
-            activeFilter === 'debt'
-              ? 'bg-green-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-          }`}
-          onClick={() => setActiveFilter('debt')}
-        >
-          Debt Payoff
-        </button>
-        <button
-          className={`px-4 py-2 rounded-lg ${
-            activeFilter === 'major_purchase'
-              ? 'bg-green-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-          }`}
-          onClick={() => setActiveFilter('major_purchase')}
-        >
-          Major Purchases
-        </button>
+      {/* Filter tabs — horizontally scrollable on mobile */}
+      <div className="mt-4 sm:mt-6 flex space-x-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+        {FILTER_TABS.map(({ label, value }) => (
+          <button
+            key={label}
+            className={`px-4 py-2 rounded-full whitespace-nowrap min-h-[36px] text-sm font-medium select-none shrink-0 transition-colors ${
+              activeFilter === value
+                ? 'bg-green-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="mt-4 sm:mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Goals List */}
         <div className="lg:col-span-2">
           {loading ? (
@@ -170,18 +151,10 @@ const Goals: FC = () => {
         </div>
       </div>
 
-      {/* Add/Edit Goal Modal */}
-      {showAddGoal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <GoalForm
-              onClose={handleCloseForm}
-              onSubmit={handleSubmitGoal}
-              initialData={editingGoal}
-            />
-          </div>
-        </div>
-      )}
+      {/* Add/Edit Goal Modal — uses responsive Modal component */}
+      <Modal isOpen={showAddGoal} onClose={handleCloseForm} size="md">
+        <GoalForm onClose={handleCloseForm} onSubmit={handleSubmitGoal} initialData={editingGoal} />
+      </Modal>
     </div>
   );
 };

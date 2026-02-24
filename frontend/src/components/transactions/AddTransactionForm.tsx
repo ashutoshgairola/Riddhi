@@ -2,7 +2,7 @@
 import { FC, useEffect, useState } from 'react';
 
 import { isEmpty } from 'lodash';
-import { AlertCircle, Clock, X } from 'lucide-react';
+import { AlertCircle, Clock } from 'lucide-react';
 
 import {
   TransactionCategory,
@@ -10,6 +10,7 @@ import {
   TransactionStatus,
   TransactionType,
 } from '../../types/transaction.types';
+import { ModalFooter, ModalHeader } from '../common/Modal';
 import Spinner from '../common/Spinner';
 
 interface AddTransactionFormProps {
@@ -225,230 +226,195 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto px-1">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold dark:text-gray-100">
-          {initialData ? 'Edit Transaction' : 'Add Transaction'}
-        </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-        >
-          <X size={20} />
-        </button>
-      </div>
+    <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+      <ModalHeader title={initialData ? 'Edit Transaction' : 'Add Transaction'} onClose={onClose} />
 
-      <div className="mb-4">
-        <label className="flex justify-center space-x-4 mb-3">
-          <button
-            type="button"
-            className={`px-4 py-2 rounded-lg flex-1 ${
-              formData.type === 'expense'
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleTypeChange('expense')}
-          >
-            Expense
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 rounded-lg flex-1 ${
-              formData.type === 'income'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleTypeChange('income')}
-          >
-            Income
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 rounded-lg flex-1 ${
-              formData.type === 'transfer'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleTypeChange('transfer')}
-          >
-            Transfer
-          </button>
-        </label>
-        {formData.type === 'expense' && (
-          <p className="text-xs text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg py-1.5 px-3">
-            💸 Money going out — track what you spend
-          </p>
-        )}
-        {formData.type === 'income' && (
-          <p className="text-xs text-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg py-1.5 px-3">
-            💰 Money coming in — record your earnings
-          </p>
-        )}
-        {formData.type === 'transfer' && (
-          <p className="text-xs text-center text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg py-1.5 px-3">
-            🔄 Move money between your accounts — no category needed
-          </p>
-        )}
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Description*
-        </label>
-        <input
-          type="text"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-          className={`w-full px-3 py-2 border ${
-            formErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-          } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-          placeholder="e.g. Grocery shopping, Rent payment"
-        />
-        {formErrors.description && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <AlertCircle size={14} className="mr-1" /> {formErrors.description}
-          </p>
-        )}
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Amount*
-        </label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
-            ₹
-          </span>
-          <input
-            type="number"
-            name="amount"
-            value={formData.amount}
-            onChange={handleChange}
-            required
-            step="0.01"
-            min="0"
-            className={`w-full px-8 py-2 border ${
-              formErrors.amount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            placeholder="0.00"
-          />
-        </div>
-        {formErrors.amount && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <AlertCircle size={14} className="mr-1" /> {formErrors.amount}
-          </p>
-        )}
-      </div>
-
-      <div
-        className={`grid gap-4 mb-4 ${formData.type !== 'transfer' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}
-      >
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Date*
+      {/* Scrollable body */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
+        <div className="mb-4">
+          <label className="flex justify-center space-x-4 mb-3">
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-lg flex-1 ${
+                formData.type === 'expense'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleTypeChange('expense')}
+            >
+              Expense
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-lg flex-1 ${
+                formData.type === 'income'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleTypeChange('income')}
+            >
+              Income
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-lg flex-1 ${
+                formData.type === 'transfer'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleTypeChange('transfer')}
+            >
+              Transfer
+            </button>
           </label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            className={`w-full px-3 py-2 border ${
-              formErrors.date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-          />
-          {formErrors.date && (
-            <p className="mt-1 text-sm text-red-600 flex items-center">
-              <AlertCircle size={14} className="mr-1" /> {formErrors.date}
+          {formData.type === 'expense' && (
+            <p className="text-xs text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg py-1.5 px-3">
+              💸 Money going out — track what you spend
+            </p>
+          )}
+          {formData.type === 'income' && (
+            <p className="text-xs text-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg py-1.5 px-3">
+              💰 Money coming in — record your earnings
+            </p>
+          )}
+          {formData.type === 'transfer' && (
+            <p className="text-xs text-center text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg py-1.5 px-3">
+              🔄 Move money between your accounts — no category needed
             </p>
           )}
         </div>
 
-        {formData.type !== 'transfer' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Category*
-            </label>
-            {categoriesLoading ? (
-              <div className="flex items-center space-x-2 h-10">
-                <Spinner size="sm" />
-                <span className="text-gray-500 dark:text-gray-400">Loading categories...</span>
-              </div>
-            ) : (
-              <>
-                <select
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className={`w-full px-3 py-2 border ${
-                    formErrors.categoryId
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-600'
-                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                {formErrors.categoryId && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle size={14} className="mr-1" /> {formErrors.categoryId}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
-      {formData.type !== 'transfer' ? (
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Account*
+            Description*
           </label>
-          <select
-            name="accountId"
-            value={formData.accountId}
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
             onChange={handleChange}
             required
-            className={`w-full px-3 py-2 border ${
-              formErrors.accountId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            className={`w-full px-3 py-2.5 border ${
+              formErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-          >
-            <option value="">Select an account</option>
-            <option value="1">Main Checking Account</option>
-            <option value="2">Savings Account</option>
-            <option value="3">Credit Card</option>
-          </select>
-          {formErrors.accountId && (
+            placeholder="e.g. Grocery shopping, Rent payment"
+          />
+          {formErrors.description && (
             <p className="mt-1 text-sm text-red-600 flex items-center">
-              <AlertCircle size={14} className="mr-1" /> {formErrors.accountId}
+              <AlertCircle size={14} className="mr-1" /> {formErrors.description}
             </p>
           )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Amount*
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              ₹
+            </span>
+            <input
+              type="number"
+              name="amount"
+              value={formData.amount}
+              onChange={handleChange}
+              required
+              step="0.01"
+              min="0"
+              className={`w-full px-8 py-2.5 border ${
+                formErrors.amount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+              placeholder="0.00"
+            />
+          </div>
+          {formErrors.amount && (
+            <p className="mt-1 text-sm text-red-600 flex items-center">
+              <AlertCircle size={14} className="mr-1" /> {formErrors.amount}
+            </p>
+          )}
+        </div>
+
+        <div
+          className={`grid gap-4 mb-4 ${formData.type !== 'transfer' ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              From Account*
+              Date*
+            </label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+              className={`w-full px-3 py-2.5 border ${
+                formErrors.date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+            />
+            {formErrors.date && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <AlertCircle size={14} className="mr-1" /> {formErrors.date}
+              </p>
+            )}
+          </div>
+
+          {formData.type !== 'transfer' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Category*
+              </label>
+              {categoriesLoading ? (
+                <div className="flex items-center space-x-2 h-10">
+                  <Spinner size="sm" />
+                  <span className="text-gray-500 dark:text-gray-400">Loading categories...</span>
+                </div>
+              ) : (
+                <>
+                  <select
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-3 py-2.5 border ${
+                      formErrors.categoryId
+                        ? 'border-red-500'
+                        : 'border-gray-300 dark:border-gray-600'
+                    } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.categoryId && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle size={14} className="mr-1" /> {formErrors.categoryId}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {formData.type !== 'transfer' ? (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Account*
             </label>
             <select
               name="accountId"
               value={formData.accountId}
               onChange={handleChange}
               required
-              className={`w-full px-3 py-2 border ${
+              className={`w-full px-3 py-2.5 border ${
                 formErrors.accountId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
             >
-              <option value="">Select account</option>
+              <option value="">Select an account</option>
               <option value="1">Main Checking Account</option>
               <option value="2">Savings Account</option>
               <option value="3">Credit Card</option>
@@ -459,207 +425,235 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
               </p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              To Account*
-            </label>
-            <select
-              name="toAccountId"
-              value={formData.toAccountId}
-              onChange={handleChange}
-              required
-              className={`w-full px-3 py-2 border ${
-                formErrors.toAccountId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-              } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-            >
-              <option value="">Select account</option>
-              <option value="1">Main Checking Account</option>
-              <option value="2">Savings Account</option>
-              <option value="3">Credit Card</option>
-            </select>
-            {formErrors.toAccountId && (
-              <p className="mt-1 text-sm text-red-600 flex items-center">
-                <AlertCircle size={14} className="mr-1" /> {formErrors.toAccountId}
-              </p>
-            )}
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                From Account*
+              </label>
+              <select
+                name="accountId"
+                value={formData.accountId}
+                onChange={handleChange}
+                required
+                className={`w-full px-3 py-2.5 border ${
+                  formErrors.accountId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              >
+                <option value="">Select account</option>
+                <option value="1">Main Checking Account</option>
+                <option value="2">Savings Account</option>
+                <option value="3">Credit Card</option>
+              </select>
+              {formErrors.accountId && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" /> {formErrors.accountId}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                To Account*
+              </label>
+              <select
+                name="toAccountId"
+                value={formData.toAccountId}
+                onChange={handleChange}
+                required
+                className={`w-full px-3 py-2.5 border ${
+                  formErrors.toAccountId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              >
+                <option value="">Select account</option>
+                <option value="1">Main Checking Account</option>
+                <option value="2">Savings Account</option>
+                <option value="3">Credit Card</option>
+              </select>
+              {formErrors.toAccountId && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" /> {formErrors.toAccountId}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Status
-        </label>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className={`px-3 py-1 rounded-lg text-sm ${
-              formData.status === 'cleared'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleStatusChange('cleared')}
-          >
-            Cleared
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 rounded-lg text-sm ${
-              formData.status === 'pending'
-                ? 'bg-yellow-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleStatusChange('pending')}
-          >
-            Pending
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 rounded-lg text-sm ${
-              formData.status === 'reconciled'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleStatusChange('reconciled')}
-          >
-            Reconciled
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 rounded-lg text-sm ${
-              isEmpty(formData.status) || formData.status === 'void'
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => handleStatusChange('void')}
-          >
-            Void
-          </button>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Notes
-        </label>
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          rows={3}
-          placeholder="Add any additional details here..."
-        ></textarea>
-      </div>
-
-      {formData.type !== 'transfer' && (
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Tags
+            Status
           </label>
-          <input
-            type="text"
-            name="tags"
-            value={formData.tags?.join(', ')}
-            onChange={handleTagsChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Enter tags separated by commas"
-          />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            E.g. food, bills, subscriptions
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-lg text-sm ${
+                formData.status === 'cleared'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleStatusChange('cleared')}
+            >
+              Cleared
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-lg text-sm ${
+                formData.status === 'pending'
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleStatusChange('pending')}
+            >
+              Pending
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-lg text-sm ${
+                formData.status === 'reconciled'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleStatusChange('reconciled')}
+            >
+              Reconciled
+            </button>
+            <button
+              type="button"
+              className={`px-3 py-1 rounded-lg text-sm ${
+                isEmpty(formData.status) || formData.status === 'void'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+              onClick={() => handleStatusChange('void')}
+            >
+              Void
+            </button>
+          </div>
         </div>
-      )}
 
-      {formData.type !== 'transfer' && (
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={handleRecurringToggle}
-            className="flex items-center text-sm font-medium text-green-600 hover:text-green-700"
-          >
-            <Clock size={16} className="mr-1" />
-            {showRecurringOptions ? 'Remove Recurring Options' : 'Make Recurring Transaction'}
-          </button>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Notes
+          </label>
+          <textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleChange}
+            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            rows={3}
+            placeholder="Add any additional details here..."
+          ></textarea>
+        </div>
 
-          {showRecurringOptions && (
-            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Frequency*
-                  </label>
-                  <select
-                    name="frequency"
-                    value={formData.recurringDetails?.frequency}
-                    onChange={handleRecurringChange}
-                    className={`w-full px-3 py-2 border ${
-                      formErrors.frequency
-                        ? 'border-red-500'
-                        : 'border-gray-300 dark:border-gray-600'
-                    } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                  </select>
-                  {formErrors.frequency && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle size={14} className="mr-1" /> {formErrors.frequency}
+        {formData.type !== 'transfer' && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tags
+            </label>
+            <input
+              type="text"
+              name="tags"
+              value={formData.tags?.join(', ')}
+              onChange={handleTagsChange}
+              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Enter tags separated by commas"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              E.g. food, bills, subscriptions
+            </p>
+          </div>
+        )}
+
+        {formData.type !== 'transfer' && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={handleRecurringToggle}
+              className="flex items-center text-sm font-medium text-green-600 hover:text-green-700"
+            >
+              <Clock size={16} className="mr-1" />
+              {showRecurringOptions ? 'Remove Recurring Options' : 'Make Recurring Transaction'}
+            </button>
+
+            {showRecurringOptions && (
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Frequency*
+                    </label>
+                    <select
+                      name="frequency"
+                      value={formData.recurringDetails?.frequency}
+                      onChange={handleRecurringChange}
+                      className={`w-full px-3 py-2.5 border ${
+                        formErrors.frequency
+                          ? 'border-red-500'
+                          : 'border-gray-300 dark:border-gray-600'
+                      } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="yearly">Yearly</option>
+                    </select>
+                    {formErrors.frequency && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center">
+                        <AlertCircle size={14} className="mr-1" /> {formErrors.frequency}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Interval*
+                    </label>
+                    <input
+                      type="number"
+                      name="interval"
+                      value={formData.recurringDetails?.interval}
+                      onChange={handleRecurringChange}
+                      min="1"
+                      className={`w-full px-3 py-2.5 border ${
+                        formErrors.interval
+                          ? 'border-red-500'
+                          : 'border-gray-300 dark:border-gray-600'
+                      } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
+                      placeholder="1"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      E.g. every 2 weeks, every 3 months
                     </p>
-                  )}
-                </div>
+                    {formErrors.interval && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center">
+                        <AlertCircle size={14} className="mr-1" /> {formErrors.interval}
+                      </p>
+                    )}
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Interval*
-                  </label>
-                  <input
-                    type="number"
-                    name="interval"
-                    value={formData.recurringDetails?.interval}
-                    onChange={handleRecurringChange}
-                    min="1"
-                    className={`w-full px-3 py-2 border ${
-                      formErrors.interval
-                        ? 'border-red-500'
-                        : 'border-gray-300 dark:border-gray-600'
-                    } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-                    placeholder="1"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    E.g. every 2 weeks, every 3 months
-                  </p>
-                  {formErrors.interval && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertCircle size={14} className="mr-1" /> {formErrors.interval}
+                  <div className="lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      End Date (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      name="endDate"
+                      value={formData.recurringDetails?.endDate || ''}
+                      onChange={handleRecurringChange}
+                      className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Leave blank for indefinite recurring
                     </p>
-                  )}
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    End Date (Optional)
-                  </label>
-                  <input
-                    type="date"
-                    name="endDate"
-                    value={formData.recurringDetails?.endDate || ''}
-                    onChange={handleRecurringChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Leave blank for indefinite recurring
-                  </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
+      {/* end scrollable body */}
 
-      <div className="flex justify-end space-x-2 mt-2">
+      <ModalFooter>
         <button
           type="button"
           onClick={onClose}
@@ -679,7 +673,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         >
           {initialData ? 'Update' : 'Add'} Transaction
         </button>
-      </div>
+      </ModalFooter>
     </form>
   );
 };

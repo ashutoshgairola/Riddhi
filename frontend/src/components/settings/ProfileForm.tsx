@@ -146,7 +146,7 @@ const ProfileForm: FC = () => {
   const initials = (form.firstName?.[0] ?? '') + (form.lastName?.[0] ?? '') || '?';
 
   const inputClass =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500';
+    'w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500';
 
   return (
     <form onSubmit={handleSubmit}>
@@ -225,7 +225,7 @@ const ProfileForm: FC = () => {
               type="email"
               value={form.email}
               readOnly
-              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg cursor-not-allowed"
+              className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg cursor-not-allowed"
             />
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Email address cannot be changed.
@@ -246,7 +246,7 @@ const ProfileForm: FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60"
+            className="flex items-center gap-2 px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-60 self-start"
           >
             {saving && <Loader2 size={16} className="animate-spin" />}
             Save Changes

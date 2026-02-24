@@ -57,11 +57,11 @@ const FinancialSummaryWidget: FC<FinancialSummaryWidgetProps> = ({ summary, load
   const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold dark:text-gray-100">Financial Overview</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <FinancialMetricCard
           loading={loading}
           title="Net Worth"

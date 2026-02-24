@@ -29,13 +29,13 @@ const CashFlowWidget: FC<CashFlowWidgetProps> = ({ cashFlow, loading }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold dark:text-gray-100">Cash Flow</h2>
           <span className="text-sm text-gray-500 dark:text-gray-400">Last 6 months</span>
         </div>
       </div>
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {loading ? (
           <div className="h-64 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
         ) : cashFlow.length === 0 ? (

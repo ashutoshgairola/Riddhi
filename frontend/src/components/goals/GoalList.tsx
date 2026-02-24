@@ -227,7 +227,7 @@ const GoalList: FC<GoalListProps> = ({
         </button>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {filteredGoals.length > 0 ? (
           <div className="space-y-4">
             {filteredGoals.map((goal) => {
@@ -240,8 +240,8 @@ const GoalList: FC<GoalListProps> = ({
                   className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                 >
                   <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <div className="min-w-0">
                         <div className="flex items-center mb-1">
                           <div
                             className="w-3 h-3 rounded-full mr-2"
@@ -254,13 +254,13 @@ const GoalList: FC<GoalListProps> = ({
                         <h3 className="font-medium dark:text-gray-100">{goal.name}</h3>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
                         {getGoalStatusElement(goal)}
 
                         {goal.status === 'active' && onPauseGoal && (
                           <button
                             title="Pause goal"
-                            className="text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 ml-2"
+                            className="p-1.5 text-gray-400 hover:text-yellow-500 dark:hover:text-yellow-400 active:text-yellow-600 transition-colors touch-manipulation"
                             onClick={() => onPauseGoal(goal.id)}
                           >
                             <Pause size={16} />
@@ -270,7 +270,7 @@ const GoalList: FC<GoalListProps> = ({
                         {goal.status === 'paused' && onResumeGoal && (
                           <button
                             title="Resume goal"
-                            className="text-gray-400 hover:text-green-500 dark:hover:text-green-400 ml-2"
+                            className="p-1.5 text-gray-400 hover:text-green-500 dark:hover:text-green-400 active:text-green-600 transition-colors touch-manipulation"
                             onClick={() => onResumeGoal(goal.id)}
                           >
                             <Play size={16} />
@@ -280,7 +280,7 @@ const GoalList: FC<GoalListProps> = ({
                         {goal.status !== 'completed' && onCompleteGoal && (
                           <button
                             title="Mark as completed"
-                            className="text-gray-400 hover:text-green-600 dark:hover:text-green-400 ml-1"
+                            className="p-1.5 text-gray-400 hover:text-green-600 dark:hover:text-green-400 active:text-green-700 transition-colors touch-manipulation"
                             onClick={() => onCompleteGoal(goal.id)}
                           >
                             <CheckCircle size={16} />
@@ -289,7 +289,7 @@ const GoalList: FC<GoalListProps> = ({
 
                         {goal.status !== 'completed' && (
                           <button
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 ml-1"
+                            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 active:text-gray-800 transition-colors touch-manipulation"
                             onClick={() => onEditGoal(goal)}
                             title="Edit goal"
                           >
@@ -300,7 +300,7 @@ const GoalList: FC<GoalListProps> = ({
                         {onDeleteGoal && (
                           <button
                             title="Delete goal"
-                            className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 ml-1"
+                            className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 active:text-red-600 transition-colors touch-manipulation"
                             onClick={() => onDeleteGoal(goal.id)}
                           >
                             <Trash2 size={16} />

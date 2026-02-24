@@ -18,7 +18,7 @@ const BudgetProgressWidget: FC<BudgetProgressWidgetProps> = ({ budgetProgress, l
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold dark:text-gray-100">Budget Progress</h2>
           <Link
@@ -29,7 +29,7 @@ const BudgetProgressWidget: FC<BudgetProgressWidgetProps> = ({ budgetProgress, l
           </Link>
         </div>
       </div>
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {loading ? (
           <div className="space-y-5">
             {[...Array(4)].map((_, i) => (

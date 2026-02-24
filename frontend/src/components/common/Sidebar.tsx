@@ -12,6 +12,7 @@ import {
   Settings,
   Target,
   TrendingUp,
+  X,
 } from 'lucide-react';
 
 import { useTheme } from '../../hooks/useTheme';
@@ -19,6 +20,9 @@ import { useTheme } from '../../hooks/useTheme';
 interface SidebarProps {
   collapsed: boolean;
   toggleSidebar: () => void;
+  /** Mobile only — close the drawer without toggling */
+  onClose?: () => void;
+  isMobileOpen?: boolean;
 }
 
 interface NavItemProps {
@@ -51,13 +55,13 @@ const NavItem: FC<NavItemProps> = ({
       <NavLink
         to={disabled ? '#' : to}
         className={({ isActive: routeActive }) => `
-          flex items-center p-4 cursor-pointer
+          flex items-center p-4 cursor-pointer select-none active:bg-opacity-80
           ${
             disabled
               ? ` ${isDark ? 'text-gray-500' : 'text-gray-400'} cursor-not-allowed`
               : isActive || routeActive
                 ? `${isDark ? 'bg-green-900/20 text-green-300' : 'bg-green-50 text-green-800'} border-r-4 border-green-600`
-                : `${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50'}`
+                : `${isDark ? 'text-gray-300 hover:bg-gray-700 active:bg-gray-600' : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'}`
           }
           ${collapsed ? 'justify-center' : ''}
         `}
@@ -91,11 +95,11 @@ const SubNavItem: FC<{
     <NavLink
       to={to}
       className={({ isActive }) => `
-        flex items-center pl-12 pr-4 py-3 cursor-pointer
+        flex items-center pl-12 pr-4 py-3 cursor-pointer select-none
         ${
           isActive
             ? `${isDark ? 'bg-green-900/20 text-green-300' : 'bg-green-50 text-green-800'} border-r-4 border-green-600`
-            : `${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+            : `${isDark ? 'text-gray-300 hover:bg-gray-700 active:bg-gray-600' : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'}`
         }
       `}
     >
@@ -105,28 +109,43 @@ const SubNavItem: FC<{
   );
 };
 
-const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
+const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar, onClose }) => {
   const { isDark } = useTheme();
 
   return (
     <div
-      className={`${isDark ? 'bg-gray-900' : 'bg-white'} shadow-md ${collapsed ? 'w-16' : 'w-64'} transition-all duration-300`}
+      className={`${isDark ? 'bg-gray-900' : 'bg-white'} shadow-md h-full flex flex-col ${collapsed ? 'w-16' : 'w-64'} transition-all duration-300`}
     >
-      <div className="p-4 flex items-center justify-between">
+      {/* Header */}
+      <div className="p-4 flex items-center justify-between shrink-0">
         {!collapsed && (
           <h1 className={`text-xl font-bold ${isDark ? 'text-green-300' : 'text-green-800'}`}>
             <span className="text-4xl">₹</span>iddhi
           </h1>
         )}
-        <button
-          onClick={toggleSidebar}
-          className={`p-2 rounded-full ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-        >
-          <Menu size={20} className={isDark ? 'text-gray-300' : 'text-gray-600'} />
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Desktop collapse toggle */}
+          <button
+            onClick={toggleSidebar}
+            className={`p-2 rounded-full select-none ${isDark ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'} hidden md:flex`}
+            aria-label="Toggle sidebar"
+          >
+            <Menu size={20} className={isDark ? 'text-gray-300' : 'text-gray-600'} />
+          </button>
+          {/* Mobile close (X) button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-full select-none md:hidden ${isDark ? 'hover:bg-gray-700 active:bg-gray-600' : 'hover:bg-gray-100 active:bg-gray-200'}`}
+              aria-label="Close menu"
+            >
+              <X size={20} className={isDark ? 'text-gray-300' : 'text-gray-600'} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <nav className="mt-8">
+      <nav className="mt-4 flex-1 overflow-y-auto overscroll-contain">
         <NavItem
           to="/dashboard"
           icon={<span className="text-xl">₹</span>}
