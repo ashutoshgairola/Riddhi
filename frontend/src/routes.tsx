@@ -6,6 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import PublicRoute from './components/auth/PublicRoute.tsx';
 // Layouts
 import DashboardLayout from './layouts/DashboardLayout';
+import Accounts from './pages/Accounts';
 import Budgets from './pages/Budgets';
 // Main pages
 import Dashboard from './pages/Dashboard';
@@ -63,6 +64,10 @@ const routes = createBrowserRouter([
       {
         path: 'dashboard',
         element: <Dashboard />,
+      },
+      {
+        path: 'accounts',
+        element: <Accounts />,
       },
       {
         path: 'transactions',

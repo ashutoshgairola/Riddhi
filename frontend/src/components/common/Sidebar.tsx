@@ -6,6 +6,7 @@ import {
   BarChart2,
   CreditCard,
   FolderTree,
+  Landmark,
   List,
   Menu,
   PieChart,
@@ -176,6 +177,15 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, toggleSidebar, onClose }) => {
             isDark={isDark}
           />
         </NavItem>
+
+        <NavItem
+          to="/accounts"
+          icon={<Landmark size={20} />}
+          label="Accounts"
+          collapsed={collapsed}
+          disabled={false}
+          isDark={isDark}
+        />
 
         <NavItem
           to="/budgets"

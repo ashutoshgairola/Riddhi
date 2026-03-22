@@ -21,4 +21,28 @@ export interface Account {
   connectionId?: string;
   includeInNetWorth: boolean;
   color?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AccountCreateDTO {
+  name: string;
+  type: AccountType;
+  balance: number;
+  currency: string;
+  institutionName?: string;
+  institutionLogo?: string;
+  includeInNetWorth: boolean;
+  color?: string;
+}
+
+export interface AccountUpdateDTO {
+  name?: string;
+  type?: AccountType;
+  balance?: number;
+  currency?: string;
+  institutionName?: string;
+  institutionLogo?: string;
+  includeInNetWorth?: boolean;
+  color?: string;
 }

@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 
+import { useAccounts } from '../../hooks/useAccounts';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearch } from '../../hooks/useSearch';
 import { useTheme } from '../../hooks/useTheme';
@@ -81,6 +82,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
 
   // Transaction hooks
   const { categories, loading: categoriesLoading } = useTransactionCategories();
+  const { accounts, loading: accountsLoading } = useAccounts();
   const { warning } = useToast();
 
   // Refs for click outside detection
@@ -627,6 +629,8 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
                 onSubmit={handleTransactionSubmit}
                 categories={categories}
                 categoriesLoading={false}
+                accounts={accounts}
+                accountsLoading={accountsLoading}
               />
             )}
           </div>

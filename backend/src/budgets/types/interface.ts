@@ -104,6 +104,7 @@ export interface CreateBudgetCategoryRequest {
 export interface UpdateBudgetCategoryRequest {
   name?: string;
   allocated?: number;
+  categoryIds?: string[];
   color?: string;
   icon?: string;
   rollover?: boolean;

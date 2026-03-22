@@ -6,6 +6,7 @@ import { Collection, Db } from 'mongodb';
 
 import { createChildLogger } from '../config/logger';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../common/errors';
+import { sendEmail } from '../notifications/providers/brevo';
 import { UserModel } from './db';
 import {
   AuthToken,
@@ -94,10 +95,30 @@ export class AuthService {
       expiresAt,
     });
 
-    // In a real implementation, send email with reset link
-    this.logger.info({ email, tokenLength: token.length }, 'Password reset token generated');
+    this.logger.info({ email }, 'Sending password reset email');
 
-    // Email would be sent here
+    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    const resetLink = `${appUrl}/reset-password?token=${token}`;
+
+    await sendEmail({
+      to: email,
+      subject: 'Reset your password',
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+          <h2 style="color:#111">Reset your password</h2>
+          <p>Hi ${user.firstName || 'there'},</p>
+          <p>We received a request to reset the password for your account. Click the button below to choose a new password. This link expires in <strong>1 hour</strong>.</p>
+          <p style="margin:24px 0">
+            <a href="${resetLink}"
+               style="background:#16a34a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block">
+              Reset Password
+            </a>
+          </p>
+          <p style="color:#666;font-size:13px">If you didn't request a password reset, you can safely ignore this email — your password will not change.</p>
+          <p style="color:#999;font-size:12px">Or copy this link into your browser:<br>${resetLink}</p>
+        </div>
+      `,
+    });
   }
 
   async confirmPasswordReset(token: string, newPassword: string): Promise<void> {

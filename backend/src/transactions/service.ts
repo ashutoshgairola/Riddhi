@@ -78,9 +78,11 @@ export class TransactionService {
     userId: string,
     transactionData: CreateTransactionRequest,
   ): Promise<TransactionDTO> {
-    const category = await this.categoryModel.findById(transactionData.categoryId, userId);
-    if (!category) {
-      throw new NotFoundError('Category not found');
+    if (transactionData.type !== 'transfer') {
+      const category = await this.categoryModel.findById(transactionData.categoryId, userId);
+      if (!category) {
+        throw new NotFoundError('Category not found');
+      }
     }
 
     const date = new Date(transactionData.date);

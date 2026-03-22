@@ -272,11 +272,28 @@ export class BudgetService {
       }
     }
 
-    // Create the budget category
+    // Calculate spent from existing transactions within the budget period
+    let spent = 0;
+    for (const categoryId of categoryData.categoryIds) {
+      const transactions = await this.transactionModel.findByDateRangeAndCategory(
+        userId,
+        budget.startDate,
+        budget.endDate,
+        categoryId,
+      );
+      for (const transaction of transactions) {
+        if (transaction.type === 'expense') {
+          spent += transaction.amount;
+        }
+      }
+    }
+    spent = Math.round(spent * 100) / 100;
+
+    // Create the budget category with the calculated spent value
     const newCategory: Omit<BudgetCategory, '_id'> = {
       name: categoryData.name,
       allocated: categoryData.allocated,
-      spent: 0, // Initially zero
+      spent,
       categoryIds: categoryData.categoryIds,
       color: categoryData.color,
       icon: categoryData.icon,
@@ -290,24 +307,12 @@ export class BudgetService {
       throw new Error('Failed to create budget category');
     }
 
-    // Update the spent amount for the new category (for all its categoryIds)
-    await this.updateCategorySpentAmount(budgetId, userId, createdCategory.categoryIds);
+    // Update budget-level totalSpent to include the new category's spent
+    await this.budgetModel.update(budgetId, userId, {
+      totalSpent: Math.round((budget.totalSpent + spent) * 100) / 100,
+    });
 
-    // Get the updated category with actual spent amount
-    const updatedBudget = await this.budgetModel.findById(budgetId, userId);
-    if (!updatedBudget) {
-      throw new Error('Failed to retrieve updated budget');
-    }
-
-    const updatedCategory = updatedBudget.categories.find(
-      (c) => c._id?.toString() === createdCategory._id?.toString(),
-    );
-
-    if (!updatedCategory) {
-      throw new Error('Failed to retrieve created category');
-    }
-
-    return this.mapBudgetCategoryToDTO(updatedCategory);
+    return this.mapBudgetCategoryToDTO({ ...createdCategory, spent });
   }
 
   async updateBudgetCategory(
@@ -354,6 +359,34 @@ export class BudgetService {
       categoryUpdates.notes = updates.notes;
     }
 
+    if (updates.categoryIds !== undefined) {
+      // Validate each transaction category exists
+      for (const categoryId of updates.categoryIds) {
+        const txCategory = await this.categoryModel.findById(categoryId, userId);
+        if (!txCategory) {
+          throw new NotFoundError(`Transaction category with ID ${categoryId} not found`);
+        }
+      }
+
+      // Check none of the new categoryIds are already used by a different budget category
+      for (const categoryId of updates.categoryIds) {
+        const conflict = (budget.categories ?? []).find((c) => {
+          if (c._id?.toString() === category._id?.toString()) return false; // skip self
+          if (c.categoryIds && Array.isArray(c.categoryIds)) return c.categoryIds.includes(categoryId);
+          if ((c as BudgetCategory & { categoryId?: string }).categoryId)
+            return (c as BudgetCategory & { categoryId?: string }).categoryId === categoryId;
+          return false;
+        });
+        if (conflict) {
+          throw new ConflictError(
+            `Transaction category ${categoryId} is already assigned to budget category "${conflict.name}"`,
+          );
+        }
+      }
+
+      categoryUpdates.categoryIds = updates.categoryIds;
+    }
+
     // Apply updates
     const updatedCategory = await this.budgetModel.updateCategory(
       budgetId,
@@ -364,6 +397,30 @@ export class BudgetService {
 
     if (!updatedCategory) {
       throw new Error('Failed to update budget category');
+    }
+
+    // If categoryIds changed, recalculate spent from transactions for the new set
+    if (updates.categoryIds !== undefined) {
+      const newCategoryIds = updates.categoryIds;
+      let totalSpent = 0;
+      for (const txCategoryId of newCategoryIds) {
+        const transactions = await this.transactionModel.findByDateRangeAndCategory(
+          userId,
+          budget.startDate,
+          budget.endDate,
+          txCategoryId,
+        );
+        for (const transaction of transactions) {
+          if (transaction.type === 'expense') totalSpent += transaction.amount;
+        }
+      }
+      totalSpent = Math.round(totalSpent * 100) / 100;
+      await this.budgetModel.updateCategorySpent(budgetId, userId, categoryId, totalSpent);
+      const newTotalSpent = Math.max(0, budget.totalSpent - category.spent + totalSpent);
+      await this.budgetModel.update(budgetId, userId, {
+        totalSpent: Math.round(newTotalSpent * 100) / 100,
+      });
+      return this.mapBudgetCategoryToDTO({ ...updatedCategory, spent: totalSpent });
     }
 
     return this.mapBudgetCategoryToDTO(updatedCategory);
@@ -462,87 +519,6 @@ export class BudgetService {
 
     // Update the total spent amount
     await this.budgetModel.update(budgetId, userId, { totalSpent });
-  }
-
-  private async updateCategorySpentAmount(
-    budgetId: string,
-    userId: string,
-    categoryIds: string[],
-  ): Promise<void> {
-    const budget = await this.budgetModel.findById(budgetId, userId);
-    if (!budget) {
-      return;
-    }
-
-    // Find the budget category that contains these categoryIds
-    const budgetCategory = budget.categories.find((c) =>
-      categoryIds.some((catId) => {
-        // Handle backward compatibility - some categories might still have the old categoryId field
-        if (c.categoryIds && Array.isArray(c.categoryIds)) {
-          return c.categoryIds.includes(catId);
-        }
-        // Fallback for old format (single categoryId)
-        if ((c as any).categoryId) {
-          return (c as any).categoryId === catId;
-        }
-        return false;
-      }),
-    );
-    if (!budgetCategory) {
-      return;
-    }
-
-    // Reset the category spent amount
-    const resetResult = await this.budgetModel.updateCategory(
-      budgetId,
-      userId,
-      budgetCategory._id!.toString(),
-      { spent: 0 } as Partial<BudgetCategory>,
-    );
-
-    if (!resetResult) {
-      return;
-    }
-
-    // Fetch transactions within the budget period for all categoryIds in this budget category
-    let totalSpent = 0;
-
-    // Get the category IDs for this budget category (handle backward compatibility)
-    const categoryIdsToProcess =
-      budgetCategory.categoryIds && Array.isArray(budgetCategory.categoryIds)
-        ? budgetCategory.categoryIds
-        : [(budgetCategory as any).categoryId].filter(Boolean);
-
-    for (const categoryId of categoryIdsToProcess) {
-      const transactions = await this.transactionModel.findByDateRangeAndCategory(
-        userId,
-        budget.startDate,
-        budget.endDate,
-        categoryId,
-      );
-
-      // Calculate total spent for this category
-      for (const transaction of transactions) {
-        if (transaction.type === 'expense') {
-          totalSpent += transaction.amount;
-        }
-      }
-    }
-
-    // Update the category spent amount with the total from all its transaction categories
-    await this.budgetModel.updateCategorySpent(
-      budgetId,
-      userId,
-      budgetCategory._id!.toString(),
-      totalSpent,
-    );
-
-    // Update the budget's total spent
-    const oldTotalSpent = budget.totalSpent - budgetCategory.spent;
-    const newTotalSpent = oldTotalSpent + totalSpent;
-    await this.budgetModel.update(budgetId, userId, {
-      totalSpent: newTotalSpent,
-    });
   }
 
   private mapBudgetToDTO(budget: Budget): BudgetDTO {

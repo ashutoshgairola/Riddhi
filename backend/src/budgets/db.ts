@@ -216,7 +216,7 @@ export class BudgetModel {
     budgetId: string,
     userId: string,
     categoryId: string,
-    updates: Partial<Omit<Budget['categories'][0], '_id' | 'categoryIds' | 'spent'>>,
+    updates: Partial<Omit<Budget['categories'][0], '_id' | 'spent'>>,
   ): Promise<Budget['categories'][0] | null> {
     // FIX: We still need to read the budget to find the category and compute
     // the allocation difference, but we now use atomic $inc for totalAllocated
@@ -227,7 +227,7 @@ export class BudgetModel {
     }
 
     // Find the category
-    const category = budget.categories.find((c) => c._id?.toString() === categoryId);
+    const category = (budget.categories ?? []).find((c) => c._id?.toString() === categoryId);
     if (!category) {
       return null;
     }
@@ -269,9 +269,13 @@ export class BudgetModel {
       return null;
     }
 
-    // Find the updated category
-    const updatedCategory = updatedBudget.categories.find((c) => c._id?.toString() === categoryId);
-    return updatedCategory || null;
+    // Find the updated category — defensive fallback same as addCategory:
+    // if findOneAndUpdate returns a result without categories, reconstruct from
+    // the pre-update category merged with the applied updates.
+    const updatedCategory = (updatedBudget.categories ?? []).find(
+      (c) => c._id?.toString() === categoryId,
+    );
+    return updatedCategory ?? ({ ...category, ...updates } as Budget['categories'][0]);
   }
 
   async deleteCategory(budgetId: string, userId: string, categoryId: string): Promise<boolean> {

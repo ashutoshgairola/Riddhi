@@ -1,11 +1,13 @@
 // src/pages/Transactions.tsx
 import { FC, useCallback, useState } from 'react';
 
+import ConfirmModal from '../components/common/ConfirmModal';
 import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import AddTransactionCategoryForm from '../components/transactions/AddTransactionCategoryForm';
 import AddTransactionForm from '../components/transactions/AddTransactionForm';
 import TransactionList from '../components/transactions/TransactionList';
+import { useAccounts } from '../hooks/useAccounts';
 import { useHighlight } from '../hooks/useHighlight';
 import { useToast } from '../hooks/useToast';
 import { useTransactionCategories } from '../hooks/useTransactionCategories';
@@ -24,6 +26,7 @@ const Transactions: FC = () => {
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
 
   // Filters state
   const [filters, setFilters] = useState<FilterType>({
@@ -55,6 +58,8 @@ const Transactions: FC = () => {
     createCategory,
     updateCategory,
   } = useTransactionCategories();
+
+  const { accounts, loading: accountsLoading } = useAccounts();
 
   const { warning, success, error: toastError } = useToast();
 
@@ -149,14 +154,15 @@ const Transactions: FC = () => {
   );
 
   // Handle transaction deletion
-  const handleDeleteTransaction = useCallback(
-    async (id: string) => {
-      if (window.confirm('Are you sure you want to delete this transaction?')) {
-        await deleteTransaction(id);
-      }
-    },
-    [deleteTransaction],
-  );
+  const handleDeleteTransaction = useCallback((id: string) => {
+    setDeletingTransactionId(id);
+  }, []);
+
+  const confirmDeleteTransaction = useCallback(async () => {
+    if (!deletingTransactionId) return;
+    await deleteTransaction(deletingTransactionId);
+    setDeletingTransactionId(null);
+  }, [deletingTransactionId, deleteTransaction]);
 
   // Handle category submission
   const handleCategorySubmit = useCallback(
@@ -259,6 +265,8 @@ const Transactions: FC = () => {
             }
             categories={categories}
             categoriesLoading={categoriesLoading}
+            accounts={accounts}
+            accountsLoading={accountsLoading}
           />
         </Modal>
       )}
@@ -272,6 +280,16 @@ const Transactions: FC = () => {
           />
         </Modal>
       )}
+
+      {/* Delete Transaction Confirm Modal */}
+      <ConfirmModal
+        isOpen={!!deletingTransactionId}
+        onClose={() => setDeletingTransactionId(null)}
+        onConfirm={confirmDeleteTransaction}
+        title="Delete Transaction"
+        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 };

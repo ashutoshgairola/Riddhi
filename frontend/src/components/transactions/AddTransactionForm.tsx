@@ -2,9 +2,10 @@
 import { FC, useEffect, useState } from 'react';
 
 import { isEmpty } from 'lodash';
-import { AlertCircle, Clock, Plus, X } from 'lucide-react';
+import { AlertCircle, Clock, Landmark, Plus, X } from 'lucide-react';
 
 import { useCategories } from '../../contexts/CategoryContext';
+import { Account } from '../../types/account.types';
 import {
   TransactionCategory,
   TransactionCreateDTO,
@@ -34,10 +35,12 @@ const FieldError: FC<{ msg?: string }> = ({ msg }) =>
 
 interface AddTransactionFormProps {
   onClose: () => void;
-  onSubmit?: (data: TransactionCreateDTO) => void;
+  onSubmit?: (data: TransactionCreateDTO) => void | Promise<void>;
   initialData?: Partial<TransactionCreateDTO>;
   categories: TransactionCategory[];
   categoriesLoading: boolean;
+  accounts: Account[];
+  accountsLoading: boolean;
 }
 
 const AddTransactionForm: FC<AddTransactionFormProps> = ({
@@ -46,6 +49,8 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
   initialData,
   categories,
   categoriesLoading,
+  accounts,
+  accountsLoading,
 }) => {
   const { createCategory } = useCategories();
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
@@ -154,7 +159,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
     if (!formData.date) errors.date = 'Date is required';
     if (formData.type !== 'transfer') {
       if (!formData.categoryId) errors.categoryId = 'Category is required';
-      if (!formData.accountId) errors.accountId = 'Account is required';
+      if (accounts.length > 0 && !formData.accountId) errors.accountId = 'Account is required';
     } else {
       if (!formData.accountId) errors.accountId = 'From account is required';
       if (!formData.toAccountId) errors.toAccountId = 'To account is required';
@@ -187,7 +192,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
     setInlineCatCreating(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
     const submitData: TransactionCreateDTO = {
@@ -198,7 +203,7 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         ? { categoryId: '', isRecurring: false, recurringDetails: undefined }
         : { toAccountId: undefined }),
     };
-    if (onSubmit) onSubmit(submitData);
+    if (onSubmit) await onSubmit(submitData);
     onClose();
   };
 
@@ -387,55 +392,85 @@ const AddTransactionForm: FC<AddTransactionFormProps> = ({
         )}
 
         {/* ── Account(s) ── */}
-        {formData.type !== 'transfer' ? (
+        {accountsLoading ? (
+          <div className="flex items-center gap-2 h-10">
+            <Spinner size="sm" />
+            <span className="text-sm text-gray-500 dark:text-gray-400">Loading accounts…</span>
+          </div>
+        ) : formData.type !== 'transfer' ? (
+          accounts.length === 0 ? (
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+              <span className="text-base">💵</span>
+              <div>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Cash transaction</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">Add accounts in settings to track by account</p>
+              </div>
+            </div>
+          ) : (
           <div>
             <label className={labelCls}>Account*</label>
-            <Select
-              name="accountId"
-              value={formData.accountId}
-              onChange={handleChange}
-              required
+            <SearchableSelect
+              options={accounts.map((a) => ({
+                value: a.id,
+                label: a.name,
+                subtitle: a.institutionName,
+                icon: a.institutionLogo
+                  ? <img src={a.institutionLogo} alt="" className="w-5 h-5 object-contain" />
+                  : <Landmark size={16} className="text-gray-400" />,
+              }))}
+              value={formData.accountId ?? ''}
+              onChange={(val) => {
+                setFormData((prev) => ({ ...prev, accountId: val }));
+                if (formErrors.accountId) setFormErrors((prev) => ({ ...prev, accountId: '' }));
+              }}
+              placeholder="Select an account"
               error={!!formErrors.accountId}
-            >
-              <option value="">Select an account</option>
-              <option value="1">Main Checking Account</option>
-              <option value="2">Savings Account</option>
-              <option value="3">Credit Card</option>
-            </Select>
+            />
             <FieldError msg={formErrors.accountId} />
           </div>
+          )
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>From Account*</label>
-              <Select
-                name="accountId"
-                value={formData.accountId}
-                onChange={handleChange}
-                required
+              <SearchableSelect
+                options={accounts.map((a) => ({
+                  value: a.id,
+                  label: a.name,
+                  subtitle: a.institutionName,
+                  icon: a.institutionLogo
+                    ? <img src={a.institutionLogo} alt="" className="w-5 h-5 object-contain" />
+                    : <Landmark size={16} className="text-gray-400" />,
+                }))}
+                value={formData.accountId ?? ''}
+                onChange={(val) => {
+                  setFormData((prev) => ({ ...prev, accountId: val }));
+                  if (formErrors.accountId) setFormErrors((prev) => ({ ...prev, accountId: '' }));
+                }}
+                placeholder="Select account"
                 error={!!formErrors.accountId}
-              >
-                <option value="">Select account</option>
-                <option value="1">Main Checking Account</option>
-                <option value="2">Savings Account</option>
-                <option value="3">Credit Card</option>
-              </Select>
+              />
               <FieldError msg={formErrors.accountId} />
             </div>
             <div>
               <label className={labelCls}>To Account*</label>
-              <Select
-                name="toAccountId"
-                value={formData.toAccountId}
-                onChange={handleChange}
-                required
+              <SearchableSelect
+                options={accounts.map((a) => ({
+                  value: a.id,
+                  label: a.name,
+                  subtitle: a.institutionName,
+                  icon: a.institutionLogo
+                    ? <img src={a.institutionLogo} alt="" className="w-5 h-5 object-contain" />
+                    : <Landmark size={16} className="text-gray-400" />,
+                }))}
+                value={formData.toAccountId ?? ''}
+                onChange={(val) => {
+                  setFormData((prev) => ({ ...prev, toAccountId: val }));
+                  if (formErrors.toAccountId) setFormErrors((prev) => ({ ...prev, toAccountId: '' }));
+                }}
+                placeholder="Select account"
                 error={!!formErrors.toAccountId}
-              >
-                <option value="">Select account</option>
-                <option value="1">Main Checking Account</option>
-                <option value="2">Savings Account</option>
-                <option value="3">Credit Card</option>
-              </Select>
+              />
               <FieldError msg={formErrors.toAccountId} />
             </div>
           </div>

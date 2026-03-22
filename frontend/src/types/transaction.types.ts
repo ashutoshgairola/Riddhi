@@ -21,7 +21,7 @@ export interface Transaction {
   type: TransactionType;
   categoryId: string;
   category?: TransactionCategory;
-  accountId: string;
+  accountId?: string;
   status: TransactionStatus;
   notes?: string;
   tags?: string[];
@@ -80,7 +80,7 @@ export interface TransactionCreateDTO {
   amount: number;
   type: TransactionType;
   categoryId: string;
-  accountId: string;
+  accountId?: string;
   toAccountId?: string;
   status?: TransactionStatus;
   notes?: string;

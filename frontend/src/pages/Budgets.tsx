@@ -7,6 +7,7 @@ import BudgetCategoryList from '../components/budgets/BudgetCategoryList';
 import BudgetSummary from '../components/budgets/BudgetSummary';
 import CreateBudgetForm from '../components/budgets/CreateBudgetForm';
 import MonthlyBudgetOverview from '../components/budgets/MonthlyBudgetOverview';
+import ConfirmModal from '../components/common/ConfirmModal';
 import EmptyState from '../components/common/EmptyState';
 import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
@@ -30,6 +31,7 @@ const Budgets: FC = () => {
   const [editingCategory, setEditingCategory] = useState<BudgetCategory | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [showCreateBudget, setShowCreateBudget] = useState(false);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
 
   // Use our budget hook to interact with the API
   const {
@@ -179,15 +181,18 @@ const Budgets: FC = () => {
 
   // Handle category deletion
   const handleDeleteCategory = useCallback(
-    async (categoryId: string) => {
+    (categoryId: string) => {
       if (!currentBudget) return;
-
-      if (window.confirm('Are you sure you want to delete this category?')) {
-        await deleteBudgetCategory(currentBudget.id, categoryId);
-      }
+      setDeletingCategoryId(categoryId);
     },
-    [currentBudget, deleteBudgetCategory],
+    [currentBudget],
   );
+
+  const confirmDeleteCategory = useCallback(async () => {
+    if (!currentBudget || !deletingCategoryId) return;
+    await deleteBudgetCategory(currentBudget.id, deletingCategoryId);
+    setDeletingCategoryId(null);
+  }, [currentBudget, deletingCategoryId, deleteBudgetCategory]);
 
   // Render loading state
   if (loading && !currentBudget) {
@@ -343,6 +348,16 @@ const Budgets: FC = () => {
           />
         </Modal>
       )}
+
+      {/* Delete Category Confirm Modal */}
+      <ConfirmModal
+        isOpen={!!deletingCategoryId}
+        onClose={() => setDeletingCategoryId(null)}
+        onConfirm={confirmDeleteCategory}
+        title="Delete Category"
+        message="Are you sure you want to delete this budget category? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 };

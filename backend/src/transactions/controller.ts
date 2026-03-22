@@ -109,13 +109,14 @@ export class TransactionController {
       );
 
       // Basic validation
+      const isTransfer = transactionData.type === 'transfer';
       if (
         !transactionData.date ||
         !transactionData.description ||
         transactionData.amount === undefined ||
         !transactionData.type ||
-        !transactionData.categoryId ||
-        !transactionData.accountId ||
+        (!isTransfer && !transactionData.categoryId) ||
+        (isTransfer && !transactionData.accountId) ||
         !transactionData.status
       ) {
         requestLogger.warn({ userId }, 'Transaction creation failed: Missing required fields');

@@ -1,6 +1,7 @@
 // src/pages/Goals.tsx
 import { FC, useState } from 'react';
 
+import ConfirmModal from '../components/common/ConfirmModal';
 import Modal from '../components/common/Modal';
 import PageHeader from '../components/common/PageHeader';
 import GoalForm from '../components/goals/GoalForm';
@@ -21,6 +22,7 @@ const Goals: FC = () => {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
 
   const {
     goals,
@@ -59,10 +61,14 @@ const Goals: FC = () => {
     }
   };
 
-  const handleDeleteGoal = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
-      await deleteGoal(id);
-    }
+  const handleDeleteGoal = (id: string) => {
+    setDeletingGoalId(id);
+  };
+
+  const confirmDeleteGoal = async () => {
+    if (!deletingGoalId) return;
+    await deleteGoal(deletingGoalId);
+    setDeletingGoalId(null);
   };
 
   // Filter goals by type if activeFilter is set
@@ -147,6 +153,16 @@ const Goals: FC = () => {
       <Modal isOpen={showAddGoal} onClose={handleCloseForm} size="md">
         <GoalForm onClose={handleCloseForm} onSubmit={handleSubmitGoal} initialData={editingGoal} />
       </Modal>
+
+      {/* Delete Goal Confirm Modal */}
+      <ConfirmModal
+        isOpen={!!deletingGoalId}
+        onClose={() => setDeletingGoalId(null)}
+        onConfirm={confirmDeleteGoal}
+        title="Delete Goal"
+        message="Are you sure you want to delete this goal? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 };
