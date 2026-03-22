@@ -221,8 +221,8 @@ export const TransactionProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
 
         if (filters.accountIds && filters.accountIds.length > 0) {
-          filteredTransactions = filteredTransactions.filter((t) =>
-            filters.accountIds!.includes(t.accountId),
+          filteredTransactions = filteredTransactions.filter(
+            (t) => t.accountId != null && filters.accountIds!.includes(t.accountId),
           );
         }
 
