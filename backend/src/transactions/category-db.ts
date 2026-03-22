@@ -49,7 +49,7 @@ export class CategoryModel {
     userId: string,
     updates: Partial<Omit<TransactionCategory, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>,
   ): Promise<TransactionCategory | null> {
-    const updatedCategory = await this.collection.findOneAndUpdate(
+    const result = await this.collection.findOneAndUpdate(
       { _id: new ObjectId(id), userId },
       {
         $set: {
@@ -60,7 +60,7 @@ export class CategoryModel {
       { returnDocument: 'after' },
     );
 
-    return updatedCategory as unknown as TransactionCategory | null;
+    return result.value;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {

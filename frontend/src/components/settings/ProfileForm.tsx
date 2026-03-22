@@ -5,6 +5,7 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
 import authService from '../../services/api/authService';
+import Select from '../common/Select';
 import { UpdateProfileDTO } from '../../types/auth.types';
 
 interface CountryCode {
@@ -196,17 +197,17 @@ const ProfileForm: FC = () => {
             </label>
             <div className="flex gap-2">
               {/* Country code dropdown */}
-              <select
+              <Select
                 value={dialCode}
                 onChange={handleDialChange}
-                className="shrink-0 px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                wrapperClassName="shrink-0"
               >
                 {COUNTRY_CODES.map((c) => (
                   <option key={`${c.name}-${c.dial}`} value={c.dial}>
                     {c.flag} {c.dial}
                   </option>
                 ))}
-              </select>
+              </Select>
               {/* Local number input */}
               <input
                 type="tel"

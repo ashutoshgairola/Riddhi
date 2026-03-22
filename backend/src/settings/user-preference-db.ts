@@ -45,7 +45,7 @@ export class UserPreferencesModel {
       // Create new preferences with defaults
       const defaultPreferences: UserPreferences = {
         userId,
-        currency: 'USD',
+        currency: 'INR',
         dateFormat: 'MM/DD/YYYY',
         theme: 'system',
         startOfWeek: 'sunday',

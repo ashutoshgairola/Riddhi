@@ -5,6 +5,8 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 
 import { useSettings } from '../../contexts/SettingsContext';
 import { UserPreferencesDTO } from '../../types/settings.types';
+import SearchableSelect from '../common/SearchableSelect';
+import Select from '../common/Select';
 
 const CURRENCIES = [
   { value: 'INR', label: 'INR (₹)' },
@@ -64,9 +66,6 @@ const PreferencesForm: FC = () => {
     }
   };
 
-  const inputCls =
-    'w-full md:w-64 px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500';
-
   if (isLoading && !userPreferences.currency) {
     return (
       <div className="flex justify-center py-10">
@@ -81,35 +80,29 @@ const PreferencesForm: FC = () => {
         {/* Currency */}
         <div>
           <h3 className="text-lg font-medium dark:text-gray-100 mb-3">Currency</h3>
-          <select
-            name="currency"
+          <SearchableSelect
+            options={CURRENCIES}
             value={form.currency}
-            onChange={handleChange}
-            className={inputCls}
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setForm((prev) => ({ ...prev, currency: value }))}
+            wrapperClassName="md:w-64"
+          />
         </div>
 
         {/* Date Format */}
         <div>
           <h3 className="text-lg font-medium dark:text-gray-100 mb-3">Date Format</h3>
-          <select
+          <Select
             name="dateFormat"
             value={form.dateFormat}
             onChange={handleChange}
-            className={inputCls}
+            wrapperClassName="md:w-64"
           >
             {DATE_FORMATS.map((f) => (
               <option key={f} value={f}>
                 {f}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         {/* Theme */}
@@ -145,32 +138,32 @@ const PreferencesForm: FC = () => {
         {/* Start of Week */}
         <div>
           <h3 className="text-lg font-medium dark:text-gray-100 mb-3">Start of Week</h3>
-          <select
+          <Select
             name="startOfWeek"
             value={form.startOfWeek}
             onChange={handleChange}
-            className={inputCls}
+            wrapperClassName="md:w-64"
           >
             <option value="sunday">Sunday</option>
             <option value="monday">Monday</option>
-          </select>
+          </Select>
         </div>
 
         {/* Language */}
         <div>
           <h3 className="text-lg font-medium dark:text-gray-100 mb-3">Language</h3>
-          <select
+          <Select
             name="language"
             value={form.language}
             onChange={handleChange}
-            className={inputCls}
+            wrapperClassName="md:w-64"
           >
             {LANGUAGES.map((l) => (
               <option key={l.value} value={l.value}>
                 {l.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         {/* Feedback */}

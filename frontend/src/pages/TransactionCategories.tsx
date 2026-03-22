@@ -21,7 +21,7 @@ const TransactionCategories: FC = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
-  const { categories, loading, error, createCategory, updateCategory, deleteCategory } =
+  const { categories, loading, createCategory, updateCategory, deleteCategory } =
     useTransactionCategories();
 
   // Handle adding a new category
@@ -107,12 +107,6 @@ const TransactionCategories: FC = () => {
           </button>
         }
       />
-
-      {error && (
-        <div className="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-400 rounded-md">
-          Error loading categories: {error.message}
-        </div>
-      )}
 
       <div className="mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-6">

@@ -12,6 +12,7 @@ export interface User {
   profileImageUrl?: string;
   createdAt: Date;
   lastLogin?: Date;
+  isFirstLogin?: boolean;
 }
 
 export interface UserDTO {
@@ -23,6 +24,7 @@ export interface UserDTO {
   profileImageUrl?: string;
   createdAt: string;
   lastLogin?: string;
+  isFirstLogin: boolean;
   token?: string;
 }
 

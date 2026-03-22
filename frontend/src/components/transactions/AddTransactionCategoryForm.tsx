@@ -6,6 +6,7 @@ import { AlertCircle } from 'lucide-react';
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import { CategoryCreateDTO, CategoryUpdateDTO } from '../../services/api/categoryService';
 import { TransactionCategory } from '../../types/transaction.types';
+import SearchableSelect from '../common/SearchableSelect';
 import IconSelector from '../common/IconSelector';
 import { ModalFooter, ModalHeader } from '../common/Modal';
 
@@ -226,19 +227,12 @@ const AddTransactionCategoryForm: FC<AddTransactionCategoryFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Parent Category
           </label>
-          <select
-            name="parentId"
+          <SearchableSelect
+            options={parentCategories.map((c) => ({ value: c.id, label: c.name }))}
             value={formData.parentId || ''}
-            onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            <option value="">None (Make this a main category)</option>
-            {parentCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => setFormData({ ...formData, parentId: value || undefined })}
+            emptyLabel="None (Make this a main category)"
+          />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {formData.parentId ? 'This will be a subcategory' : 'This will be a main category'}
           </p>

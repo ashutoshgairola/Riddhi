@@ -164,7 +164,7 @@ export class SettingsService {
         name: account.name,
         type: account.type as AccountType,
         balance: account.balance,
-        currency: 'USD', // Default for mock
+        currency: 'INR',
         institutionName: connectionDetails.institutionName,
         institutionLogo: connectionDetails.institutionLogo,
         lastUpdated: new Date(),

@@ -5,6 +5,7 @@ import { BudgetModel } from '../../budgets/db';
 import { getErrorMessage } from '../../common/utils';
 import { createChildLogger } from '../../config/logger';
 import { NotificationService } from '../../notifications/service';
+import { UserPreferencesModel } from '../../settings/user-preference-db';
 import { CategoryModel } from '../../transactions/category-db';
 import { TransactionModel } from '../../transactions/db';
 import { JobResult } from '../types/interface';
@@ -27,6 +28,7 @@ export function createMonthlyReportsJob(db: Db, notificationService: Notificatio
   const transactionModel = new TransactionModel(db);
   const budgetModel = new BudgetModel(db);
   const categoryModel = new CategoryModel(db);
+  const preferencesModel = new UserPreferencesModel(db);
 
   return async (): Promise<JobResult> => {
     const errors: string[] = [];
@@ -117,17 +119,20 @@ export function createMonthlyReportsJob(db: Db, notificationService: Notificatio
           }
 
           // Send notification
+          const userPrefs = await preferencesModel.findByUserId(userId);
+          const currency = userPrefs?.currency ?? 'INR';
+
           await notificationService.send({
             userId,
             payload: {
               type: 'monthly_report',
-              userName: '', // populated by notification service or left for template
+              userName: '',
               month: monthLabel,
               totalIncome: Math.round(totalIncome * 100) / 100,
               totalExpenses: Math.round(totalExpenses * 100) / 100,
               netSavings: Math.round(netSavings * 100) / 100,
               topCategories,
-              currency: '₹', // TODO: pull from user preferences
+              currency,
               budgetUtilization,
             },
           });

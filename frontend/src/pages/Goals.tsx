@@ -25,7 +25,6 @@ const Goals: FC = () => {
   const {
     goals,
     loading,
-    error,
     createGoal,
     updateGoal,
     deleteGoal,
@@ -94,13 +93,6 @@ const Goals: FC = () => {
           </button>
         }
       />
-
-      {/* Error banner */}
-      {error && (
-        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
-          {error.message || 'Failed to load goals. Please try again.'}
-        </div>
-      )}
 
       {/* Filter tabs — horizontally scrollable on mobile */}
       <div className="mt-4 sm:mt-6 flex space-x-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">

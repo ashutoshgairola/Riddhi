@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../common/utils';
 import { createChildLogger } from '../../config/logger';
 import { NotificationLogModel } from '../../notifications/db';
 import { NotificationService } from '../../notifications/service';
+import { UserPreferencesModel } from '../../settings/user-preference-db';
 import { JobResult } from '../types/interface';
 
 const logger = createChildLogger({ job: 'BudgetAlerts' });
@@ -22,10 +23,21 @@ const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours between repeat alerts per c
 export function createBudgetAlertsJob(db: Db, notificationService: NotificationService) {
   const budgetModel = new BudgetModel(db);
   const notificationLogModel = new NotificationLogModel(db);
+  const preferencesModel = new UserPreferencesModel(db);
 
   return async (): Promise<JobResult> => {
     const errors: string[] = [];
     let processedCount = 0;
+    // Cache currency per userId within this run to avoid redundant DB calls
+    const currencyCache = new Map<string, string>();
+
+    const getUserCurrency = async (userId: string): Promise<string> => {
+      if (currencyCache.has(userId)) return currencyCache.get(userId) ?? 'INR';
+      const userPrefs = await preferencesModel.findByUserId(userId);
+      const currency = userPrefs?.currency ?? 'INR';
+      currencyCache.set(userId, currency);
+      return currency;
+    };
 
     try {
       const now = new Date();
@@ -66,8 +78,11 @@ export function createBudgetAlertsJob(db: Db, notificationService: NotificationS
 
               if (recentAlert) continue; // already notified
 
+              const currency = await getUserCurrency(budget.userId);
+
               await notificationService.send({
                 userId: budget.userId,
+                dedupeKey,
                 payload: {
                   type: 'budget_alert',
                   userName: '',
@@ -76,7 +91,7 @@ export function createBudgetAlertsJob(db: Db, notificationService: NotificationS
                   spent: Math.round(category.spent * 100) / 100,
                   allocated: Math.round(category.allocated * 100) / 100,
                   percentUsed,
-                  currency: '₹', // TODO: pull from user preferences
+                  currency,
                 },
               });
 

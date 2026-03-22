@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import { FC } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 
 import PageHeader from '../components/common/PageHeader';
 import BudgetProgressWidget from '../components/dashboard/BudgetProgressWidget';
@@ -8,15 +8,38 @@ import ExpenseBreakdownWidget from '../components/dashboard/ExpenseBreakdownWidg
 import FinancialSummaryWidget from '../components/dashboard/FinancialSummaryWidget';
 import GoalsWidget from '../components/dashboard/GoalsWidget';
 import RecentTransactionsWidget from '../components/dashboard/RecentTransactionsWidget';
+import GettingStartedCard from '../components/onboarding/GettingStartedCard';
+import OnboardingWizard from '../components/onboarding/OnboardingWizard';
+import { useAuth } from '../hooks/useAuth';
 import { useDashboard } from '../hooks/useDashboard';
 
 const Dashboard: FC = () => {
   const { data, loading } = useDashboard();
+  const { user, markWizardSeen } = useAuth();
+  const hasTransactions = (data?.recentTransactions?.length ?? 0) > 0;
+  const [showWizard, setShowWizard] = useState(false);
+  const autoOpenedRef = useRef(false);
+
+  // Auto-open wizard on first login (server-driven flag)
+  useEffect(() => {
+    if (!user || autoOpenedRef.current) return;
+    if (user.isFirstLogin) {
+      autoOpenedRef.current = true;
+      setShowWizard(true);
+    }
+  }, [user]);
+
+  const handleWizardComplete = async () => {
+    setShowWizard(false);
+    await markWizardSeen();
+  };
 
   const currentMonth = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
 
   return (
     <div>
+      {showWizard && <OnboardingWizard onComplete={handleWizardComplete} />}
+      <GettingStartedCard hasTransactions={hasTransactions} onStartWizard={() => setShowWizard(true)} />
       <PageHeader
         title="Dashboard"
         subtitle="Your financial overview"

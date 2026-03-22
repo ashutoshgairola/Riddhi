@@ -201,11 +201,11 @@ const Budgets: FC = () => {
   // Render error state
   if (error && !currentBudget) {
     return (
-      <div className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 p-4 rounded-lg">
-        <p>Error loading budget: {error.message}</p>
+      <div className="p-6 text-center">
+        <p className="text-gray-500 dark:text-gray-400 mb-3">Failed to load budget data.</p>
         <button
           onClick={() => fetchCurrentBudget()}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
         >
           Retry
         </button>

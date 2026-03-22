@@ -2,6 +2,7 @@
 import { FC, useState } from 'react';
 
 import { CreateGoalRequest, Goal, GoalType, UpdateGoalRequest } from '../../types/goal.types';
+import Select from '../common/Select';
 import { ModalFooter, ModalHeader } from '../common/Modal';
 
 interface GoalFormProps {
@@ -269,16 +270,11 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData, isLoading
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Priority
           </label>
-          <select
-            name="priority"
-            value={formData.priority}
-            onChange={handleChange}
-            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
+          <Select name="priority" value={formData.priority} onChange={handleChange}>
             <option value="1">High</option>
             <option value="2">Medium</option>
             <option value="3">Low</option>
-          </select>
+          </Select>
         </div>
 
         <div className="mb-4">
@@ -286,17 +282,12 @@ const GoalForm: FC<GoalFormProps> = ({ onClose, onSubmit, initialData, isLoading
             Regular Contribution
           </label>
           <div className="grid grid-cols-2 gap-4">
-            <select
-              name="contributionFrequency"
-              value={formData.contributionFrequency}
-              onChange={handleChange}
-              className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
+            <Select name="contributionFrequency" value={formData.contributionFrequency} onChange={handleChange}>
               <option value="">None</option>
               <option value="weekly">Weekly</option>
               <option value="biweekly">Bi-weekly</option>
               <option value="monthly">Monthly</option>
-            </select>
+            </Select>
 
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">

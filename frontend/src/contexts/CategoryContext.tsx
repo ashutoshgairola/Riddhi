@@ -54,9 +54,14 @@ export const CategoryProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [isAuthenticated, authLoading]);
 
-  // Fetch once on mount after auth is ready
+  // Fetch once after auth is ready; reset on logout so re-login gets fresh data
   useEffect(() => {
-    if (isAuthenticated && !authLoading && !hasFetchedRef.current) {
+    if (!isAuthenticated) {
+      hasFetchedRef.current = false;
+      setCategories([]);
+      return;
+    }
+    if (!authLoading && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchCategories();
     }

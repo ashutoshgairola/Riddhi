@@ -53,16 +53,24 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Load current budget and history after authentication is confirmed
   useEffect(() => {
+    // Reset on logout so re-login fetches fresh data
+    if (!isAuthenticated) {
+      hasLoadedCurrentRef.current = false;
+      hasLoadedHistoryRef.current = false;
+      setCurrentBudget(null);
+      setBudgetHistory([]);
+      return;
+    }
     // Only fetch data if authenticated and auth check is complete
-    if (isAuthenticated && !authLoading) {
+    if (!authLoading) {
       const loadInitialData = async () => {
         // Load current budget if not already loaded
         if (!hasLoadedCurrentRef.current) {
+          hasLoadedCurrentRef.current = true;
           setIsLoading(true);
           try {
             const response = await budgetService.getCurrentBudget();
             setCurrentBudget(response.data);
-            hasLoadedCurrentRef.current = true;
             setError(null);
           } catch (err) {
             console.error('Error loading current budget:', err);
@@ -74,11 +82,11 @@ export const BudgetProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         // Load budget history if not already loaded
         if (!hasLoadedHistoryRef.current) {
+          hasLoadedHistoryRef.current = true;
           setIsLoading(true);
           try {
             const response = await budgetService.getBudgetHistory();
             setBudgetHistory(response.data.items || []);
-            hasLoadedHistoryRef.current = true;
             setError(null);
           } catch (err) {
             console.error('Error loading budget history:', err);

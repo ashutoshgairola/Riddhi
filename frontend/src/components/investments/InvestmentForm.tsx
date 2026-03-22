@@ -9,6 +9,8 @@ import {
   InvestmentType,
   UpdateInvestmentRequest,
 } from '../../types/investment.types';
+import SearchableSelect from '../common/SearchableSelect';
+import Select from '../common/Select';
 import { ModalFooter, ModalHeader } from '../common/Modal';
 
 interface InvestmentFormProps {
@@ -16,6 +18,16 @@ interface InvestmentFormProps {
   onSubmit?: (data: CreateInvestmentRequest | UpdateInvestmentRequest) => void;
   initialData?: Investment | null;
 }
+
+const CURRENCY_OPTIONS = [
+  { value: 'INR', label: 'INR (₹)' },
+  { value: 'USD', label: 'USD ($)' },
+  { value: 'EUR', label: 'EUR (€)' },
+  { value: 'GBP', label: 'GBP (£)' },
+  { value: 'JPY', label: 'JPY (¥)' },
+  { value: 'CAD', label: 'CAD ($)' },
+  { value: 'AUD', label: 'AUD ($)' },
+];
 
 const InvestmentForm: FC<InvestmentFormProps> = ({ onClose, onSubmit, initialData }) => {
   const { isDark } = useTheme();
@@ -123,31 +135,19 @@ const InvestmentForm: FC<InvestmentFormProps> = ({ onClose, onSubmit, initialDat
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           <div>
             <label className={labelClass}>Asset Class*</label>
-            <select
-              name="assetClass"
-              value={formData.assetClass}
-              onChange={handleChange}
-              required
-              className={inputClass}
-            >
+            <Select name="assetClass" value={formData.assetClass} onChange={handleChange} required>
               <option value="stocks">Stocks</option>
               <option value="bonds">Bonds</option>
               <option value="cash">Cash</option>
               <option value="alternatives">Alternatives</option>
               <option value="real_estate">Real Estate</option>
               <option value="other">Other</option>
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className={labelClass}>Investment Type*</label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              required
-              className={inputClass}
-            >
+            <Select name="type" value={formData.type} onChange={handleChange} required>
               <option value="etf">ETF</option>
               <option value="individual_stock">Individual Stock</option>
               <option value="mutual_fund">Mutual Fund</option>
@@ -156,7 +156,7 @@ const InvestmentForm: FC<InvestmentFormProps> = ({ onClose, onSubmit, initialDat
               <option value="options">Options</option>
               <option value="reit">REIT</option>
               <option value="other">Other</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -227,16 +227,11 @@ const InvestmentForm: FC<InvestmentFormProps> = ({ onClose, onSubmit, initialDat
 
           <div>
             <label className={labelClass}>Account</label>
-            <select
-              name="accountId"
-              value={formData.accountId}
-              onChange={handleChange}
-              className={inputClass}
-            >
+            <Select name="accountId" value={formData.accountId} onChange={handleChange}>
               <option value="1">Retirement Account</option>
               <option value="2">Brokerage Account</option>
               <option value="3">Roth IRA</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -283,20 +278,11 @@ const InvestmentForm: FC<InvestmentFormProps> = ({ onClose, onSubmit, initialDat
 
         <div className="mb-4">
           <label className={labelClass}>Currency</label>
-          <select
-            name="currency"
+          <SearchableSelect
+            options={CURRENCY_OPTIONS}
             value={formData.currency}
-            onChange={handleChange}
-            className={inputClass}
-          >
-            <option value="INR">INR (₹)</option>
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="GBP">GBP (£)</option>
-            <option value="JPY">JPY (¥)</option>
-            <option value="CAD">CAD ($)</option>
-            <option value="AUD">AUD ($)</option>
-          </select>
+            onChange={(value) => setFormData({ ...formData, currency: value })}
+          />
         </div>
 
         <div className="mb-6">

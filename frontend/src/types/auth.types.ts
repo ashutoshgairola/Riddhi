@@ -7,25 +7,8 @@ export interface User {
   phone?: string;
   profileImageUrl?: string;
   createdAt: string;
-  lastLogin: string;
-}
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  profileImageUrl?: string;
-  createdAt: string;
   updatedAt: string;
+  isFirstLogin: boolean;
 }
 
 export interface AuthResponse {

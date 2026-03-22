@@ -1,0 +1,12 @@
+.git
+.github
+.claude
+*.md
+*.png
+*.log
+.env.local
+.DS_Store
+node_modules
+coverage
+.eslintcache
+Riddhi-API.postman_collection.json

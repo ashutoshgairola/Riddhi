@@ -2,7 +2,9 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 
 import debounce from 'lodash/debounce';
-import { Filter, Search, X } from 'lucide-react';
+import { ChevronDown, Filter, Search, X } from 'lucide-react';
+
+import Select from '../common/Select';
 
 import { useTransactionCategories } from '../../hooks/useTransactionCategories';
 import {
@@ -19,6 +21,9 @@ interface TransactionFiltersProps {
 const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChange }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState<FilterType>(filters);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const [catQuery, setCatQuery] = useState('');
+  const catDropdownRef = useRef<HTMLDivElement>(null);
   const { categories } = useTransactionCategories();
 
   // Create a reference to store the previous filters for comparison
@@ -32,6 +37,17 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
     }, 500),
     [onFilterChange],
   );
+
+  // Close category dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) {
+        setCatDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Update local filters when parent filters change
   useEffect(() => {
@@ -74,12 +90,10 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
     }));
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedCategories = Array.from(e.target.selectedOptions).map((option) => option.value);
-
+  const handleCategoryChange = (ids: string[]) => {
     setLocalFilters((prev) => ({
       ...prev,
-      categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
+      categoryIds: ids.length > 0 ? ids : undefined,
     }));
   };
 
@@ -303,36 +317,77 @@ const TransactionFilters: FC<TransactionFiltersProps> = ({ filters, onFilterChan
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Categories
               </label>
-              <select
-                className="px-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                multiple
-                size={3}
-                value={localFilters.categoryIds || []}
-                onChange={handleCategoryChange}
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+              <div ref={catDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => { setCatDropdownOpen(!catDropdownOpen); setCatQuery(''); }}
+                  className="w-full flex items-center justify-between px-3 py-3 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <span className={localFilters.categoryIds?.length ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}>
+                    {localFilters.categoryIds?.length ? `${localFilters.categoryIds.length} selected` : 'All categories'}
+                  </span>
+                  <ChevronDown size={16} className={`text-gray-400 transition-transform ${catDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {catDropdownOpen && (
+                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg overflow-hidden">
+                    {categories.length > 4 && (
+                      <div className="p-2 border-b border-gray-100 dark:border-gray-700">
+                        <div className="relative">
+                          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                          <input
+                            type="text"
+                            value={catQuery}
+                            onChange={(e) => setCatQuery(e.target.value)}
+                            placeholder="Search…"
+                            className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="max-h-48 overflow-y-auto p-1">
+                      {categories
+                        .filter((c) => !catQuery || c.name.toLowerCase().includes(catQuery.toLowerCase()))
+                        .map((category) => (
+                          <label
+                            key={category.id}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-gray-100"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={localFilters.categoryIds?.includes(category.id) ?? false}
+                              onChange={(e) => {
+                                const current = localFilters.categoryIds || [];
+                                handleCategoryChange(
+                                  e.target.checked
+                                    ? [...current, category.id]
+                                    : current.filter((id) => id !== category.id),
+                                );
+                              }}
+                              className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            />
+                            {category.name}
+                          </label>
+                        ))}
+                      {categories.length === 0 && (
+                        <p className="px-3 py-3 text-sm text-center text-gray-400 dark:text-gray-500">No categories</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Status
               </label>
-              <select
-                className="px-3 py-2 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={localFilters.status?.[0] || ''}
-                onChange={handleStatusChange}
-              >
+              <Select value={localFilters.status?.[0] || ''} onChange={handleStatusChange}>
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
                 <option value="cleared">Cleared</option>
                 <option value="reconciled">Reconciled</option>
                 <option value="void">Void</option>
-              </select>
+              </Select>
             </div>
 
             <div>

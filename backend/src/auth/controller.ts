@@ -319,6 +319,17 @@ export class AuthController {
     }
   };
 
+  markWizardSeen = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.body.user;
+      const updatedProfile = await this.authService.markWizardSeen(userId);
+      sendResponse({ res, data: updatedProfile, message: 'Onboarding marked as complete' });
+    } catch (error) {
+      log.error('💥 Mark wizard seen failed', { context: this.context, error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
   changePassword = async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.body.user;

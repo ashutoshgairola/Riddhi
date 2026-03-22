@@ -185,6 +185,14 @@ export class AuthService {
     } as jwt.SignOptions);
   }
 
+  async markWizardSeen(userId: string): Promise<UserDTO> {
+    const updatedUser = await this.userModel.markWizardSeen(userId);
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return this.mapUserToDTO(updatedUser);
+  }
+
   private mapUserToDTO(user: User, token?: string): UserDTO {
     const userDTO: UserDTO = {
       id: user._id?.toString() ?? user.id ?? '',
@@ -195,6 +203,7 @@ export class AuthService {
       profileImageUrl: user.profileImageUrl,
       createdAt: user.createdAt.toISOString(),
       lastLogin: user.lastLogin ? user.lastLogin.toISOString() : undefined,
+      isFirstLogin: user.isFirstLogin ?? false,
     };
 
     if (token) {

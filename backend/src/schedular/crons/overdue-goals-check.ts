@@ -3,8 +3,12 @@ import { Db } from 'mongodb';
 import { getErrorMessage } from '../../common/utils';
 import { createChildLogger } from '../../config/logger';
 import { GoalModel } from '../../goals/db';
+import { NotificationLogModel } from '../../notifications/db';
 import { NotificationService } from '../../notifications/service';
+import { UserPreferencesModel } from '../../settings/user-preference-db';
 import { JobResult } from '../types/interface';
+
+const COOLDOWN_MS = 24 * 60 * 60 * 1000; // one alert per overdue goal per day
 
 const logger = createChildLogger({ job: 'OverdueGoalsCheck' });
 
@@ -16,10 +20,21 @@ const logger = createChildLogger({ job: 'OverdueGoalsCheck' });
  */
 export function createOverdueGoalsCheckJob(db: Db, notificationService: NotificationService) {
   const goalModel = new GoalModel(db);
+  const notificationLogModel = new NotificationLogModel(db);
+  const preferencesModel = new UserPreferencesModel(db);
 
   return async (): Promise<JobResult> => {
     const errors: string[] = [];
     let processedCount = 0;
+    const currencyCache = new Map<string, string>();
+
+    const getUserCurrency = async (userId: string): Promise<string> => {
+      if (currencyCache.has(userId)) return currencyCache.get(userId) ?? 'INR';
+      const userPrefs = await preferencesModel.findByUserId(userId);
+      const currency = userPrefs?.currency ?? 'INR';
+      currencyCache.set(userId, currency);
+      return currency;
+    };
 
     try {
       const now = new Date();
@@ -36,13 +51,28 @@ export function createOverdueGoalsCheckJob(db: Db, notificationService: Notifica
 
       for (const goal of overdueGoals) {
         try {
+          const dedupeKey = `overdue_goal:${goal._id?.toString() ?? ''}`;
+
+          const recentAlert = await notificationLogModel.findRecentByDedupeKey(
+            goal.userId,
+            'goal_progress',
+            'sent',
+            dedupeKey,
+            new Date(Date.now() - COOLDOWN_MS),
+          );
+
+          if (recentAlert) continue;
+
           const percentComplete =
             goal.targetAmount > 0
               ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100))
               : 0;
 
+          const currency = await getUserCurrency(goal.userId);
+
           await notificationService.send({
             userId: goal.userId,
+            dedupeKey,
             payload: {
               type: 'goal_progress',
               userName: '',
@@ -50,7 +80,7 @@ export function createOverdueGoalsCheckJob(db: Db, notificationService: Notifica
               currentAmount: goal.currentAmount,
               targetAmount: goal.targetAmount,
               percentComplete,
-              currency: '₹', // TODO: pull from user preferences
+              currency,
             },
           });
 

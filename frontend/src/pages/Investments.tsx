@@ -30,7 +30,6 @@ const Investments: FC = () => {
     allocations,
     performance,
     loading,
-    error,
     createInvestment,
     updateInvestment,
     deleteInvestment,
@@ -97,13 +96,6 @@ const Investments: FC = () => {
         }
       />
 
-      {error && (
-        <div
-          className={`mt-4 p-3 rounded-lg text-sm border ${isDark ? 'bg-red-900/20 border-red-700 text-red-400' : 'bg-red-50 border-red-200 text-red-700'}`}
-        >
-          {error.message}
-        </div>
-      )}
 
       {/* Portfolio summary — 1 col on mobile, 3 col on md+ */}
       <div className="mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-4">

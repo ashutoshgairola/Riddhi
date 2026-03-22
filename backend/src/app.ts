@@ -58,7 +58,10 @@ export class App {
   private configureMiddleware(): void {
     // Security middleware
     this.app.use(helmet());
-    this.app.use(cors({ origin: 'http://localhost:5173' }));
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+      : ['http://localhost:5173'];
+    this.app.use(cors({ origin: allowedOrigins }));
 
     // Request parsing middleware
     this.app.use(express.json());

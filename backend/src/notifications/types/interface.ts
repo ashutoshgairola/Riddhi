@@ -106,6 +106,8 @@ export interface SendNotificationOptions {
   email?: string;
   phone?: string;
   pushSubscription?: PushSubscriptionData;
+  /** Used for deduplication — stored in notification log metadata */
+  dedupeKey?: string;
   payload: NotificationPayload;
 }
 

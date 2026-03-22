@@ -73,17 +73,29 @@ export class NotificationService {
     // Dispatch to each enabled channel concurrently
     const dispatches: Promise<void>[] = [];
 
+    const { dedupeKey } = options;
+
     if (enabledChannels.includes('email') && options.email) {
-      dispatches.push(this.sendEmailNotification(userId, notificationType, options.email, payload));
+      dispatches.push(
+        this.sendEmailNotification(userId, notificationType, options.email, payload, dedupeKey),
+      );
     }
 
     if (enabledChannels.includes('sms') && options.phone) {
-      dispatches.push(this.sendSmsNotification(userId, notificationType, options.phone, payload));
+      dispatches.push(
+        this.sendSmsNotification(userId, notificationType, options.phone, payload, dedupeKey),
+      );
     }
 
     if (enabledChannels.includes('push') && options.pushSubscription) {
       dispatches.push(
-        this.sendPushNotification(userId, notificationType, options.pushSubscription, payload),
+        this.sendPushNotification(
+          userId,
+          notificationType,
+          options.pushSubscription,
+          payload,
+          dedupeKey,
+        ),
       );
     } else if (enabledChannels.includes('push') && !options.pushSubscription) {
       // Fall back to all stored subscriptions for this user
@@ -95,6 +107,7 @@ export class NotificationService {
             notificationType,
             { endpoint: sub.endpoint, keys: sub.keys },
             payload,
+            dedupeKey,
           ),
         );
       }
@@ -154,26 +167,24 @@ export class NotificationService {
     type: NotificationType,
     email: string,
     payload: SendNotificationOptions['payload'],
+    dedupeKey?: string,
   ): Promise<void> {
+    // Render first so we can store the real subject in the log
+    const { subject, html } = renderEmail(payload);
+
     const log = await this.logModel.create({
       userId,
       type,
       channel: 'email',
-      subject: '',
+      subject,
       status: 'pending',
+      metadata: dedupeKey ? { dedupeKey } : undefined,
       createdAt: new Date(),
     });
 
     try {
-      const { subject, html } = renderEmail(payload);
-
-      // Update log with subject
-      await this.logModel.updateStatus(log._id?.toString() ?? '', 'pending');
-
       await sendEmail({ to: email, subject, html });
-
       await this.logModel.updateStatus(log._id?.toString() ?? '', 'sent');
-
       this.logger.info({ userId, type, channel: 'email' }, 'Email notification sent');
     } catch (error: unknown) {
       await this.logModel.updateStatus(log._id?.toString() ?? '', 'failed', getErrorMessage(error));
@@ -186,6 +197,7 @@ export class NotificationService {
     type: NotificationType,
     phone: string,
     payload: SendNotificationOptions['payload'],
+    dedupeKey?: string,
   ): Promise<void> {
     const log = await this.logModel.create({
       userId,
@@ -193,19 +205,17 @@ export class NotificationService {
       channel: 'sms',
       subject: TYPE_TO_SETTING_NAME[type],
       status: 'pending',
+      metadata: dedupeKey ? { dedupeKey } : undefined,
       createdAt: new Date(),
     });
 
     try {
       const message = renderSms(payload);
-
       await sendSms({ to: phone, message });
-
-      await this.logModel.updateStatus(log._id!.toString(), 'sent');
-
+      await this.logModel.updateStatus(log._id?.toString() ?? '', 'sent');
       this.logger.info({ userId, type, channel: 'sms' }, 'SMS notification sent');
     } catch (error: unknown) {
-      await this.logModel.updateStatus(log._id!.toString(), 'failed', getErrorMessage(error));
+      await this.logModel.updateStatus(log._id?.toString() ?? '', 'failed', getErrorMessage(error));
       this.logger.error({ userId, type, channel: 'sms', error }, 'SMS notification failed');
     }
   }
@@ -215,6 +225,7 @@ export class NotificationService {
     type: NotificationType,
     subscription: SendNotificationOptions['pushSubscription'],
     payload: SendNotificationOptions['payload'],
+    dedupeKey?: string,
   ): Promise<void> {
     if (!subscription) return;
 
@@ -224,6 +235,7 @@ export class NotificationService {
       channel: 'push',
       subject: TYPE_TO_SETTING_NAME[type],
       status: 'pending',
+      metadata: dedupeKey ? { dedupeKey } : undefined,
       createdAt: new Date(),
     });
 
@@ -237,12 +249,20 @@ export class NotificationService {
         url: '/',
       });
 
-      await this.logModel.updateStatus(log._id!.toString(), 'sent');
+      await this.logModel.updateStatus(log._id?.toString() ?? '', 'sent');
 
       this.logger.info({ userId, type, channel: 'push' }, 'Push notification sent');
     } catch (error: unknown) {
-      await this.logModel.updateStatus(log._id!.toString(), 'failed', getErrorMessage(error));
-      this.logger.error({ userId, type, channel: 'push', error }, 'Push notification failed');
+      const msg = getErrorMessage(error);
+      await this.logModel.updateStatus(log._id?.toString() ?? '', 'failed', msg);
+
+      // Expired or unregistered subscription — remove it so we stop trying
+      if (msg === 'Push subscription expired') {
+        await this.pushSubModel.deleteByEndpoint(userId, subscription.endpoint);
+        this.logger.info({ userId, endpoint: subscription.endpoint }, 'Removed expired push subscription');
+      } else {
+        this.logger.error({ userId, type, channel: 'push', error }, 'Push notification failed');
+      }
     }
   }
 }

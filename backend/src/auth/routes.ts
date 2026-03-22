@@ -27,6 +27,7 @@ export class AuthRoutes {
 
     this.router.get('/profile', this.controller.getProfile);
     this.router.put('/profile', this.controller.updateProfile);
+    this.router.patch('/onboarding', this.controller.markWizardSeen);
     this.router.put('/change-password', this.controller.changePassword);
   }
 

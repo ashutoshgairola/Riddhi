@@ -1,7 +1,7 @@
 // src/pages/Reports.tsx
 import { FC, useCallback, useEffect, useState } from 'react';
 
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 import wallet05 from '../assets/empty-states/Wallet 05.svg';
 import EmptyState from '../components/common/EmptyState';
@@ -33,7 +33,6 @@ const Reports: FC = () => {
     netWorth,
     budgetPerformance,
     loading,
-    error,
     fetchIncomeExpense,
     fetchNetWorth,
   } = useReports();
@@ -135,15 +134,6 @@ const Reports: FC = () => {
         </button>
       </div>
 
-      {/* Error banner */}
-      {error && (
-        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg text-sm flex items-center gap-2">
-          <AlertCircle size={16} />
-          {typeof error === 'object' && 'message' in error
-            ? (error as { message: string }).message
-            : 'Failed to load report data'}
-        </div>
-      )}
 
       {/* Report Type Tabs — horizontally scrollable on mobile */}
       <div className="mt-4 sm:mt-6 flex space-x-2 overflow-x-auto pb-1 -mx-1 px-1">

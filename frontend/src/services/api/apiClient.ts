@@ -1,6 +1,8 @@
 // src/services/api/apiClient.ts
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
+import { notifyApiError } from './apiErrorBridge';
+
 // Types for API responses
 export interface ApiResponse<T> {
   data: T;
@@ -71,6 +73,12 @@ export class ApiClient {
           // Clear local storage and redirect to login
           localStorage.removeItem('auth_token');
           window.location.href = '/login';
+        } else {
+          // Skip toast for auth routes — those pages handle errors inline
+          const url = (error.config?.url ?? '');
+          if (!url.includes('/api/auth')) {
+            notifyApiError(apiError.message);
+          }
         }
 
         return Promise.reject(apiError);

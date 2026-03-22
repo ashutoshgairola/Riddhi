@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.tsx
-import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { ApiError } from '../services/api/apiClient';
 import authService from '../services/api/authService';
@@ -28,6 +28,7 @@ interface AuthContextType {
   confirmPasswordReset: (data: ResetPasswordConfirmDTO) => Promise<boolean>;
   changePassword: (data: ChangePasswordDTO) => Promise<boolean>;
   updateProfile: (data: UpdateProfileDTO) => Promise<boolean>;
+  markWizardSeen: () => Promise<void>;
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
@@ -120,8 +121,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     checkAuthStatus();
   }, [authInitialized]);
 
-  // Force check authentication status
-  const checkAuth = async (): Promise<boolean> => {
+  // Force check authentication status (memoized so consumers using it as an effect dep don't loop)
+  const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true }));
 
@@ -182,7 +183,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       return false;
     }
-  };
+  }, []);
 
   // Login function
   const login = async (data: LoginDTO): Promise<boolean> => {
@@ -237,7 +238,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Logout function
   const logout = () => {
     authService.logout();
-
+    // Clear onboarding flags so the next user on this device gets the wizard
+    localStorage.removeItem('riddhi_wizard_auto_shown_v1');
+    localStorage.removeItem('riddhi_wizard_dismissed_v2');
+    localStorage.removeItem('riddhi_onboarding_dismissed_v1');
     setAuthState({
       isAuthenticated: false,
       user: null,
@@ -352,6 +356,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
+  // Mark wizard as seen — flips isFirstLogin to false on the server and updates local state
+  const markWizardSeen = async (): Promise<void> => {
+    try {
+      const response = await authService.markWizardSeen();
+      const updatedUser = response.data;
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setAuthState((prev) => ({ ...prev, user: updatedUser }));
+    } catch (err) {
+      console.error('Failed to mark wizard as seen:', err);
+    }
+  };
+
   const value = {
     authState,
     login,
@@ -361,6 +377,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     confirmPasswordReset,
     changePassword,
     updateProfile,
+    markWizardSeen,
     isAuthenticated: authState.isAuthenticated,
     user: authState.user,
     loading: authState.loading,

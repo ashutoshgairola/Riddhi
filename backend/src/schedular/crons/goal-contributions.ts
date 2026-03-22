@@ -6,6 +6,7 @@ import { createChildLogger } from '../../config/logger';
 import { GoalModel } from '../../goals/db';
 import { Goal } from '../../goals/types/interface';
 import { NotificationService } from '../../notifications/service';
+import { UserPreferencesModel } from '../../settings/user-preference-db';
 import { JobResult } from '../types/interface';
 
 const logger = createChildLogger({ job: 'GoalContributions' });
@@ -28,11 +29,21 @@ const logger = createChildLogger({ job: 'GoalContributions' });
  */
 export function createGoalContributionsJob(db: Db, notificationService?: NotificationService) {
   const goalModel = new GoalModel(db);
+  const preferencesModel = new UserPreferencesModel(db);
 
   return async (): Promise<JobResult> => {
     const errors: string[] = [];
     let processedCount = 0;
     const milestoneThresholds = [25, 50, 75, 100];
+    const currencyCache = new Map<string, string>();
+
+    const getUserCurrency = async (userId: string): Promise<string> => {
+      if (currencyCache.has(userId)) return currencyCache.get(userId) ?? 'INR';
+      const userPrefs = await preferencesModel.findByUserId(userId);
+      const currency = userPrefs?.currency ?? 'INR';
+      currencyCache.set(userId, currency);
+      return currency;
+    };
 
     try {
       const today = dayjs().startOf('day');
@@ -106,6 +117,8 @@ export function createGoalContributionsJob(db: Db, notificationService?: Notific
             for (const threshold of milestoneThresholds) {
               if (prevPercent < threshold && newPercent >= threshold) {
                 try {
+                  const currency = await getUserCurrency(goal.userId);
+
                   await notificationService.send({
                     userId: goal.userId,
                     payload: {
@@ -115,7 +128,7 @@ export function createGoalContributionsJob(db: Db, notificationService?: Notific
                       currentAmount: newAmount,
                       targetAmount: goal.targetAmount,
                       percentComplete: Math.min(100, Math.round(newPercent)),
-                      currency: '₹',
+                      currency,
                     },
                   });
                 } catch (notifError: unknown) {

@@ -24,6 +24,7 @@ export class UserModel {
       ...user,
       password: hashedPassword,
       createdAt: dayjs().toDate(),
+      isFirstLogin: true,
     };
 
     const result = await this.collection.insertOne(newUser);
@@ -55,6 +56,15 @@ export class UserModel {
     );
 
     return result.modifiedCount === 1;
+  }
+
+  async markWizardSeen(id: string): Promise<User | null> {
+    const result = await this.collection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { isFirstLogin: false, updatedAt: dayjs().toDate() } },
+      { returnDocument: 'after', includeResultMetadata: false },
+    );
+    return result as User | null;
   }
 
   async updateLastLogin(id: string): Promise<boolean> {

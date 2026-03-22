@@ -88,6 +88,10 @@ class AuthService {
 
   // ----- Auth Status Helpers -----
 
+  public async markWizardSeen(): Promise<ApiResponse<User>> {
+    return apiClient.patch<ApiResponse<User>>(`${this.baseUrl}/onboarding`);
+  }
+
   public isAuthenticated(): boolean {
     const token = localStorage.getItem('auth_token');
     const expiresAt = localStorage.getItem('token_expires_at');

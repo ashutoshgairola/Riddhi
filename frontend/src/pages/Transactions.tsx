@@ -200,6 +200,25 @@ const Transactions: FC = () => {
         }
       />
 
+      {!categoriesLoading && categories.length === 0 && (
+        <div className="mt-4 p-4 sm:p-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+              Start by creating a spending category
+            </h3>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
+              Transactions need a category. Create your first one to start tracking income and expenses.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsAddCategoryModalOpen(true)}
+            className="flex-shrink-0 px-4 py-2 text-sm font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 active:scale-95 transition-all"
+          >
+            Create First Category
+          </button>
+        </div>
+      )}
+
       <div className="mt-4 sm:mt-6">
         <TransactionList
           transactions={transactions}
