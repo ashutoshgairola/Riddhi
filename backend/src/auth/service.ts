@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { Collection, Db } from 'mongodb';
 
 import { createChildLogger } from '../config/logger';
+import { ConflictError, NotFoundError, UnauthorizedError } from '../common/errors';
 import { UserModel } from './db';
 import {
   AuthToken,
@@ -41,7 +42,7 @@ export class AuthService {
     // Check if user with this email already exists
     const existingUser = await this.userModel.findByEmail(userData.email);
     if (existingUser) {
-      throw new Error('Email already registered');
+      throw new ConflictError('Email already registered');
     }
 
     const user = await this.userModel.create(userData);
@@ -53,12 +54,12 @@ export class AuthService {
   async login(credentials: LoginRequest) {
     const user = await this.userModel.findByEmail(credentials.email);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     const isPasswordValid = await this.userModel.comparePassword(user, credentials.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     // Update last login time
@@ -74,7 +75,7 @@ export class AuthService {
   async requestPasswordReset(email: string): Promise<void> {
     const user = await this.userModel.findByEmail(email);
     if (!user) {
-      throw new Error('Email not found');
+      throw new NotFoundError('Email not found');
     }
 
     // Generate reset token
@@ -103,13 +104,13 @@ export class AuthService {
     // Find the token
     const resetToken = await this.resetTokenCollection.findOne({ token });
     if (!resetToken) {
-      throw new Error('Invalid or expired token');
+      throw new UnauthorizedError('Invalid or expired token');
     }
 
     // Check if token is expired
     if (dayjs(resetToken.expiresAt).isBefore(dayjs())) {
       await this.resetTokenCollection.deleteOne({ token });
-      throw new Error('Token has expired');
+      throw new UnauthorizedError('Token has expired');
     }
 
     // Hash the new password
@@ -128,7 +129,7 @@ export class AuthService {
   async getProfile(userId: string): Promise<UserDTO> {
     const user = await this.userModel.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     return this.mapUserToDTO(user);
@@ -137,7 +138,7 @@ export class AuthService {
   async updateProfile(userId: string, updates: UpdateProfileRequest): Promise<UserDTO> {
     const updatedUser = await this.userModel.updateProfile(userId, updates);
     if (!updatedUser) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     return this.mapUserToDTO(updatedUser);
@@ -150,12 +151,12 @@ export class AuthService {
   ): Promise<void> {
     const user = await this.userModel.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     const isPasswordValid = await this.userModel.comparePassword(user, currentPassword);
     if (!isPasswordValid) {
-      throw new Error('Current password is incorrect');
+      throw new UnauthorizedError('Current password is incorrect');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -170,7 +171,7 @@ export class AuthService {
     try {
       return jwt.verify(token, this.jwtSecret) as AuthToken;
     } catch (error) {
-      throw new Error('Invalid or expired token');
+      throw new UnauthorizedError('Invalid or expired token');
     }
   }
 
@@ -188,7 +189,7 @@ export class AuthService {
   async markWizardSeen(userId: string): Promise<UserDTO> {
     const updatedUser = await this.userModel.markWizardSeen(userId);
     if (!updatedUser) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
     return this.mapUserToDTO(updatedUser);
   }

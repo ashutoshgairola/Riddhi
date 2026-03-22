@@ -1,5 +1,6 @@
 import { Db } from 'mongodb';
 
+import { ConflictError, NotFoundError, ValidationError } from '../common/errors';
 import { CategoryModel } from '../transactions/category-db';
 import { TransactionModel } from '../transactions/db';
 import { BudgetModel } from './db';
@@ -55,7 +56,7 @@ export class BudgetService {
   async getBudgetById(id: string, userId: string): Promise<BudgetDTO> {
     const budget = await this.budgetModel.findById(id, userId);
     if (!budget) {
-      throw new Error('Budget not found');
+      throw new NotFoundError('Budget not found');
     }
 
     return this.mapBudgetToDTO(budget);
@@ -67,17 +68,17 @@ export class BudgetService {
     const endDate = new Date(budgetData.endDate);
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      throw new Error('Invalid date format');
+      throw new ValidationError('Invalid date format');
     }
 
     if (startDate >= endDate) {
-      throw new Error('Start date must be before end date');
+      throw new ValidationError('Start date must be before end date');
     }
 
     // Check for overlapping budget periods
     const hasOverlap = await this.budgetModel.checkOverlappingBudgets(userId, startDate, endDate);
     if (hasOverlap) {
-      throw new Error('Budget period overlaps with an existing budget');
+      throw new ConflictError('Budget period overlaps with an existing budget');
     }
 
     // Validate categories
@@ -86,7 +87,7 @@ export class BudgetService {
     // Collect all categoryIds from all budget categories
     for (const budgetCategory of budgetData.categories) {
       if (!Array.isArray(budgetCategory.categoryIds) || budgetCategory.categoryIds.length === 0) {
-        throw new Error(
+        throw new ValidationError(
           `Budget category "${budgetCategory.name}" must have at least one categoryId`,
         );
       }
@@ -97,7 +98,7 @@ export class BudgetService {
     for (const categoryId of allCategoryIds) {
       const category = await this.categoryModel.findById(categoryId, userId);
       if (!category) {
-        throw new Error(`Category with ID ${categoryId} not found`);
+        throw new NotFoundError(`Category with ID ${categoryId} not found`);
       }
     }
 
@@ -146,7 +147,7 @@ export class BudgetService {
   async updateBudget(id: string, userId: string, updates: UpdateBudgetRequest): Promise<BudgetDTO> {
     const budget = await this.budgetModel.findById(id, userId);
     if (!budget) {
-      throw new Error('Budget not found');
+      throw new NotFoundError('Budget not found');
     }
 
     // Prepare updates
@@ -164,7 +165,7 @@ export class BudgetService {
     if (updates.startDate) {
       startDate = new Date(updates.startDate);
       if (isNaN(startDate.getTime())) {
-        throw new Error('Invalid start date format');
+        throw new ValidationError('Invalid start date format');
       }
       budgetUpdates.startDate = startDate;
     }
@@ -172,14 +173,14 @@ export class BudgetService {
     if (updates.endDate) {
       endDate = new Date(updates.endDate);
       if (isNaN(endDate.getTime())) {
-        throw new Error('Invalid end date format');
+        throw new ValidationError('Invalid end date format');
       }
       budgetUpdates.endDate = endDate;
     }
 
     // Validate date order
     if (startDate >= endDate) {
-      throw new Error('Start date must be before end date');
+      throw new ValidationError('Start date must be before end date');
     }
 
     // Check for overlapping budget periods
@@ -191,7 +192,7 @@ export class BudgetService {
         id, // Exclude current budget from overlap check
       );
       if (hasOverlap) {
-        throw new Error('Budget period overlaps with an existing budget');
+        throw new ConflictError('Budget period overlaps with an existing budget');
       }
     }
 
@@ -223,7 +224,7 @@ export class BudgetService {
   async deleteBudget(id: string, userId: string): Promise<void> {
     const budget = await this.budgetModel.findById(id, userId);
     if (!budget) {
-      throw new Error('Budget not found');
+      throw new NotFoundError('Budget not found');
     }
 
     const deleted = await this.budgetModel.delete(id, userId);
@@ -240,32 +241,32 @@ export class BudgetService {
   ): Promise<BudgetCategoryDTO> {
     const budget = await this.budgetModel.findById(budgetId, userId);
     if (!budget) {
-      throw new Error('Budget not found');
+      throw new NotFoundError('Budget not found');
     }
 
     // Validate that all transaction categories exist
     for (const categoryId of categoryData.categoryIds) {
       const transactionCategory = await this.categoryModel.findById(categoryId, userId);
       if (!transactionCategory) {
-        throw new Error(`Transaction category with ID ${categoryId} not found`);
+        throw new NotFoundError(`Transaction category with ID ${categoryId} not found`);
       }
     }
 
     // Check if any of the categoryIds are already used in existing budget categories
     for (const categoryId of categoryData.categoryIds) {
-      const existingCategory = budget.categories.find((c) => {
+      const existingCategory = (budget.categories ?? []).find((c) => {
         // Handle backward compatibility - some categories might still have the old categoryId field
         if (c.categoryIds && Array.isArray(c.categoryIds)) {
           return c.categoryIds.includes(categoryId);
         }
         // Fallback for old format (single categoryId)
-        if ((c as any).categoryId) {
-          return (c as any).categoryId === categoryId;
+        if ((c as BudgetCategory & { categoryId?: string }).categoryId) {
+          return (c as BudgetCategory & { categoryId?: string }).categoryId === categoryId;
         }
         return false;
       });
       if (existingCategory) {
-        throw new Error(
+        throw new ConflictError(
           `Transaction category ${categoryId} is already assigned to budget category "${existingCategory.name}"`,
         );
       }
@@ -317,13 +318,13 @@ export class BudgetService {
   ): Promise<BudgetCategoryDTO> {
     const budget = await this.budgetModel.findById(budgetId, userId);
     if (!budget) {
-      throw new Error('Budget not found');
+      throw new NotFoundError('Budget not found');
     }
 
     // Find the category
-    const category = budget.categories.find((c) => c._id?.toString() === categoryId);
+    const category = (budget.categories ?? []).find((c) => c._id?.toString() === categoryId);
     if (!category) {
-      throw new Error('Budget category not found');
+      throw new NotFoundError('Budget category not found');
     }
 
     // Prepare updates
@@ -371,13 +372,13 @@ export class BudgetService {
   async deleteBudgetCategory(budgetId: string, categoryId: string, userId: string): Promise<void> {
     const budget = await this.budgetModel.findById(budgetId, userId);
     if (!budget) {
-      throw new Error('Budget not found');
+      throw new NotFoundError('Budget not found');
     }
 
     // Find the category
-    const category = budget.categories.find((c) => c._id?.toString() === categoryId);
+    const category = (budget.categories ?? []).find((c) => c._id?.toString() === categoryId);
     if (!category) {
-      throw new Error('Budget category not found');
+      throw new NotFoundError('Budget category not found');
     }
 
     const deleted = await this.budgetModel.deleteCategory(budgetId, userId, categoryId);

@@ -1,5 +1,6 @@
 import { Db } from 'mongodb';
 
+import { ConflictError, NotFoundError, ValidationError } from '../common/errors';
 import { GoalModel } from './db';
 import {
   ContributionFrequency,
@@ -36,7 +37,7 @@ export class GoalService {
   async getGoalById(id: string, userId: string): Promise<GoalDetailDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new NotFoundError('Goal not found');
     }
 
     return this.mapGoalToDetailDTO(goal);
@@ -48,29 +49,29 @@ export class GoalService {
     const targetDate = new Date(goalData.targetDate);
 
     if (isNaN(startDate.getTime()) || isNaN(targetDate.getTime())) {
-      throw new Error('Invalid date format');
+      throw new ValidationError('Invalid date format');
     }
 
     if (startDate >= targetDate) {
-      throw new Error('Start date must be before target date');
+      throw new ValidationError('Start date must be before target date');
     }
 
     // Validate amounts
     if (goalData.targetAmount <= 0) {
-      throw new Error('Target amount must be greater than zero');
+      throw new ValidationError('Target amount must be greater than zero');
     }
 
     if (goalData.currentAmount < 0) {
-      throw new Error('Current amount cannot be negative');
+      throw new ValidationError('Current amount cannot be negative');
     }
 
     if (goalData.currentAmount > goalData.targetAmount) {
-      throw new Error('Current amount cannot exceed target amount');
+      throw new ValidationError('Current amount cannot exceed target amount');
     }
 
     // Validate priority
     if (goalData.priority < 1 || goalData.priority > 3) {
-      throw new Error('Priority must be between 1 and 3');
+      throw new ValidationError('Priority must be between 1 and 3');
     }
 
     // Create the goal
@@ -98,7 +99,7 @@ export class GoalService {
   async updateGoal(id: string, userId: string, updates: UpdateGoalRequest): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new NotFoundError('Goal not found');
     }
 
     // Prepare updates
@@ -117,7 +118,7 @@ export class GoalService {
     // Handle amount updates
     if (updates.targetAmount !== undefined) {
       if (updates.targetAmount <= 0) {
-        throw new Error('Target amount must be greater than zero');
+        throw new ValidationError('Target amount must be greater than zero');
       }
 
       // If we're lowering the target amount and it's now less than the current amount,
@@ -131,13 +132,13 @@ export class GoalService {
 
     if (updates.currentAmount !== undefined) {
       if (updates.currentAmount < 0) {
-        throw new Error('Current amount cannot be negative');
+        throw new ValidationError('Current amount cannot be negative');
       }
 
       const targetAmount =
         updates.targetAmount !== undefined ? updates.targetAmount : goal.targetAmount;
       if (updates.currentAmount > targetAmount) {
-        throw new Error('Current amount cannot exceed target amount');
+        throw new ValidationError('Current amount cannot exceed target amount');
       }
 
       goalUpdates.currentAmount = updates.currentAmount;
@@ -161,7 +162,7 @@ export class GoalService {
     if (updates.startDate) {
       startDate = new Date(updates.startDate);
       if (isNaN(startDate.getTime())) {
-        throw new Error('Invalid start date format');
+        throw new ValidationError('Invalid start date format');
       }
       goalUpdates.startDate = startDate;
     }
@@ -169,14 +170,14 @@ export class GoalService {
     if (updates.targetDate) {
       targetDate = new Date(updates.targetDate);
       if (isNaN(targetDate.getTime())) {
-        throw new Error('Invalid target date format');
+        throw new ValidationError('Invalid target date format');
       }
       goalUpdates.targetDate = targetDate;
     }
 
     // Validate date order
     if (startDate >= targetDate) {
-      throw new Error('Start date must be before target date');
+      throw new ValidationError('Start date must be before target date');
     }
 
     // Handle other updates
@@ -194,7 +195,7 @@ export class GoalService {
 
     if (updates.priority !== undefined) {
       if (updates.priority < 1 || updates.priority > 3) {
-        throw new Error('Priority must be between 1 and 3');
+        throw new ValidationError('Priority must be between 1 and 3');
       }
       goalUpdates.priority = updates.priority;
     }
@@ -220,7 +221,7 @@ export class GoalService {
   async deleteGoal(id: string, userId: string): Promise<void> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new NotFoundError('Goal not found');
     }
 
     const deleted = await this.goalModel.delete(id, userId);
@@ -233,11 +234,11 @@ export class GoalService {
   async completeGoal(id: string, userId: string): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new NotFoundError('Goal not found');
     }
 
     if (goal.status === 'completed') {
-      throw new Error('Goal is already completed');
+      throw new ConflictError('Goal is already completed');
     }
 
     const updatedGoal = await this.goalModel.updateStatus(id, userId, 'completed');
@@ -252,15 +253,15 @@ export class GoalService {
   async pauseGoal(id: string, userId: string): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new NotFoundError('Goal not found');
     }
 
     if (goal.status === 'completed') {
-      throw new Error('Completed goals cannot be paused');
+      throw new ConflictError('Completed goals cannot be paused');
     }
 
     if (goal.status === 'paused') {
-      throw new Error('Goal is already paused');
+      throw new ConflictError('Goal is already paused');
     }
 
     const updatedGoal = await this.goalModel.updateStatus(id, userId, 'paused');
@@ -275,11 +276,11 @@ export class GoalService {
   async resumeGoal(id: string, userId: string): Promise<GoalDTO> {
     const goal = await this.goalModel.findById(id, userId);
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new NotFoundError('Goal not found');
     }
 
     if (goal.status !== 'paused') {
-      throw new Error('Only paused goals can be resumed');
+      throw new ConflictError('Only paused goals can be resumed');
     }
 
     const updatedGoal = await this.goalModel.updateStatus(id, userId, 'active');

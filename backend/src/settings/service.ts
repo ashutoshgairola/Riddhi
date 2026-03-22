@@ -4,6 +4,7 @@ import { Db } from 'mongodb';
 import path from 'path';
 
 import { AccountModel } from '../accounts/db';
+import { NotFoundError, ValidationError } from '../common/errors';
 import { AccountType } from '../accounts/types/interface';
 import { BudgetModel } from '../budgets/db';
 import { createChildLogger } from '../config/logger';
@@ -104,7 +105,7 @@ export class SettingsService {
     const setting = await this.notificationSettingModel.findById(id, userId);
 
     if (!setting) {
-      throw new Error('Notification setting not found');
+      throw new NotFoundError('Notification setting not found');
     }
 
     const updatedSetting = await this.notificationSettingModel.update(id, userId, updates);
@@ -181,11 +182,11 @@ export class SettingsService {
     const connection = await this.accountConnectionModel.findById(id, userId);
 
     if (!connection) {
-      throw new Error('Connection not found');
+      throw new NotFoundError('Connection not found');
     }
 
     if (!connection.isConnected) {
-      throw new Error('Connection is not active');
+      throw new ValidationError('Connection is not active');
     }
 
     // In a real implementation, this would call the banking API to refresh data
@@ -205,7 +206,7 @@ export class SettingsService {
     const connection = await this.accountConnectionModel.findById(id, userId);
 
     if (!connection) {
-      throw new Error('Connection not found');
+      throw new NotFoundError('Connection not found');
     }
 
     // Mark accounts as disconnected
@@ -265,7 +266,7 @@ export class SettingsService {
       formattedData = this.convertToCSV(data, type);
       contentType = 'text/csv';
     } else {
-      throw new Error('Invalid format');
+      throw new ValidationError('Invalid format');
     }
 
     // Save to file
@@ -285,7 +286,7 @@ export class SettingsService {
       fileExt === '.csv' && (file.mimetype.includes('csv') || file.mimetype.includes('text/plain'));
 
     if (!isJSON && !isCSV) {
-      throw new Error('Invalid file format. Only JSON and CSV are supported.');
+      throw new ValidationError('Invalid file format. Only JSON and CSV are supported.');
     }
 
     // Parse file content
@@ -297,7 +298,7 @@ export class SettingsService {
         const parsedData = JSON.parse(content);
         data = Array.isArray(parsedData) ? parsedData : parsedData[type] || [];
       } catch (error) {
-        throw new Error('Invalid JSON format');
+        throw new ValidationError('Invalid JSON format');
       }
     } else {
       // CSV parsing - in a real app, use a proper CSV parser library
@@ -305,7 +306,7 @@ export class SettingsService {
         const content = file.buffer.toString('utf8');
         data = this.parseCSV(content, type);
       } catch (error) {
-        throw new Error('Invalid CSV format');
+        throw new ValidationError('Invalid CSV format');
       }
     }
 
@@ -330,7 +331,7 @@ export class SettingsService {
         break;
 
       default:
-        throw new Error(`Unsupported import type: ${type}`);
+        throw new ValidationError(`Unsupported import type: ${type}`);
     }
 
     return stats;
@@ -341,7 +342,7 @@ export class SettingsService {
 
     // Validate confirmation
     if (confirmation !== 'DELETE MY DATA') {
-      throw new Error('Invalid confirmation text');
+      throw new ValidationError('Invalid confirmation text');
     }
 
     // Process each data type
@@ -360,7 +361,7 @@ export class SettingsService {
           return this.clearUserAccounts(userId);
 
         default:
-          throw new Error(`Unsupported data type: ${type}`);
+          throw new ValidationError(`Unsupported data type: ${type}`);
       }
     });
 
@@ -580,7 +581,7 @@ export class SettingsService {
     const lines = csvText.split('\n').filter((line) => line.trim() !== '');
 
     if (lines.length < 2) {
-      throw new Error('CSV file must have at least a header row and one data row');
+      throw new ValidationError('CSV file must have at least a header row and one data row');
     }
 
     // Parse headers

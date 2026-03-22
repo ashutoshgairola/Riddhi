@@ -5,6 +5,7 @@ import path from 'path';
 import { promisify } from 'util';
 
 import { BudgetModel } from '../budgets/db';
+import { ConflictError, NotFoundError, ValidationError } from '../common/errors';
 import { createChildLogger } from '../config/logger';
 import { AttachmentModel } from './attachment-db';
 import { CategoryModel } from './category-db';
@@ -67,7 +68,7 @@ export class TransactionService {
   async getTransactionById(id: string, userId: string): Promise<TransactionDTO> {
     const transaction = await this.transactionModel.findById(id, userId);
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new NotFoundError('Transaction not found');
     }
 
     return this.enrichTransactionWithCategory(transaction);
@@ -79,7 +80,7 @@ export class TransactionService {
   ): Promise<TransactionDTO> {
     const category = await this.categoryModel.findById(transactionData.categoryId, userId);
     if (!category) {
-      throw new Error('Category not found');
+      throw new NotFoundError('Category not found');
     }
 
     const date = new Date(transactionData.date);
@@ -121,7 +122,7 @@ export class TransactionService {
   ): Promise<TransactionDTO> {
     const existingTransaction = await this.transactionModel.findById(id, userId);
     if (!existingTransaction) {
-      throw new Error('Transaction not found');
+      throw new NotFoundError('Transaction not found');
     }
 
     // Store the original transaction for budget comparison
@@ -148,7 +149,7 @@ export class TransactionService {
     if (updates.categoryId !== undefined) {
       const category = await this.categoryModel.findById(updates.categoryId, userId);
       if (!category) {
-        throw new Error('Category not found');
+        throw new NotFoundError('Category not found');
       }
       transactionUpdates.categoryId = updates.categoryId;
     }
@@ -188,7 +189,7 @@ export class TransactionService {
   async deleteTransaction(id: string, userId: string): Promise<void> {
     const transaction = await this.transactionModel.findById(id, userId);
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new NotFoundError('Transaction not found');
     }
 
     // Update budget if transaction is an expense
@@ -360,7 +361,7 @@ export class TransactionService {
   ): Promise<AttachmentDTO> {
     const transaction = await this.transactionModel.findById(transactionId, userId);
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new NotFoundError('Transaction not found');
     }
 
     const fileName = `${Date.now()}-${file.originalname}`;
@@ -393,7 +394,7 @@ export class TransactionService {
   async deleteAttachment(attachmentId: string): Promise<void> {
     const attachment = await this.attachmentModel.findById(attachmentId);
     if (!attachment) {
-      throw new Error('Attachment not found');
+      throw new NotFoundError('Attachment not found');
     }
 
     const filePath = path.join(process.cwd(), attachment.url);
@@ -440,13 +441,13 @@ export class TransactionService {
   ): Promise<CategoryDTO> {
     const existingCategory = await this.categoryModel.findByName(name, userId);
     if (existingCategory) {
-      throw new Error('Category with this name already exists');
+      throw new ConflictError('Category with this name already exists');
     }
 
     if (parentId) {
       const parentCategory = await this.categoryModel.findById(parentId, userId);
       if (!parentCategory) {
-        throw new Error('Parent category not found');
+        throw new NotFoundError('Parent category not found');
       }
     }
 
@@ -472,24 +473,24 @@ export class TransactionService {
   ): Promise<CategoryDTO> {
     const existingCategory = await this.categoryModel.findById(id, userId);
     if (!existingCategory) {
-      throw new Error('Category not found');
+      throw new NotFoundError('Category not found');
     }
 
     if (name && name !== existingCategory.name) {
       const categoryWithSameName = await this.categoryModel.findByName(name, userId);
       if (categoryWithSameName) {
-        throw new Error('Category with this name already exists');
+        throw new ConflictError('Category with this name already exists');
       }
     }
 
     if (parentId) {
       if (parentId === id) {
-        throw new Error('Category cannot be its own parent');
+        throw new ValidationError('Category cannot be its own parent');
       }
 
       const parentCategory = await this.categoryModel.findById(parentId, userId);
       if (!parentCategory) {
-        throw new Error('Parent category not found');
+        throw new NotFoundError('Parent category not found');
       }
     }
 
@@ -523,17 +524,17 @@ export class TransactionService {
   async deleteCategory(id: string, userId: string): Promise<void> {
     const category = await this.categoryModel.findById(id, userId);
     if (!category) {
-      throw new Error('Category not found');
+      throw new NotFoundError('Category not found');
     }
 
     const transactionCount = await this.transactionModel.countByCategory(userId, id);
     if (transactionCount > 0) {
-      throw new Error('Cannot delete category with associated transactions');
+      throw new ConflictError('Cannot delete category with associated transactions');
     }
 
     const childCategories = await this.categoryModel.findByParentId(id, userId);
     if (childCategories.length > 0) {
-      throw new Error('Cannot delete category with child categories');
+      throw new ConflictError('Cannot delete category with child categories');
     }
 
     const deleted = await this.categoryModel.delete(id, userId);

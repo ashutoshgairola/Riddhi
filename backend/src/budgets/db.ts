@@ -202,12 +202,14 @@ export class BudgetModel {
       return null;
     }
 
-    // Find the added category
-    const addedCategory = addedBudget.categories.find(
+    // Find the added category — defensive: categories may be missing from the returned result
+    // in some MongoDB driver versions even when the $push succeeded. Fall back to the
+    // categoryWithId we constructed, since we know exactly what was pushed.
+    const addedCategory = (addedBudget.categories ?? []).find(
       (c) => c._id?.toString() === categoryWithId._id.toString(),
     );
 
-    return addedCategory || null;
+    return addedCategory ?? (categoryWithId as Budget['categories'][0]);
   }
 
   async updateCategory(

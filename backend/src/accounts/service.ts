@@ -1,5 +1,6 @@
 import { Db } from 'mongodb';
 
+import { ConflictError, NotFoundError, ValidationError } from '../common/errors';
 import { TransactionModel } from '../transactions/db';
 import { AccountModel } from './db';
 import {
@@ -43,7 +44,7 @@ export class AccountService {
   async getAccountById(id: string, userId: string): Promise<AccountDetailDTO> {
     const account = await this.accountModel.findById(id, userId);
     if (!account) {
-      throw new Error('Account not found');
+      throw new NotFoundError('Account not found');
     }
 
     // Get recent transactions for this account
@@ -71,7 +72,7 @@ export class AccountService {
       accountData.balance < 0 &&
       ['checking', 'savings', 'cash', 'investment'].includes(accountData.type)
     ) {
-      throw new Error('Balance cannot be negative for this account type');
+      throw new ValidationError('Balance cannot be negative for this account type');
     }
 
     // For credit and loan accounts, convert balance to negative if positive
@@ -105,7 +106,7 @@ export class AccountService {
   ): Promise<AccountDTO> {
     const account = await this.accountModel.findById(id, userId);
     if (!account) {
-      throw new Error('Account not found');
+      throw new NotFoundError('Account not found');
     }
 
     // Prepare updates
@@ -147,7 +148,7 @@ export class AccountService {
         updates.balance < 0 &&
         ['checking', 'savings', 'cash', 'investment'].includes(accountType)
       ) {
-        throw new Error('Balance cannot be negative for this account type');
+        throw new ValidationError('Balance cannot be negative for this account type');
       }
 
       // For credit and loan accounts, convert balance to negative if positive
@@ -192,13 +193,13 @@ export class AccountService {
   async deleteAccount(id: string, userId: string): Promise<void> {
     const account = await this.accountModel.findById(id, userId);
     if (!account) {
-      throw new Error('Account not found');
+      throw new NotFoundError('Account not found');
     }
 
     // Check if account has associated transactions
     const transactionCount = await this.transactionModel.countByAccountId(userId, id);
     if (transactionCount > 0) {
-      throw new Error('Cannot delete account with associated transactions');
+      throw new ConflictError('Cannot delete account with associated transactions');
     }
 
     const deleted = await this.accountModel.delete(id, userId);

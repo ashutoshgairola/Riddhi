@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { Db } from 'mongodb';
 
+import { NotFoundError, ValidationError } from '../common/errors';
 import { InvestmentModel } from './db';
 import { InvestmentTransactionModel } from './transaction-db';
 import {
@@ -62,7 +63,7 @@ export class InvestmentService {
   async getInvestmentById(id: string, userId: string): Promise<InvestmentDTO> {
     const investment = await this.investmentModel.findById(id, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     return this.toDTO(investment);
@@ -97,7 +98,7 @@ export class InvestmentService {
   ): Promise<InvestmentDTO> {
     const investment = await this.investmentModel.findById(id, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     const allowedFields: (keyof UpdateInvestmentRequest)[] = [
@@ -139,7 +140,7 @@ export class InvestmentService {
   async deleteInvestment(id: string, userId: string): Promise<void> {
     const investment = await this.investmentModel.findById(id, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     // Delete all associated transactions first
@@ -159,7 +160,7 @@ export class InvestmentService {
   ): Promise<InvestmentTransactionsResponse> {
     const investment = await this.investmentModel.findById(investmentId, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     const txs = await this.txModel.findByInvestmentId(investmentId, userId);
@@ -177,7 +178,7 @@ export class InvestmentService {
   ): Promise<InvestmentTransactionDTO> {
     const investment = await this.investmentModel.findById(investmentId, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     let amount: number;
@@ -186,7 +187,7 @@ export class InvestmentService {
 
     if (data.type === 'dividend') {
       if (data.amount === undefined) {
-        throw new Error('Missing required fields: type, date, amount');
+        throw new ValidationError('Missing required fields: type, date, amount');
       }
       amount = data.amount;
       shares = undefined;
@@ -194,12 +195,12 @@ export class InvestmentService {
     } else {
       // buy or sell
       if (!shares || !price) {
-        throw new Error('Missing required fields: type, date, shares, price');
+        throw new ValidationError('Missing required fields: type, date, shares, price');
       }
       amount = shares * price;
 
       if (data.type === 'sell' && shares > investment.shares) {
-        throw new Error('Insufficient shares to sell');
+        throw new ValidationError('Insufficient shares to sell');
       }
     }
 
@@ -247,12 +248,12 @@ export class InvestmentService {
   ): Promise<void> {
     const investment = await this.investmentModel.findById(investmentId, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     const tx = await this.txModel.findById(txId, userId);
     if (!tx || tx.investmentId.toString() !== investmentId) {
-      throw new Error('Investment transaction not found');
+      throw new NotFoundError('Investment transaction not found');
     }
 
     // Reverse the effect on parent investment
@@ -291,7 +292,7 @@ export class InvestmentService {
   async getInvestmentReturns(id: string, userId: string): Promise<InvestmentReturnsDTO> {
     const investment = await this.investmentModel.findById(id, userId);
     if (!investment) {
-      throw new Error('Investment not found');
+      throw new NotFoundError('Investment not found');
     }
 
     const currentValue = investment.shares * investment.currentPrice;

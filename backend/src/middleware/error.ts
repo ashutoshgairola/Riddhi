@@ -1,12 +1,18 @@
 import { Request, Response } from 'express';
 
+import { AppError } from '../common/errors';
 import { createChildLogger } from '../config/logger';
 
 export class ErrorMiddleware {
   private static logger = createChildLogger({ middleware: 'ErrorMiddleware' });
 
   static handleErrors = (err: Error, req: Request, res: Response): void => {
-    const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+    const statusCode =
+      err instanceof AppError
+        ? err.statusCode
+        : res.statusCode !== 200
+          ? res.statusCode
+          : 500;
 
     // Log error with context
     const errorContext = {
