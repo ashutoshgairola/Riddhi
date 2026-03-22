@@ -37,7 +37,7 @@ async function startServer() {
     const expressApp = app.getExpressApp();
 
     // Start the server
-    const port = parseInt(process.env.PORT || '3000', 10);
+    const port = parseInt(process.env.BACKEND_PORT || '3000', 10);
     const server = expressApp.listen(port, () => {
       log.info('Server running and ready to accept connections', { port });
     });
