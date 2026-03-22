@@ -36,7 +36,7 @@ export interface RecentTransaction {
   type: 'income' | 'expense' | 'transfer';
   categoryId: string;
   categoryName: string;
-  accountId: string;
+  accountId?: string;
 }
 
 export interface BudgetCategoryProgress {
